@@ -29,143 +29,149 @@
     </header>
 
     <main>
-        <!-- Hero Section with Rounded Video Card -->
-        <section class="hero-section" id="hero">
-            <div class="hero-card reveal-fade">
-                <div class="hero-video-container">
-                    <video autoplay muted loop playsinline class="hero-video">
-                        <source src="assets/video/hero-mobile.mp4" type="video/mp4">
-                        <source src="assets/video/hero-mobile.mp4" type="video/mp4">
-                    </video>
-                    <div class="hero-overlay"></div>
-                </div>
-                <div class="hero-content">
-                    <h1 class="hero-title">West Wickham<br>Underwater Hockey Club</h1>
-                    <p class="hero-subtitle">South London club, hosting, coaching and games.</p>
-                    <div class="hero-cta-row">
-                        
-                        <a href="https://spond.com/" target="_blank" rel="noopener noreferrer" class="glass-button glass-button-secondary">Enrol with Spond</a>
+        <!-- Pinned Hero + Scrollytelling Section -->
+        <div class="scrolly-container" id="hero">
+            <!-- Hero Background (Pinned) -->
+            <div class="hero-pinned">
+                <div class="hero-card">
+                    <div class="hero-video-container">
+                        <video autoplay muted loop playsinline class="hero-video">
+                            <source src="assets/video/hero-mobile.mp4" type="video/mp4">
+                        </video>
+                        <div class="hero-overlay"></div>
                     </div>
                 </div>
             </div>
-        </section>
 
-        <!-- Sessions Introduction -->
-        <section class="sessions-intro" id="sessions">
-            <div class="container">
-                <h2 class="section-title reveal-fade">Training Sessions</h2>
-                <p class="section-subtitle reveal-fade">Join us for weekly sessions across South London</p>
+            <!-- Scrolling Chapters (Over Hero) -->
+            <div class="scrolly-chapters">
+                <!-- Intro Chapter -->
+                <section class="chapter chapter-intro" data-chapter="intro" id="sessions">
+                    <div class="chapter-content">
+                        <div class="hero-text">
+                            <h1 class="hero-title">West Wickham<br>Underwater Hockey Club</h1>
+                            <p class="hero-subtitle">South London club, hosting, coaching and games.</p>
+                        </div>
+                        <div class="hero-cta">
+                            <a href="https://spond.com/" target="_blank" rel="noopener noreferrer" class="glass-button glass-button-primary">
+                                Enrol with Spond
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Wednesday Chapter -->
+                <section class="chapter chapter-session" data-chapter="wednesday">
+                    <div class="chapter-content">
+                        <div class="session-layout">
+                            <div class="session-badge">
+                                <a href="https://www.google.com/maps/search/?api=1&query=South%20Norwood%20Leisure%20Centre%2C%20164%20Portland%20Road%2C%20London%20SE25%204PT" 
+                                   target="_blank" 
+                                   rel="noopener noreferrer"
+                                   class="session-image-link">
+                                    <img src="assets/southnorwood-pool.webp" alt="South Norwood Leisure Centre" class="session-image">
+                                    <span class="map-icon">📍</span>
+                                </a>
+                            </div>
+                            <div class="session-info">
+                                <div class="session-day">Wednesday</div>
+                                <div class="session-meta">Members & Guests</div>
+                                <div class="session-time">9PM to 10PM</div>
+                                <a href="https://www.google.com/maps/search/?api=1&query=South%20Norwood%20Leisure%20Centre%2C%20164%20Portland%20Road%2C%20London%20SE25%204PT" 
+                                   target="_blank" 
+                                   rel="noopener noreferrer"
+                                   class="session-location-link">
+                                    <address class="session-address">
+                                        South Norwood Leisure Centre<br>
+                                        164 Portland Road<br>
+                                        London SE25 4PT
+                                    </address>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Thursday Chapter -->
+                <section class="chapter chapter-session" data-chapter="thursday">
+                    <div class="chapter-content">
+                        <div class="session-layout">
+                            <div class="session-badge">
+                                <a href="https://www.google.com/maps/search/?api=1&query=Downham%20Leisure%20Centre%2C%20Moorside%20Road%2C%20London%20BR1%205EW" 
+                                   target="_blank" 
+                                   rel="noopener noreferrer"
+                                   class="session-image-link">
+                                    <img src="assets/downham-pool.webp" alt="Downham Leisure Centre" class="session-image">
+                                    <span class="map-icon">📍</span>
+                                </a>
+                            </div>
+                            <div class="session-info">
+                                <div class="session-day">Thursday</div>
+                                <div class="session-meta">Members & Guests</div>
+                                <div class="session-time">9PM to 10PM</div>
+                                <a href="https://www.google.com/maps/search/?api=1&query=Downham%20Leisure%20Centre%2C%20Moorside%20Road%2C%20London%20BR1%205EW" 
+                                   target="_blank" 
+                                   rel="noopener noreferrer"
+                                   class="session-location-link">
+                                    <address class="session-address">
+                                        Downham Leisure Centre<br>
+                                        Moorside Road<br>
+                                        London BR1 5EW
+                                    </address>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Sunday Chapter -->
+                <section class="chapter chapter-session" data-chapter="sunday">
+                    <div class="chapter-content">
+                        <div class="session-layout">
+                            <div class="session-badge">
+                                <a href="https://www.google.com/maps/search/?api=1&query=De%20Stafford%20Sports%20Centre%2C%20Burntwood%20Lane%2C%20Caterham%20CR3%205YX" 
+                                   target="_blank" 
+                                   rel="noopener noreferrer"
+                                   class="session-image-link">
+                                    <img src="assets/caterham-pool.webp" alt="De Stafford Sports Centre" class="session-image">
+                                    <span class="map-icon">📍</span>
+                                </a>
+                            </div>
+                            <div class="session-info">
+                                <div class="session-day">Sunday</div>
+                                <div class="session-meta">Juniors Only</div>
+                                <div class="session-time">3:30PM to 4:30PM</div>
+                                <a href="https://www.google.com/maps/search/?api=1&query=De%20Stafford%20Sports%20Centre%2C%20Burntwood%20Lane%2C%20Caterham%20CR3%205YX" 
+                                   target="_blank" 
+                                   rel="noopener noreferrer"
+                                   class="session-location-link">
+                                    <address class="session-address">
+                                        De Stafford Sports Centre<br>
+                                        Burntwood Lane<br>
+                                        Caterham CR3 5YX
+                                    </address>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Transition/Spacer for Release -->
+                <div class="scrolly-release"></div>
             </div>
-        </section>
+        </div>
 
-        <!-- Wave Divider -->
-        <div class="wave-divider"></div>
-
-        <!-- Wednesday Session -->
-        <section class="session-chapter chapter-wednesday" id="wednesday">
-            <div class="container">
-                <div class="session-content reveal-slide">
-                    <div class="session-badge">
-                        <a href="https://www.google.com/maps/search/?api=1&query=South%20Norwood%20Leisure%20Centre%2C%20164%20Portland%20Road%2C%20London%20SE25%204PT" 
-                           target="_blank" 
-                           rel="noopener noreferrer"
-                           class="session-image-link">
-                            <img src="assets/southnorwood-pool.webp" alt="South Norwood Leisure Centre" class="session-image">
-                            <span class="map-icon">📍</span>
-                        </a>
-                    </div>
-                    <div class="session-info">
-                        <div class="session-day">Wednesday</div>
-                        <div class="session-meta">Members & Guests</div>
-                        <div class="session-time">9PM to 10PM</div>
-                        <a href="https://www.google.com/maps/search/?api=1&query=South%20Norwood%20Leisure%20Centre%2C%20164%20Portland%20Road%2C%20London%20SE25%204PT" 
-                           target="_blank" 
-                           rel="noopener noreferrer"
-                           class="session-location-link">
-                            <address class="session-address">
-                                South Norwood Leisure Centre<br>
-                                164 Portland Road<br>
-                                London SE25 4PT
-                            </address>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Thursday Session -->
-        <section class="session-chapter chapter-thursday" id="thursday">
-            <div class="container">
-                <div class="session-content reveal-slide">
-                    <div class="session-badge">
-                        <a href="https://www.google.com/maps/search/?api=1&query=Downham%20Leisure%20Centre%2C%20Moorside%20Road%2C%20London%20BR1%205EW" 
-                           target="_blank" 
-                           rel="noopener noreferrer"
-                           class="session-image-link">
-                            <img src="assets/downham-pool.webp" alt="Downham Leisure Centre" class="session-image">
-                            <span class="map-icon">📍</span>
-                        </a>
-                    </div>
-                    <div class="session-info">
-                        <div class="session-day">Thursday</div>
-                        <div class="session-meta">Members & Guests</div>
-                        <div class="session-time">9PM to 10PM</div>
-                        <a href="https://www.google.com/maps/search/?api=1&query=Downham%20Leisure%20Centre%2C%20Moorside%20Road%2C%20London%20BR1%205EW" 
-                           target="_blank" 
-                           rel="noopener noreferrer"
-                           class="session-location-link">
-                            <address class="session-address">
-                                Downham Leisure Centre<br>
-                                Moorside Road<br>
-                                London BR1 5EW
-                            </address>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Sunday Session -->
-        <section class="session-chapter chapter-sunday" id="sunday">
-            <div class="container">
-                <div class="session-content reveal-slide">
-                    <div class="session-badge">
-                        <a href="https://www.google.com/maps/search/?api=1&query=De%20Stafford%20Sports%20Centre%2C%20Burntwood%20Lane%2C%20Caterham%20CR3%205YX" 
-                           target="_blank" 
-                           rel="noopener noreferrer"
-                           class="session-image-link">
-                            <img src="assets/caterham-pool.webp" alt="De Stafford Sports Centre" class="session-image">
-                            <span class="map-icon">📍</span>
-                        </a>
-                    </div>
-                    <div class="session-info">
-                        <div class="session-day">Sunday</div>
-                        <div class="session-meta">Juniors Only</div>
-                        <div class="session-time">3:30PM to 4:30PM</div>
-                        <a href="https://www.google.com/maps/search/?api=1&query=De%20Stafford%20Sports%20Centre%2C%20Burntwood%20Lane%2C%20Caterham%20CR3%205YX" 
-                           target="_blank" 
-                           rel="noopener noreferrer"
-                           class="session-location-link">
-                            <address class="session-address">
-                                De Stafford Sports Centre<br>
-                                Burntwood Lane<br>
-                                Caterham CR3 5YX
-                            </address>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Wave Divider -->
-        <div class="wave-divider wave-divider-light"></div>
+        <!-- Normal Scrolling Content (After Release) -->
+        
+        <!-- Transition Wave -->
+        <div class="transition-wave"></div>
 
         <!-- Watch Section -->
         <section class="watch-section" id="watch">
             <div class="container">
-                <h2 class="section-title reveal-fade">Watch Us Play</h2>
+                <h2 class="section-title">Watch Us Play</h2>
                 <div class="video-grid">
-                    <div class="video-wrapper reveal-scale">
+                    <div class="video-wrapper">
                         <iframe 
                             src="https://www.youtube.com/embed/lamGHPI_vIk" 
                             title="K2 Session Aug 18 2024 - A team"
@@ -175,7 +181,7 @@
                             loading="lazy">
                         </iframe>
                     </div>
-                    <div class="video-wrapper reveal-scale">
+                    <div class="video-wrapper">
                         <iframe 
                             src="https://www.youtube.com/embed/6cZsM1buJvU" 
                             title="K2 Session Aug 18 2024 - B team"
@@ -189,14 +195,11 @@
             </div>
         </section>
 
-        <!-- Wave Divider -->
-        <div class="wave-divider"></div>
-
         <!-- Instagram Section -->
         <section class="instagram-section">
             <div class="container">
-                <h2 class="section-title reveal-fade">Follow Our Journey</h2>
-                <div class="instagram-wrapper reveal-fade">
+                <h2 class="section-title">Follow Our Journey</h2>
+                <div class="instagram-wrapper">
                     <behold-widget feed-id="P9oK8WYN3W41RYNLK4cK"></behold-widget>
                 </div>
                 <a href="https://www.instagram.com/wwuwh/" 
@@ -208,14 +211,11 @@
             </div>
         </section>
 
-        <!-- Wave Divider -->
-        <div class="wave-divider wave-divider-light"></div>
-
         <!-- Social Section -->
         <section class="social-section" id="social">
             <div class="container">
-                <h2 class="section-title reveal-fade">Connect With Us</h2>
-                <div class="social-grid reveal-scale">
+                <h2 class="section-title">Connect With Us</h2>
+                <div class="social-grid">
                     <a href="https://www.instagram.com/wwuwh/" 
                        target="_blank" 
                        rel="noopener noreferrer" 
