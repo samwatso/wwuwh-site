@@ -5,7 +5,7 @@
 (function() {
 ‘use strict’;
 
-```
+
 // ============================================
 // Floating Nav: Scroll State
 // ============================================
@@ -187,6 +187,6 @@ if (window.location.hostname === 'localhost' || window.location.hostname === '12
     console.log('Viewport:', window.innerWidth, 'x', window.innerHeight);
     console.log('Reduced Motion:', prefersReducedMotion);
 }
-```
+
 
 })();
