@@ -39,9 +39,9 @@ CSS Reset & Variables
 –grey-pale: #F3F5F9;
 –white: #FFFFFF;
 
-```
+
 --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-```
+
 
 }
 
@@ -211,7 +211,7 @@ color: var(–blue-light);
 display: none;
 }
 
-```
+
 .nav-menu {
     position: static;
     transform: none;
@@ -232,7 +232,7 @@ display: none;
     font-size: 13px;
     padding: 10px 18px;
 }
-```
+
 
 }
 
@@ -411,11 +411,11 @@ flex-direction: row;
 justify-content: center;
 }
 
-```
+
 .hero-cta-row .glass-button {
     flex: 0 1 auto;
 }
-```
+
 
 }
 
@@ -424,11 +424,11 @@ justify-content: center;
 font-size: 52px;
 }
 
-```
+
 .hero-subtitle {
     font-size: 22px;
 }
-```
+
 
 }
 
@@ -437,11 +437,10 @@ font-size: 52px;
 font-size: 64px;
 }
 
-```
+
 .hero-subtitle {
     font-size: 24px;
 }
-```
 
 }
 
@@ -520,11 +519,10 @@ margin: 0 auto;
 font-size: 48px;
 }
 
-```
 .section-subtitle {
     font-size: 20px;
 }
-```
+
 
 }
 
@@ -690,11 +688,11 @@ color: rgba(255, 255, 255, 0.9);
 font-size: 42px;
 }
 
-```
+
 .session-time {
     font-size: 22px;
 }
-```
+
 
 }
 
@@ -831,12 +829,12 @@ width: 72px;
 height: 72px;
 }
 
-```
+
 .social-link svg {
     width: 32px;
     height: 32px;
 }
-```
+
 
 }
 
@@ -910,14 +908,14 @@ transition-duration: 0.01ms !important;
 scroll-behavior: auto !important;
 }
 
-```
+
 .reveal-fade,
 .reveal-slide,
 .reveal-scale {
     opacity: 1 !important;
     transform: none !important;
 }
-```
+
 
 }
 
