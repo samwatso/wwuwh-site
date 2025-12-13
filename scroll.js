@@ -1,9 +1,15 @@
 // ============================================
-// WWUWH Scroll Interactions
+// WWUWH Scrollytelling Interactions
 // ============================================
 
 (function() {
     'use strict';
+
+    // Add .js class to enable JS-dependent styling
+    document.documentElement.classList.add('js');
+
+    // Check if user prefers reduced motion
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     // ============================================
     // Floating Nav: Scroll State
@@ -14,7 +20,7 @@
     function updateHeaderState() {
         const currentScrollY = window.scrollY;
         
-        if (currentScrollY > 50) {
+        if (currentScrollY > 100) {
             header.classList.add('scrolled');
         } else {
             header.classList.remove('scrolled');
@@ -87,45 +93,85 @@
     handleNavResize(); // Run on load
 
     // ============================================
-    // Intersection Observer: Reveal Animations
+    // Scrollytelling: Chapter Progress
     // ============================================
     
-    // Check if user prefers reduced motion
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    if (!prefersReducedMotion) {
+    const chapters = document.querySelectorAll('.chapter');
+    
+    if (chapters.length > 0 && !prefersReducedMotion) {
         const observerOptions = {
             root: null,
-            rootMargin: '0px 0px -100px 0px', // Trigger slightly before element enters viewport
-            threshold: 0.15 // Trigger when 15% of element is visible
+            rootMargin: '-20% 0px -20% 0px', // Trigger when chapter is in middle 60% of viewport
+            threshold: [0, 0.25, 0.5, 0.75, 1]
         };
 
-        const revealObserver = new IntersectionObserver((entries) => {
+        const chapterObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                    // Optional: unobserve after reveal for performance
-                    // revealObserver.unobserve(entry.target);
+                if (entry.isIntersecting && entry.intersectionRatio > 0.4) {
+                    // Remove active class from all chapters
+                    chapters.forEach(ch => ch.classList.remove('is-active'));
+                    
+                    // Add active class to current chapter
+                    entry.target.classList.add('is-active');
+                    
+                    // Log active chapter (dev only)
+                    const chapterName = entry.target.getAttribute('data-chapter');
+                    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                        console.log('Active chapter:', chapterName);
+                    }
                 }
             });
         }, observerOptions);
 
-        // Observe all reveal elements
-        const revealElements = document.querySelectorAll('.reveal-fade, .reveal-slide, .reveal-scale');
-        revealElements.forEach(el => {
-            revealObserver.observe(el);
+        // Observe all chapters
+        chapters.forEach(chapter => {
+            chapterObserver.observe(chapter);
         });
-    } else {
-        // If user prefers reduced motion, immediately show all elements
-        const revealElements = document.querySelectorAll('.reveal-fade, .reveal-slide, .reveal-scale');
-        revealElements.forEach(el => {
-            el.classList.add('is-visible');
+
+        // Set first chapter as active initially
+        if (chapters[0]) {
+            chapters[0].classList.add('is-active');
+        }
+    } else if (prefersReducedMotion) {
+        // If reduced motion, show all chapters
+        chapters.forEach(chapter => {
+            chapter.classList.add('is-active');
         });
     }
 
     // ============================================
-    // Video: Pause when not in viewport (optional optimization)
+    // Hero Overlay Fade on Scroll
     // ============================================
+    
+    const heroOverlay = document.querySelector('.hero-overlay');
+    const scrollyContainer = document.querySelector('.scrolly-container');
+    
+    if (heroOverlay && scrollyContainer && !prefersReducedMotion) {
+        function updateHeroOverlay() {
+            const scrollProgress = window.scrollY / (scrollyContainer.offsetHeight - window.innerHeight);
+            const clampedProgress = Math.min(Math.max(scrollProgress, 0), 1);
+            
+            // Fade overlay slightly as user scrolls through chapters
+            const overlayOpacity = 1 - (clampedProgress * 0.3); // Fade to 70%
+            heroOverlay.style.opacity = overlayOpacity;
+        }
+
+        let overlayTicking = false;
+        window.addEventListener('scroll', () => {
+            if (!overlayTicking) {
+                window.requestAnimationFrame(() => {
+                    updateHeroOverlay();
+                    overlayTicking = false;
+                });
+                overlayTicking = true;
+            }
+        });
+    }
+
+    // ============================================
+    // Video: Pause when not in viewport (performance)
+    // ============================================
+    
     const heroVideo = document.querySelector('.hero-video');
     
     if (heroVideo && !prefersReducedMotion) {
@@ -133,7 +179,7 @@
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
                     heroVideo.play().catch(() => {
-                        // Handle autoplay restrictions
+                        // Handle autoplay restrictions silently
                     });
                 } else {
                     heroVideo.pause();
@@ -147,8 +193,9 @@
     }
 
     // ============================================
-    // Smooth Scroll Polyfill for older browsers
+    // Smooth Scroll for Anchor Links
     // ============================================
+    
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
             const targetId = this.getAttribute('href');
@@ -179,12 +226,56 @@
     });
 
     // ============================================
+    // Enhanced Text Visibility on Active Chapters
+    // ============================================
+    
+    // This is handled by CSS transitions, but we can add
+    // .is-visible class for additional control if needed
+    chapters.forEach(chapter => {
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Add visible class for additional animations if needed
+                    const textElements = entry.target.querySelectorAll('.hero-text, .hero-cta, .session-layout');
+                    textElements.forEach((el, index) => {
+                        setTimeout(() => {
+                            el.classList.add('is-visible');
+                        }, index * 100);
+                    });
+                }
+            });
+        }, {
+            threshold: 0.3
+        });
+
+        observer.observe(chapter);
+    });
+
+    // ============================================
     // Performance: Log viewport info (dev only)
     // ============================================
+    
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.log('WWUWH Scroll Interactions Initialized');
+        console.log('WWUWH Scrollytelling Initialized');
         console.log('Viewport:', window.innerWidth, 'x', window.innerHeight);
         console.log('Reduced Motion:', prefersReducedMotion);
+        console.log('Chapters found:', chapters.length);
     }
+
+    // ============================================
+    // Handle Window Resize (recalculate positions)
+    // ============================================
+    
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            handleNavResize();
+            // Trigger observers to recalculate if needed
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                console.log('Viewport resized:', window.innerWidth, 'x', window.innerHeight);
+            }
+        }, 250);
+    });
 
 })();
