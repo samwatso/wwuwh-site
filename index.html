@@ -1,389 +1,287 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="West Wickham Underwater Hockey Club - South London club, hosting, coaching and games. Join us for weekly sessions.">
-    <meta name="keywords" content="underwater hockey, West Wickham, South London, water sports, swimming, club">
+    <meta name="description" content="West Wickham Underwater Hockey Club - South London club, hosting, coaching and games.">
     <title>West Wickham Underwater Hockey Club | WWUWH</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <!-- Header & Navigation -->
-    <header class="header" id="main-header">
-        <div class="container">
-            <div class="logo">
-                <img src="assets/logo.png" alt="West Wickham Underwater Hockey Club Logo" class="logo-img">
+    <!-- Floating Glass Navigation -->
+    <header class="floating-nav" id="main-header">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="assets/logo.png" alt="West Wickham UWH Logo">
             </div>
-            <nav class="nav" aria-label="Main navigation">
-                <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-                <ul class="nav-list">
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#sessions">Sessions</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
+            <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <nav class="nav-menu">
+                <a href="#hero">Home</a>
+                <a href="#sessions">Sessions</a>
+                <a href="#watch">Videos</a>
+                <a href="#social">Connect</a>
             </nav>
         </div>
     </header>
 
-    <main>
-        <!-- Underwater Hero Section -->
-        <section class="hero-underwater" id="home">
-            <div class="hero-background">
-                <picture>
-                    <source srcset="assets/hero1.jpg" type="image/jpeg">
-                    <img src="assets/hero2.jpg" alt="Underwater hockey action" class="hero-bg-image">
-                </picture>
+```
+<main>
+    <!-- Hero Section with Rounded Video Card -->
+    <section class="hero-section" id="hero">
+        <div class="hero-card reveal-fade">
+            <div class="hero-video-container">
+                <video autoplay muted loop playsinline class="hero-video">
+                    <source src="assets/video/hero-mobile.mp4" type="video/mp4">
+                    <source src="assets/video/hero-mobile.mp4" type="video/mp4">
+                </video>
+                <div class="hero-overlay"></div>
             </div>
-            <div class="hero-overlay"></div>
-            
-            <!-- Logo Watermark -->
-            <div class="hero-watermark">
-                <img src="assets/logo.png" alt="" aria-hidden="true">
-            </div>
-            
-            <!-- Animated Bubbles -->
-            <div class="bubbles" aria-hidden="true">
-                <span class="bubble bubble-1"></span>
-                <span class="bubble bubble-2"></span>
-                <span class="bubble bubble-3"></span>
-                <span class="bubble bubble-4"></span>
-                <span class="bubble bubble-5"></span>
-                <span class="bubble bubble-6"></span>
-                <span class="bubble bubble-7"></span>
-                <span class="bubble bubble-8"></span>
-            </div>
-            
             <div class="hero-content">
-                <div class="container">
-                    <h1 class="hero-title">West Wickham<br>Underwater Hockey</h1>
-                    <p class="hero-subtitle">South London's premier underwater hockey club</p>
-                    <div class="hero-cta-row">
-                        <a href="https://spond.com/" class="cta-button cta-primary" target="_blank" rel="noopener noreferrer">
-                            Join on Spond
-                        </a>
-                        <a href="#sessions" class="cta-button cta-secondary">
-                            View Sessions
-                        </a>
-                    </div>
+                <h1 class="hero-title">West Wickham<br>Underwater Hockey Club</h1>
+                <p class="hero-subtitle">South London club, hosting, coaching and games.</p>
+                <div class="hero-cta-row">
+                    <a href="#sessions" class="glass-button glass-button-primary">View Sessions</a>
+                    <a href="https://spond.com/" target="_blank" rel="noopener noreferrer" class="glass-button glass-button-secondary">Enrol with Spond</a>
                 </div>
             </div>
-            
-            <div class="hero-scroll-indicator" aria-label="Scroll down">
-                <span></span>
-            </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- Club Title Section -->
-        <section class="club-intro section-surface">
-            <div class="container">
-                <div class="club-intro-card">
-                    <h1>West Wickham Underwater Hockey Club</h1>
-                    <p class="subtitle">South London club, hosting, coaching and games.</p>
-                </div>
-            </div>
-        </section>
+    <!-- Sessions Introduction -->
+    <section class="sessions-intro" id="sessions">
+        <div class="container">
+            <h2 class="section-title reveal-fade">Training Sessions</h2>
+            <p class="section-subtitle reveal-fade">Join us for weekly sessions across South London</p>
+        </div>
+    </section>
 
-        <!-- Session Information Section -->
-        <section class="sessions section-wash wave-divider">
-            <div class="container">
-                <h2>Session Information</h2>
-                <div class="session-grid">
-                    <article class="session-card">
-                        <a href="https://www.google.com/maps/search/?api=1&query=South%20Norwood%20Leisure%20Centre%2C%20164%20Portland%20Road%2C%20London%20SE25%204PT" 
-                           target="_blank" 
-                           rel="noopener noreferrer" 
-                           class="session-image-link"
-                           aria-label="View South Norwood Leisure Centre on Google Maps">
-                            <div class="session-image">
-                                <img src="assets/southnorwood-pool.webp" alt="South Norwood Leisure Centre pool">
-                            </div>
-                        </a>
-                        <div class="session-content">
-                            <div class="session-day">Wednesday</div>
-                            <div class="session-type">Members & Guests</div>
-                            <div class="session-time">9PM to 10PM</div>
-                            <a href="https://www.google.com/maps/search/?api=1&query=South%20Norwood%20Leisure%20Centre%2C%20164%20Portland%20Road%2C%20London%20SE25%204PT" 
-                               target="_blank" 
-                               rel="noopener noreferrer" 
-                               class="session-address-link"
-                               aria-label="View South Norwood Leisure Centre on Google Maps">
-                                <address class="session-location">
-                                    South Norwood Leisure Centre<br>
-                                    164 Portland Road<br>
-                                    London SE25 4PT
-                                </address>
-                            </a>
-                        </div>
-                    </article>
+    <!-- Wave Divider -->
+    <div class="wave-divider"></div>
 
-                    <article class="session-card">
-                        <a href="https://www.google.com/maps/search/?api=1&query=Downham%20Leisure%20Centre%2C%20Moorside%20Road%2C%20London%20BR1%205EW" 
-                           target="_blank" 
-                           rel="noopener noreferrer" 
-                           class="session-image-link"
-                           aria-label="View Downham Leisure Centre on Google Maps">
-                            <div class="session-image">
-                                <img src="assets/downham-pool.webp" alt="Downham Leisure Centre pool">
-                            </div>
-                        </a>
-                        <div class="session-content">
-                            <div class="session-day">Thursday</div>
-                            <div class="session-type">Members & Guests</div>
-                            <div class="session-time">9PM to 10PM</div>
-                            <a href="https://www.google.com/maps/search/?api=1&query=Downham%20Leisure%20Centre%2C%20Moorside%20Road%2C%20London%20BR1%205EW" 
-                               target="_blank" 
-                               rel="noopener noreferrer" 
-                               class="session-address-link"
-                               aria-label="View Downham Leisure Centre on Google Maps">
-                                <address class="session-location">
-                                    Downham Leisure Centre<br>
-                                    Moorside Road<br>
-                                    London BR1 5EW
-                                </address>
-                            </a>
-                        </div>
-                    </article>
-
-                    <article class="session-card">
-                        <a href="https://www.google.com/maps/search/?api=1&query=De%20Stafford%20Sports%20Centre%2C%20Burntwood%20Lane%2C%20Caterham%20CR3%205YX" 
-                           target="_blank" 
-                           rel="noopener noreferrer" 
-                           class="session-image-link"
-                           aria-label="View De Stafford Sports Centre on Google Maps">
-                            <div class="session-image">
-                                <img src="assets/caterham-pool.webp" alt="De Stafford Sports Centre pool">
-                            </div>
-                        </a>
-                        <div class="session-content">
-                            <div class="session-day">Sunday</div>
-                            <div class="session-type">Juniors Only</div>
-                            <div class="session-time">3:30PM to 4:30PM</div>
-                            <a href="https://www.google.com/maps/search/?api=1&query=De%20Stafford%20Sports%20Centre%2C%20Burntwood%20Lane%2C%20Caterham%20CR3%205YX" 
-                               target="_blank" 
-                               rel="noopener noreferrer" 
-                               class="session-address-link"
-                               aria-label="View De Stafford Sports Centre on Google Maps">
-                                <address class="session-location">
-                                    De Stafford Sports Centre<br>
-                                    Burntwood Lane<br>
-                                    Caterham CR3 5YX
-                                </address>
-                            </a>
-                        </div>
-                    </article>
-                </div>
-
-                <div class="enrollment-cta">
-                    <p>Please register session attendance by enrolling with Spond.</p>
-                    <a href="https://spond.com/" class="cta-button" target="_blank" rel="noopener noreferrer">Enrol with SPOND</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- YouTube Video Section -->
-        <section class="video-preview section-deep wave-divider">
-            <div class="container">
-                <h2>Watch Us In Action</h2>
-                <div class="video-grid">
-                    <div class="video-container">
-                        <iframe 
-                            src="https://www.youtube.com/embed/lamGHPI_vIk" 
-                            title="K2 Session Aug 18 2024 - A team"
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            referrerpolicy="strict-origin-when-cross-origin" 
-                            allowfullscreen
-                            loading="lazy">
-                        </iframe>
-                    </div>
-                    <div class="video-container">
-                        <iframe 
-                            src="https://www.youtube.com/embed/6cZsM1buJvU" 
-                            title="K2 Session Aug 18 2024 - B team"
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
-                            referrerpolicy="strict-origin-when-cross-origin" 
-                            allowfullscreen
-                            loading="lazy">
-                        </iframe>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Instagram Feed Section -->
-        <section class="instagram-feed section-surface wave-divider">
-            <div class="container">
-                <h2>Follow Us on Instagram</h2>
-                <div class="behold-wrapper">
-                    <behold-widget feed-id="P9oK8WYN3W41RYNLK4cK"></behold-widget>
-                </div>
-                <a href="https://www.instagram.com/wwuwh/" class="follow-link" target="_blank" rel="noopener noreferrer">@wwuwh</a>
-            </div>
-        </section>
-
-        <!-- Social Links Section -->
-        <section class="social-links section-wash" id="contact">
-            <div class="container">
-                <h2>Connect With Us</h2>
-                <div class="social-icons">
-                    <a href="https://www.instagram.com/wwuwh/" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
+    <!-- Wednesday Session -->
+    <section class="session-chapter chapter-wednesday" id="wednesday">
+        <div class="container">
+            <div class="session-content reveal-slide">
+                <div class="session-badge">
+                    <a href="https://www.google.com/maps/search/?api=1&query=South%20Norwood%20Leisure%20Centre%2C%20164%20Portland%20Road%2C%20London%20SE25%204PT" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="session-image-link">
+                        <img src="assets/southnorwood-pool.webp" alt="South Norwood Leisure Centre" class="session-image">
+                        <span class="map-icon">📍</span>
                     </a>
-                    <a href="https://www.facebook.com/westwickhamuwh/" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Facebook">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
-                    </a>
-                    <a href="https://www.tiktok.com/@westwickhamuwh" target="_blank" rel="noopener noreferrer" aria-label="Follow us on TikTok">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                        </svg>
-                    </a>
-                    <a href="https://www.x.com/westwickhamuwh" target="_blank" rel="noopener noreferrer" aria-label="Follow us on X (Twitter)">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                        </svg>
-                    </a>
-                    <a href="https://www.youtube.com/@westwickhamuwh1293" target="_blank" rel="noopener noreferrer" aria-label="Subscribe on YouTube">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                        </svg>
+                </div>
+                <div class="session-info">
+                    <div class="session-day">Wednesday</div>
+                    <div class="session-meta">Members & Guests</div>
+                    <div class="session-time">9PM to 10PM</div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=South%20Norwood%20Leisure%20Centre%2C%20164%20Portland%20Road%2C%20London%20SE25%204PT" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="session-location-link">
+                        <address class="session-address">
+                            South Norwood Leisure Centre<br>
+                            164 Portland Road<br>
+                            London SE25 4PT
+                        </address>
                     </a>
                 </div>
             </div>
-        </section>
-    </main>
+        </div>
+    </section>
+
+    <!-- Thursday Session -->
+    <section class="session-chapter chapter-thursday" id="thursday">
+        <div class="container">
+            <div class="session-content reveal-slide">
+                <div class="session-badge">
+                    <a href="https://www.google.com/maps/search/?api=1&query=Downham%20Leisure%20Centre%2C%20Moorside%20Road%2C%20London%20BR1%205EW" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="session-image-link">
+                        <img src="assets/downham-pool.webp" alt="Downham Leisure Centre" class="session-image">
+                        <span class="map-icon">📍</span>
+                    </a>
+                </div>
+                <div class="session-info">
+                    <div class="session-day">Thursday</div>
+                    <div class="session-meta">Members & Guests</div>
+                    <div class="session-time">9PM to 10PM</div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=Downham%20Leisure%20Centre%2C%20Moorside%20Road%2C%20London%20BR1%205EW" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="session-location-link">
+                        <address class="session-address">
+                            Downham Leisure Centre<br>
+                            Moorside Road<br>
+                            London BR1 5EW
+                        </address>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sunday Session -->
+    <section class="session-chapter chapter-sunday" id="sunday">
+        <div class="container">
+            <div class="session-content reveal-slide">
+                <div class="session-badge">
+                    <a href="https://www.google.com/maps/search/?api=1&query=De%20Stafford%20Sports%20Centre%2C%20Burntwood%20Lane%2C%20Caterham%20CR3%205YX" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="session-image-link">
+                        <img src="assets/caterham-pool.webp" alt="De Stafford Sports Centre" class="session-image">
+                        <span class="map-icon">📍</span>
+                    </a>
+                </div>
+                <div class="session-info">
+                    <div class="session-day">Sunday</div>
+                    <div class="session-meta">Juniors Only</div>
+                    <div class="session-time">3:30PM to 4:30PM</div>
+                    <a href="https://www.google.com/maps/search/?api=1&query=De%20Stafford%20Sports%20Centre%2C%20Burntwood%20Lane%2C%20Caterham%20CR3%205YX" 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       class="session-location-link">
+                        <address class="session-address">
+                            De Stafford Sports Centre<br>
+                            Burntwood Lane<br>
+                            Caterham CR3 5YX
+                        </address>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wave Divider -->
+    <div class="wave-divider wave-divider-light"></div>
+
+    <!-- Watch Section -->
+    <section class="watch-section" id="watch">
+        <div class="container">
+            <h2 class="section-title reveal-fade">Watch Us Play</h2>
+            <div class="video-grid">
+                <div class="video-wrapper reveal-scale">
+                    <iframe 
+                        src="https://www.youtube.com/embed/lamGHPI_vIk" 
+                        title="K2 Session Aug 18 2024 - A team"
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen
+                        loading="lazy">
+                    </iframe>
+                </div>
+                <div class="video-wrapper reveal-scale">
+                    <iframe 
+                        src="https://www.youtube.com/embed/6cZsM1buJvU" 
+                        title="K2 Session Aug 18 2024 - B team"
+                        frameborder="0" 
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                        allowfullscreen
+                        loading="lazy">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Wave Divider -->
+    <div class="wave-divider"></div>
+
+    <!-- Instagram Section -->
+    <section class="instagram-section">
+        <div class="container">
+            <h2 class="section-title reveal-fade">Follow Our Journey</h2>
+            <div class="instagram-wrapper reveal-fade">
+                <behold-widget feed-id="P9oK8WYN3W41RYNLK4cK"></behold-widget>
+            </div>
+            <a href="https://www.instagram.com/wwuwh/" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="glass-button glass-button-primary instagram-cta">
+                @wwuwh on Instagram
+            </a>
+        </div>
+    </section>
+
+    <!-- Wave Divider -->
+    <div class="wave-divider wave-divider-light"></div>
+
+    <!-- Social Section -->
+    <section class="social-section" id="social">
+        <div class="container">
+            <h2 class="section-title reveal-fade">Connect With Us</h2>
+            <div class="social-grid reveal-scale">
+                <a href="https://www.instagram.com/wwuwh/" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="social-link"
+                   aria-label="Instagram">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                </a>
+                <a href="https://www.facebook.com/westwickhamuwh/" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="social-link"
+                   aria-label="Facebook">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                    </svg>
+                </a>
+                <a href="https://www.tiktok.com/@westwickhamuwh" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="social-link"
+                   aria-label="TikTok">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                    </svg>
+                </a>
+                <a href="https://www.x.com/westwickhamuwh" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="social-link"
+                   aria-label="X (Twitter)">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                </a>
+                <a href="https://www.youtube.com/@westwickhamuwh1293" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="social-link"
+                   aria-label="YouTube">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </section>
 
     <!-- Footer -->
-    <footer class="footer">
+    <footer class="site-footer">
         <div class="container">
-            <p>&copy; 2024 West Wickham Underwater Hockey Club. All rights reserved.</p>
+            <p>&copy; 2024 West Wickham Underwater Hockey Club</p>
             <p class="footer-note">Affiliated with the British Octopush Association</p>
         </div>
     </footer>
+</main>
 
-    <!-- Behold Instagram Widget Script -->
-    <script type="module" src="https://w.behold.so/widget.js"></script>
+<!-- Behold Instagram Widget -->
+<script type="module" src="https://w.behold.so/widget.js"></script>
 
-    <script>
-        // ============================================
-        // Hero Parallax Effect
-        // ============================================
-        const hero = document.querySelector('.hero-underwater');
-        const heroBackground = document.querySelector('.hero-background');
-        const heroOverlay = document.querySelector('.hero-overlay');
-        
-        let heroHeight = hero ? hero.offsetHeight : 0;
-        
-        function updateHeroParallax() {
-            if (!hero) return;
-            
-            const scrollY = window.scrollY;
-            const heroRect = hero.getBoundingClientRect();
-            
-            // Only apply parallax when hero is in viewport
-            if (heroRect.bottom > 0) {
-                // Calculate parallax progress (0 to 1)
-                const progress = Math.min(scrollY / heroHeight, 1);
-                
-                // Background moves slower (parallax effect)
-                const bgOffset = progress * 30; // Move up to 30% slower
-                hero.style.setProperty('--parallax-offset', `${bgOffset}%`);
-                
-                // Overlay intensifies slightly on scroll
-                const overlayIntensity = 0.3 + (progress * 0.15); // 0.3 to 0.45
-                hero.style.setProperty('--overlay-intensity', overlayIntensity);
-            }
-        }
-        
-        // Throttled parallax scroll handler
-        let parallaxTicking = false;
-        window.addEventListener('scroll', () => {
-            if (!parallaxTicking) {
-                window.requestAnimationFrame(() => {
-                    updateHeroParallax();
-                    parallaxTicking = false;
-                });
-                parallaxTicking = true;
-            }
-        });
-        
-        // Update hero height on resize
-        window.addEventListener('resize', () => {
-            heroHeight = hero ? hero.offsetHeight : 0;
-        });
-        
-        // Initialize
-        updateHeroParallax();
+<!-- Scroll Interactions -->
+<script src="scroll.js"></script>
+```
 
-        // ============================================
-        // Scrolling Header Effect
-        // ============================================
-        const header = document.getElementById('main-header');
-        let lastScrollY = window.scrollY;
-        
-        function handleScroll() {
-            const currentScrollY = window.scrollY;
-            
-            if (currentScrollY > 20) {
-                header.classList.add('is-scrolled');
-            } else {
-                header.classList.remove('is-scrolled');
-            }
-            
-            lastScrollY = currentScrollY;
-        }
-        
-        // Throttle scroll event for performance
-        let ticking = false;
-        window.addEventListener('scroll', () => {
-            if (!ticking) {
-                window.requestAnimationFrame(() => {
-                    handleScroll();
-                    ticking = false;
-                });
-                ticking = true;
-            }
-        });
-
-        // ============================================
-        // Mobile nav toggle
-        // ============================================
-        const navToggle = document.querySelector('.nav-toggle');
-        const navList = document.querySelector('.nav-list');
-        
-        navToggle.addEventListener('click', () => {
-            const expanded = navToggle.getAttribute('aria-expanded') === 'true';
-            navToggle.setAttribute('aria-expanded', !expanded);
-            navList.classList.toggle('active');
-        });
-
-        // Close mobile nav when clicking nav links
-        document.querySelectorAll('.nav-list a').forEach(link => {
-            link.addEventListener('click', () => {
-                navList.classList.remove('active');
-                navToggle.setAttribute('aria-expanded', 'false');
-            });
-        });
-        
-        // Fix desktop nav on resize
-        function handleNavResize() {
-            if (window.innerWidth >= 768) {
-                navList.classList.remove('active');
-                navToggle.setAttribute('aria-expanded', 'false');
-            }
-        }
-        
-        window.addEventListener('resize', handleNavResize);
-        handleNavResize(); // Run on load
-    </script>
 </body>
 </html>
