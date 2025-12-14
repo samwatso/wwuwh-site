@@ -12,7 +12,8 @@
 
 @font-face {
     font-family: 'Nexa Light';
-    src: url('assets/fonts/NexaLight.otf') format('opentype');
+    src: url('assets/fonts/Nexa Light.otf') format('opentype'),
+         url('assets/fonts/NexaLight.otf') format('opentype');
     font-weight: 300;
     font-style: normal;
     font-display: swap;
@@ -39,6 +40,11 @@
     --grey-pale: #F3F5F9;
     --white: #FFFFFF;
     
+    --frame-gap: 18px;
+    --frame-radius: 28px;
+    --frame-border: rgba(255, 255, 255, 0.32);
+    --frame-shadow: 0 20px 80px rgba(0,0,0,0.35);
+
     --transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -50,8 +56,42 @@ body {
     font-family: "Nexa Light", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
     line-height: 1.6;
     color: var(--grey-dark);
-    background: var(--white);
+    background: radial-gradient(1200px 800px at 20% 0%, rgba(47, 167, 255, 0.10), transparent 60%),
+                radial-gradient(900px 700px at 90% 20%, rgba(32, 44, 96, 0.45), transparent 55%),
+                #050814;
     overflow-x: hidden;
+}
+
+
+/* ============================================
+   Framed Page Shell (IntegratedBio-style)
+   ============================================ */
+
+.site-shell{
+    min-height: 100vh;
+    padding: var(--frame-gap);
+    transition: padding 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.site-inner{
+    min-height: calc(100vh - (2 * var(--frame-gap)));
+    border-radius: var(--frame-radius);
+    overflow: clip;
+    background: transparent;
+    border: 1px solid var(--frame-border);
+    box-shadow: var(--frame-shadow);
+    transition: border-radius 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@supports not (overflow: clip){
+    .site-inner{ overflow: hidden; }
+}
+
+@media (min-width: 768px){
+    :root{
+        --frame-gap: 22px;
+        --frame-radius: 34px;
+    }
 }
 
 .container {
@@ -72,37 +112,44 @@ body {
 
 .floating-nav {
     position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: var(--frame-gap);
+    left: var(--frame-gap);
+    right: var(--frame-gap);
     z-index: 1000;
-    width: calc(100% - 32px);
-    max-width: 1100px;
+    padding: 0;
     transition: var(--transition);
+    pointer-events: none;
+}
+
+.nav-container{
+    pointer-events: auto;
 }
 
 .nav-container {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border-radius: 20px;
-    padding: 16px 24px;
+    background: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    border-radius: 999px;
+    padding: 14px 22px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 
-        0 0 0 1px rgba(255, 255, 255, 0.5) inset,
-        0 8px 32px rgba(32, 44, 96, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    gap: 16px;
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.55) inset,
+        0 10px 36px rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    max-width: 1100px;
+    margin: 0 auto;
 }
 
 .floating-nav.scrolled .nav-container {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(28px) saturate(200%);
-    -webkit-backdrop-filter: blur(28px) saturate(200%);
-    box-shadow: 
-        0 0 0 1px rgba(255, 255, 255, 0.5) inset,
-        0 8px 32px rgba(32, 44, 96, 0.15);
+    background: rgba(255, 255, 255, 0.50);
+    backdrop-filter: blur(26px) saturate(200%);
+    -webkit-backdrop-filter: blur(26px) saturate(200%);
+    box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.45) inset,
+        0 12px 44px rgba(0, 0, 0, 0.22);
 }
 
 .nav-logo {
@@ -111,14 +158,14 @@ body {
 }
 
 .nav-logo img {
-    height: 48px;
+    height: 40px;
     width: auto;
     filter: drop-shadow(0 2px 4px rgba(32, 44, 96, 0.2));
     transition: var(--transition);
 }
 
 .floating-nav.scrolled .nav-logo img {
-    height: 38px;
+    height: 36px;
 }
 
 .nav-toggle {
@@ -301,7 +348,7 @@ body {
     height: 100vh;
     width: 100%;
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     justify-content: center;
     padding: 0;
     z-index: 1;
@@ -309,29 +356,16 @@ body {
 
 .hero-card {
     width: 100%;
-    max-width: 100%;
     height: 100%;
-    border-radius: 0;
+    border-radius: inherit;
     overflow: hidden;
     position: relative;
     box-shadow: none;
-    /* Opening animation */
-    opacity: 0;
-    transform: scale(0.98);
-    animation: heroOpen 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.3s forwards;
-}
 
-@media (min-width: 768px) {
-    .hero-pinned {
-        padding: 12px;
-    }
-    
-    .hero-card {
-        border-radius: 24px;
-        box-shadow: 
-            0 0 0 1px rgba(255, 255, 255, 0.15) inset,
-            0 20px 60px rgba(32, 44, 96, 0.15);
-    }
+    opacity: 0;
+    transform: scale(0.985);
+    filter: blur(6px);
+    animation: heroOpen 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.15s forwards;
 }
 
 @keyframes heroOpen {
@@ -402,16 +436,16 @@ body {
     border: 1px solid rgba(255, 255, 255, 0);
     box-shadow: 0 0 0 rgba(0, 0, 0, 0);
     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-    opacity: 0.3;
+    opacity: 0.2;
 }
 
-/* Active chapter styling */
+/* Active chapter styling - more transparent like IntegratedBio */
 .chapter.is-active .chapter-content {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: 0 12px 48px rgba(32, 44, 96, 0.15);
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px rgba(32, 44, 96, 0.08);
     opacity: 1;
 }
 
@@ -420,19 +454,20 @@ body {
    ============================================ */
 
 .chapter-intro {
-    padding-top: 140px;
+    padding-top: 120px;
 }
 
 .chapter-intro .chapter-content {
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    min-height: 70vh;
+    justify-content: flex-start;
+    min-height: 80vh;
     background: transparent;
     backdrop-filter: none;
     border: none;
     box-shadow: none;
     padding: 0 32px;
+    max-width: 1400px;
 }
 
 .hero-text {
@@ -440,7 +475,8 @@ body {
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.8s ease, transform 0.8s ease;
-    max-width: 800px;
+    max-width: 100%;
+    margin-bottom: auto;
 }
 
 .chapter-intro.is-active .hero-text {
@@ -450,28 +486,32 @@ body {
 
 .hero-title {
     font-family: "Azonix", "Nexa Light", sans-serif;
-    font-size: 44px;
+    font-size: 48px;
     line-height: 1.15;
     color: var(--white);
-    margin-bottom: 20px;
+    margin-bottom: 40px;
     text-transform: uppercase;
     letter-spacing: 0.01em;
     text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 .hero-subtitle {
-    font-size: 22px;
-    line-height: 1.4;
+    font-size: 20px;
+    line-height: 1.5;
     color: rgba(255, 255, 255, 0.95);
     text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4);
+    max-width: 700px;
 }
 
 .hero-cta {
-    text-align: center;
+    text-align: left;
     opacity: 0;
     transform: translateY(20px);
     transition: opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s;
     margin-bottom: 60px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
 .chapter-intro.is-active .hero-cta {
@@ -481,7 +521,7 @@ body {
 
 @media (min-width: 768px) {
     .chapter-intro {
-        padding-top: 160px;
+        padding-top: 140px;
     }
     
     .chapter-intro .chapter-content {
@@ -489,14 +529,14 @@ body {
     }
     
     .hero-title {
-        font-size: 64px;
+        font-size: 72px;
         line-height: 1.1;
-        margin-bottom: 24px;
+        margin-bottom: 48px;
     }
     
     .hero-subtitle {
-        font-size: 26px;
-        max-width: 700px;
+        font-size: 24px;
+        max-width: 800px;
     }
     
     .hero-cta {
@@ -506,18 +546,87 @@ body {
 
 @media (min-width: 1024px) {
     .hero-title {
-        font-size: 76px;
+        font-size: 86px;
+        max-width: 1200px;
     }
     
     .hero-subtitle {
-        font-size: 28px;
-        max-width: 750px;
+        font-size: 26px;
+        max-width: 900px;
     }
 }
 
 /* ============================================
    Session Chapters
    ============================================ */
+
+.chapter-session {
+    position: relative;
+}
+
+/* Progress Timeline Indicator */
+.chapter-session::before {
+    content: '';
+    position: absolute;
+    left: 40px;
+    top: 120px;
+    width: 1px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.25);
+    opacity: 0;
+    transition: opacity 0.6s ease;
+}
+
+.chapter-session.is-active::before {
+    opacity: 1;
+}
+
+/* Session Number Badge */
+.session-badge-number {
+    position: absolute;
+    left: 40px;
+    top: 60px;
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 20px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: rgba(255, 255, 255, 0.7);
+    opacity: 0;
+    transform: translateX(-10px);
+    transition: all 0.6s ease;
+}
+
+.chapter-session.is-active .session-badge-number {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.session-badge-number::before {
+    content: attr(data-step);
+    font-family: "Azonix", "Nexa Light", sans-serif;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+@media (min-width: 768px) {
+    .chapter-session::before {
+        left: 64px;
+        top: 140px;
+    }
+    
+    .session-badge-number {
+        left: 64px;
+        top: 80px;
+    }
+}
 
 .session-layout {
     display: flex;

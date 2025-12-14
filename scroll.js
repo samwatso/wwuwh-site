@@ -1,281 +1,212 @@
 // ============================================
-// WWUWH Scrollytelling Interactions
+// WWUWH Scrollytelling + Framed Hero (IntegratedBio-style)
 // ============================================
 
-(function() {
-    'use strict';
+(() => {
+  'use strict';
 
-    // Add .js class to enable JS-dependent styling
-    document.documentElement.classList.add('js');
+  document.documentElement.classList.add('js');
 
-    // Check if user prefers reduced motion
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // ============================================
-    // Floating Nav: Scroll State
-    // ============================================
-    const header = document.getElementById('main-header');
-    let lastScrollY = window.scrollY;
+  const root = document.documentElement;
+  const header = document.getElementById('main-header');
+  const scrollyContainer = document.querySelector('.scrolly-container');
+  const heroOverlay = document.querySelector('.hero-overlay');
+  const heroVideo = document.querySelector('.hero-video');
 
-    function updateHeaderState() {
-        const currentScrollY = window.scrollY;
-        
-        if (currentScrollY > 100) {
-            header.classList.add('scrolled');
-        } else {
-            header.classList.remove('scrolled');
-        }
-        
-        lastScrollY = currentScrollY;
+  // ------------------------------------------------
+  // Framed shell -> full-bleed transition
+  // ------------------------------------------------
+  let frameStartGap = 16;
+  let frameStartRadius = 28;
+
+  function computeFrameDefaults() {
+    frameStartGap = window.innerWidth >= 768 ? 22 : 16;
+    frameStartRadius = window.innerWidth >= 768 ? 34 : 28;
+  }
+
+  function clamp(v, min, max) {
+    return Math.min(Math.max(v, min), max);
+  }
+
+  function updateFrame() {
+    // Collapse the "frame" quickly as the user starts scrolling.
+    // Range tuned to feel like IntegratedBio.
+    const range = 240;
+    const y = window.scrollY || 0;
+    const p = clamp(y / range, 0, 1);
+
+    const gap = frameStartGap * (1 - p);
+    const radius = frameStartRadius * (1 - p);
+
+    root.style.setProperty('--frame-gap', `${gap.toFixed(2)}px`);
+    root.style.setProperty('--frame-radius', `${radius.toFixed(2)}px`);
+
+    // Subtle border/shadow blending as the frame disappears
+    const borderA = (0.32 * (1 - p)) + (0.08 * p);
+    root.style.setProperty('--frame-border', `rgba(255,255,255,${borderA.toFixed(3)})`);
+
+    const shadowA = (0.35 * (1 - p)) + (0.18 * p);
+    root.style.setProperty('--frame-shadow', `0 20px 80px rgba(0,0,0,${shadowA.toFixed(3)})`);
+
+    if (header) {
+      if (y > 30) header.classList.add('scrolled');
+      else header.classList.remove('scrolled');
     }
+  }
 
-    // Throttle scroll events for performance
-    let scrollTicking = false;
-    window.addEventListener('scroll', () => {
-        if (!scrollTicking) {
-            window.requestAnimationFrame(() => {
-                updateHeaderState();
-                scrollTicking = false;
-            });
-            scrollTicking = true;
-        }
+  // ------------------------------------------------
+  // Hero overlay fade (keeps text readable at top, reveals video as you scroll)
+  // ------------------------------------------------
+  function updateHeroOverlay() {
+    if (!heroOverlay || !scrollyContainer || prefersReducedMotion) return;
+
+    const containerTop = scrollyContainer.offsetTop;
+    const containerH = scrollyContainer.offsetHeight;
+    const viewportH = window.innerHeight;
+
+    const y = (window.scrollY || 0) - containerTop;
+    const denom = Math.max(containerH - viewportH, 1);
+    const p = clamp(y / denom, 0, 1);
+
+    const opacity = 0.85 - (p * 0.25); // 0.85 -> 0.60
+    heroOverlay.style.opacity = opacity.toFixed(3);
+  }
+
+  // ------------------------------------------------
+  // Mobile nav toggle
+  // ------------------------------------------------
+  const navToggle = document.querySelector('.nav-toggle');
+  const navMenu = document.querySelector('.nav-menu');
+
+  function closeNav() {
+    if (!navMenu || !navToggle) return;
+    navMenu.classList.remove('active');
+    navToggle.setAttribute('aria-expanded', 'false');
+  }
+
+  if (navToggle && navMenu) {
+    navToggle.addEventListener('click', () => {
+      const expanded = navToggle.getAttribute('aria-expanded') === 'true';
+      navToggle.setAttribute('aria-expanded', String(!expanded));
+      navMenu.classList.toggle('active');
     });
 
-    // Initialize
-    updateHeaderState();
+    navMenu.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeNav));
 
-    // ============================================
-    // Mobile Nav Toggle
-    // ============================================
-    const navToggle = document.querySelector('.nav-toggle');
-    const navMenu = document.querySelector('.nav-menu');
-
-    if (navToggle && navMenu) {
-        navToggle.addEventListener('click', () => {
-            const isExpanded = navToggle.getAttribute('aria-expanded') === 'true';
-            navToggle.setAttribute('aria-expanded', !isExpanded);
-            navMenu.classList.toggle('active');
-        });
-
-        // Close menu when clicking a link
-        const navLinks = navMenu.querySelectorAll('a');
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                navMenu.classList.remove('active');
-                navToggle.setAttribute('aria-expanded', 'false');
-            });
-        });
-
-        // Close menu on escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && navMenu.classList.contains('active')) {
-                navMenu.classList.remove('active');
-                navToggle.setAttribute('aria-expanded', 'false');
-            }
-        });
-    }
-
-    // ============================================
-    // Desktop Nav Bug Fix
-    // ============================================
-    function handleNavResize() {
-        if (window.innerWidth >= 768) {
-            if (navMenu) {
-                navMenu.classList.remove('active');
-            }
-            if (navToggle) {
-                navToggle.setAttribute('aria-expanded', 'false');
-            }
-        }
-    }
-
-    window.addEventListener('resize', handleNavResize);
-    handleNavResize(); // Run on load
-
-    // ============================================
-    // Scrollytelling: Chapter Progress
-    // ============================================
-    
-    const chapters = document.querySelectorAll('.chapter');
-    
-    if (chapters.length > 0 && !prefersReducedMotion) {
-        const observerOptions = {
-            root: null,
-            rootMargin: '-20% 0px -20% 0px', // Trigger when chapter is in middle 60% of viewport
-            threshold: [0, 0.25, 0.5, 0.75, 1]
-        };
-
-        const chapterObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting && entry.intersectionRatio > 0.4) {
-                    // Remove active class from all chapters
-                    chapters.forEach(ch => ch.classList.remove('is-active'));
-                    
-                    // Add active class to current chapter
-                    entry.target.classList.add('is-active');
-                    
-                    // Log active chapter (dev only)
-                    const chapterName = entry.target.getAttribute('data-chapter');
-                    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                        console.log('Active chapter:', chapterName);
-                    }
-                }
-            });
-        }, observerOptions);
-
-        // Observe all chapters
-        chapters.forEach(chapter => {
-            chapterObserver.observe(chapter);
-        });
-
-        // Set first chapter as active initially
-        if (chapters[0]) {
-            chapters[0].classList.add('is-active');
-        }
-    } else if (prefersReducedMotion) {
-        // If reduced motion, show all chapters
-        chapters.forEach(chapter => {
-            chapter.classList.add('is-active');
-        });
-    }
-
-    // ============================================
-    // Hero Overlay Fade on Scroll
-    // ============================================
-    
-    const heroOverlay = document.querySelector('.hero-overlay');
-    const scrollyContainer = document.querySelector('.scrolly-container');
-    
-    if (heroOverlay && scrollyContainer && !prefersReducedMotion) {
-        function updateHeroOverlay() {
-            const scrollProgress = window.scrollY / (scrollyContainer.offsetHeight - window.innerHeight);
-            const clampedProgress = Math.min(Math.max(scrollProgress, 0), 1);
-            
-            // Fade overlay slightly as user scrolls through chapters
-            const overlayOpacity = 1 - (clampedProgress * 0.3); // Fade to 70%
-            heroOverlay.style.opacity = overlayOpacity;
-        }
-
-        let overlayTicking = false;
-        window.addEventListener('scroll', () => {
-            if (!overlayTicking) {
-                window.requestAnimationFrame(() => {
-                    updateHeroOverlay();
-                    overlayTicking = false;
-                });
-                overlayTicking = true;
-            }
-        });
-    }
-
-    // ============================================
-    // Video: Pause when not in viewport (performance)
-    // ============================================
-    
-    const heroVideo = document.querySelector('.hero-video');
-    
-    if (heroVideo && !prefersReducedMotion) {
-        const videoObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    heroVideo.play().catch(() => {
-                        // Handle autoplay restrictions silently
-                    });
-                } else {
-                    heroVideo.pause();
-                }
-            });
-        }, {
-            threshold: 0.25
-        });
-
-        videoObserver.observe(heroVideo);
-    }
-
-    // ============================================
-    // Smooth Scroll for Anchor Links
-    // ============================================
-    
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            const targetId = this.getAttribute('href');
-            
-            // Skip if it's just "#"
-            if (targetId === '#') return;
-            
-            const targetElement = document.querySelector(targetId);
-            
-            if (targetElement) {
-                e.preventDefault();
-                
-                // Close mobile menu if open
-                if (navMenu && navMenu.classList.contains('active')) {
-                    navMenu.classList.remove('active');
-                    if (navToggle) {
-                        navToggle.setAttribute('aria-expanded', 'false');
-                    }
-                }
-                
-                // Smooth scroll to target
-                targetElement.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeNav();
     });
+  }
 
-    // ============================================
-    // Enhanced Text Visibility on Active Chapters
-    // ============================================
-    
-    // This is handled by CSS transitions, but we can add
-    // .is-visible class for additional control if needed
-    chapters.forEach(chapter => {
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    // Add visible class for additional animations if needed
-                    const textElements = entry.target.querySelectorAll('.hero-text, .hero-cta, .session-layout');
-                    textElements.forEach((el, index) => {
-                        setTimeout(() => {
-                            el.classList.add('is-visible');
-                        }, index * 100);
-                    });
-                }
-            });
-        }, {
-            threshold: 0.3
-        });
+  function handleNavResize() {
+    if (window.innerWidth >= 768) closeNav();
+  }
 
-        observer.observe(chapter);
-    });
+  // ------------------------------------------------
+  // Scrollytelling: active chapter class
+  // ------------------------------------------------
+  const chapters = Array.from(document.querySelectorAll('.chapter'));
 
-    // ============================================
-    // Performance: Log viewport info (dev only)
-    // ============================================
-    
-    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        console.log('WWUWH Scrollytelling Initialized');
-        console.log('Viewport:', window.innerWidth, 'x', window.innerHeight);
-        console.log('Reduced Motion:', prefersReducedMotion);
-        console.log('Chapters found:', chapters.length);
+  function initChapterObserver() {
+    if (!chapters.length) return;
+
+    if (prefersReducedMotion) {
+      chapters.forEach((c) => c.classList.add('is-active'));
+      return;
     }
 
-    // ============================================
-    // Handle Window Resize (recalculate positions)
-    // ============================================
-    
-    let resizeTimeout;
-    window.addEventListener('resize', () => {
-        clearTimeout(resizeTimeout);
-        resizeTimeout = setTimeout(() => {
-            handleNavResize();
-            // Trigger observers to recalculate if needed
-            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-                console.log('Viewport resized:', window.innerWidth, 'x', window.innerHeight);
-            }
-        }, 250);
-    });
+    const chapterObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && entry.intersectionRatio > 0.4) {
+            chapters.forEach((ch) => ch.classList.remove('is-active'));
+            entry.target.classList.add('is-active');
+          }
+        });
+      },
+      { root: null, rootMargin: '-22% 0px -22% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
 
+    chapters.forEach((c) => chapterObserver.observe(c));
+    if (chapters[0]) chapters[0].classList.add('is-active');
+  }
+
+  // ------------------------------------------------
+  // Video: pause when not visible (performance)
+  // ------------------------------------------------
+  function initVideoObserver() {
+    if (!heroVideo || prefersReducedMotion) return;
+
+    const io = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            heroVideo.play().catch(() => {});
+          } else {
+            heroVideo.pause();
+          }
+        });
+      },
+      { threshold: 0.25 }
+    );
+
+    io.observe(heroVideo);
+  }
+
+  // ------------------------------------------------
+  // Smooth scroll for anchor links
+  // ------------------------------------------------
+  document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+    anchor.addEventListener('click', (e) => {
+      const id = anchor.getAttribute('href');
+      if (!id || id === '#') return;
+
+      const target = document.querySelector(id);
+      if (!target) return;
+
+      e.preventDefault();
+      closeNav();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  // ------------------------------------------------
+  // RAF-throttled scroll handler
+  // ------------------------------------------------
+  let ticking = false;
+
+  function onScroll() {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(() => {
+      updateFrame();
+      updateHeroOverlay();
+      ticking = false;
+    });
+  }
+
+  // ------------------------------------------------
+  // Init
+  // ------------------------------------------------
+  computeFrameDefaults();
+  updateFrame();
+  updateHeroOverlay();
+  initChapterObserver();
+  initVideoObserver();
+  handleNavResize();
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      computeFrameDefaults();
+      updateFrame();
+      updateHeroOverlay();
+      handleNavResize();
+    }, 150);
+  });
 })();
