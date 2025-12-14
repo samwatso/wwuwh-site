@@ -58,7 +58,7 @@ body {
     color: var(--grey-dark);
     background: radial-gradient(1200px 800px at 20% 0%, rgba(47, 167, 255, 0.10), transparent 60%),
                 radial-gradient(900px 700px at 90% 20%, rgba(32, 44, 96, 0.45), transparent 55%),
-                #050814;
+                #FFFFFF;
     overflow-x: hidden;
 }
 
@@ -410,6 +410,84 @@ body {
     transition: opacity 0.6s ease;
 }
 
+/* ============================================
+   Hero Launch Overlay (Title top-left + CTA bottom-centre)
+   ============================================ */
+
+.hero-launch{
+  position:absolute;
+  inset:0;
+  z-index:10;
+  pointer-events:none;
+}
+
+/* Top-left hero copy visible immediately 
+.hero-text--launch{
+  position:absolute;
+  top:clamp(18px, 3vw, 36px);
+  left:clamp(18px, 3vw, 36px);
+  max-width:min(760px, 78vw);
+  opacity:1;
+  transform:none;
+  text-align:left;
+}
+
+/* Title styling */
+.hero-title{
+  font-family: "Azonix", "Nexa Light", sans-serif;
+    font-size: 48px;
+    line-height: 1.15;
+    color: var(--white);
+  letter-spacing:0.01em;
+  text-transform:uppercase;
+  text-shadow: 0 10px 34px rgba(0,0,0,0.55), 0 2px 10px rgba(0,0,0,0.35);
+}
+
+.hero-subtitle{
+   font-size: 20px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4);
+    max-width: 700px;
+}
+
+/* Bottom-centre CTA 
+.hero-cta--launch{
+  position:absolute;
+  left:50%;
+  bottom:clamp(18px, 4vw, 42px);
+  transform:translateX(-50%);
+  pointer-events:auto;
+  text-align:center;
+}
+
+/* Buttons */
+.glass-button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:14px 18px;
+  border-radius:999px;
+  background: rgba(255,255,255,0.14);
+  border:1px solid rgba(255,255,255,0.22);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  transition: transform .2s ease, background .2s ease, border-color .2s ease;
+}
+
+.glass-button:hover{
+  transform: translateY(-2px);
+  background: rgba(255,255,255,0.18);
+  border-color: rgba(255,255,255,0.30);
+}
+
+.glass-button-primary{
+  background: rgba(165, 255, 255, 0.16);
+  border-color: rgba(165, 255, 255, 0.30);
+}
+
 /* Scrolling Chapters */
 .scrolly-chapters {
     position: relative;
@@ -423,6 +501,35 @@ body {
     justify-content: center;
     padding: 80px 24px;
     position: relative;
+}
+
+.chapter-hero{
+  min-height: 100vh;
+  display: block;
+  padding: 0;
+}
+
+.chapter-hero .hero-launch{
+  position: relative;     /* NOT absolute */
+  height: 100vh;
+  width: 100%;
+  pointer-events: none;   /* so only button is clickable */
+}
+
+.chapter-hero .hero-text--launch{
+  position: absolute;
+  top: 150px;             /* adjust to clear your nav */
+  left: 24px;
+  max-width: min(760px, 78vw);
+  pointer-events: none;
+}
+
+.chapter-hero .hero-cta--launch{
+  position: absolute;
+  left: 50%;
+  bottom: 28px;
+  transform: translateX(-50%);
+  pointer-events: auto;   /* button clickable */
 }
 
 .chapter-content {
@@ -450,7 +557,7 @@ body {
 }
 
 /* ============================================
-   Intro Chapter (Hero Text + CTA)
+   Intro Chapter
    ============================================ */
 
 .chapter-intro {
@@ -470,48 +577,9 @@ body {
     max-width: 1400px;
 }
 
-.hero-text {
-    text-align: left;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.8s ease, transform 0.8s ease;
-    max-width: 100%;
-    margin-bottom: auto;
-}
-
 .chapter-intro.is-active .hero-text {
     opacity: 1;
     transform: translateY(0);
-}
-
-.hero-title {
-    font-family: "Azonix", "Nexa Light", sans-serif;
-    font-size: 48px;
-    line-height: 1.15;
-    color: var(--white);
-    margin-bottom: 40px;
-    text-transform: uppercase;
-    letter-spacing: 0.01em;
-    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.5);
-}
-
-.hero-subtitle {
-    font-size: 20px;
-    line-height: 1.5;
-    color: rgba(255, 255, 255, 0.95);
-    text-shadow: 0 2px 16px rgba(0, 0, 0, 0.6), 0 1px 4px rgba(0, 0, 0, 0.4);
-    max-width: 700px;
-}
-
-.hero-cta {
-    text-align: left;
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.8s ease 0.2s, transform 0.8s ease 0.2s;
-    margin-bottom: 60px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
 }
 
 .chapter-intro.is-active .hero-cta {
@@ -770,32 +838,35 @@ body {
 }
 
 /* ============================================
-   Transition Wave
+   Transition Wave (Vector SVG, 3 layers)
    ============================================ */
 
 .transition-wave {
-    position: relative;
-    height: 120px;
-    background: linear-gradient(180deg, 
-        rgba(234, 243, 255, 0.5) 0%, 
-        var(--white) 100%);
-    overflow: hidden;
+  position: relative;
+  width: 100%;
+  height: 0; /* wave drawn by ::before */
 }
 
+/* Default: white wave for light sections */
 .transition-wave::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 200%;
-    height: 100%;
-    background: radial-gradient(ellipse at center, rgba(47, 167, 255, 0.1) 0%, transparent 70%);
-    animation: waveFlow 20s linear infinite;
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 44px;
+  transform: translateY(-100%);
+  pointer-events: none;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: bottom;
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 80' preserveAspectRatio='none'%3E%3Cpath d='M0,48 Q120,26 240,48 T480,48 T720,48 T960,48 T1200,48 T1440,48 L1440,80 L0,80 Z' fill='%23ffffff' fill-opacity='0.30'/%3E%3Cpath d='M0,56 Q120,34 240,56 T480,56 T720,56 T960,56 T1200,56 T1440,56 L1440,80 L0,80 Z' fill='%23ffffff' fill-opacity='0.50'/%3E%3Cpath d='M0,64 Q120,42 240,64 T480,64 T720,64 T960,64 T1200,64 T1440,64 L1440,80 L0,80 Z' fill='%23ffffff' fill-opacity='1.00'/%3E%3C/svg%3E");
 }
 
-@keyframes waveFlow {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
+/* Optional: navy wave variant (add class "transition-wave--navy" in HTML) */
+.transition-wave.transition-wave--navy::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 80' preserveAspectRatio='none'%3E%3Cpath d='M0,48 Q120,26 240,48 T480,48 T720,48 T960,48 T1200,48 T1440,48 L1440,80 L0,80 Z' fill='%231f2d60' fill-opacity='0.30'/%3E%3Cpath d='M0,56 Q120,34 240,56 T480,56 T720,56 T960,56 T1200,56 T1440,56 L1440,80 L0,80 Z' fill='%231f2d60' fill-opacity='0.50'/%3E%3Cpath d='M0,64 Q120,42 240,64 T480,64 T720,64 T960,64 T1200,64 T1440,64 L1440,80 L0,80 Z' fill='%231f2d60' fill-opacity='1.00'/%3E%3C/svg%3E");
 }
 
 /* ============================================
@@ -803,8 +874,8 @@ body {
    ============================================ */
 
 .watch-section {
-    padding: 100px 0;
-    background: linear-gradient(180deg, var(--white) 0%, var(--grey-pale) 100%);
+    padding: 50px 0;
+    background: #FFFFFF;
 }
 
 .section-title {
@@ -859,11 +930,8 @@ body {
    ============================================ */
 
 .instagram-section {
-    padding: 100px 0;
-    background: linear-gradient(135deg, 
-        var(--grey-pale) 0%, 
-        var(--blue-pale) 50%,
-        var(--grey-pale) 100%);
+    padding: 25px 0;
+    background: #FFFFFF;
     text-align: center;
 }
 
@@ -880,7 +948,7 @@ body {
    ============================================ */
 
 .social-section {
-    padding: 100px 0;
+    padding: 40px 0;
     background: linear-gradient(135deg, 
         var(--navy-primary) 0%, 
         var(--navy-secondary) 100%);
