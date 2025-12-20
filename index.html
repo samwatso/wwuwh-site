@@ -1,294 +1,467 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="West Wickham Underwater Hockey Club - South London club, hosting, coaching and games.">
-    <title>West Wickham Underwater Hockey Club | WWUWH</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta name="description"
+        content="West Wickham Underwater Hockey Club — South London club, hosting, coaching and games. Join our sessions in South Norwood, Downham, and Caterham.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="West Wickham Underwater Hockey Club">
+    <meta property="og:description" content="South London club, hosting, coaching and games.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="assets/hero1.jpg">
+
+    <title>West Wickham Underwater Hockey Club</title>
+
+    <!-- Fonts preload -->
+    <link rel="preload" href="assets/fonts/Azonix.otf" as="font" type="font/otf" crossorigin>
+    <link rel="preload" href="assets/fonts/Nexa Light.otf" as="font" type="font/otf" crossorigin>
+
+    <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body>
-    <div class="site-shell" id="site-shell">
-      <div class="site-inner">
-<!-- Floating Glass Navigation -->
-    <header class="floating-nav" id="main-header">
-        <div class="nav-container">
-            <div class="nav-logo">
-                <img src="assets/logo.png" alt="West Wickham UWH Logo">
-            </div>
-            <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
-                <span></span>
-                <span></span>
-                <span></span>
+    <!-- Skip link -->
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Header / Nav -->
+    <header class="site-header">
+        <nav class="nav-container glass-nav" aria-label="Main navigation">
+            <a href="index.html" class="nav-logo">
+                <img src="assets/logo-simple.png" alt="WWUWH Logo" class="logo-img">
+            </a>
+
+            <!-- Desktop Nav -->
+            <ul class="nav-links" role="menubar">
+                <li role="none"><a href="index.html" role="menuitem" class="nav-link is-active">Home</a></li>
+                <li role="none" class="nav-item-dropdown">
+                    <button class="nav-link nav-dropdown-trigger" aria-expanded="false" aria-haspopup="true"
+                        aria-controls="about-dropdown">
+                        About
+                        <span class="dropdown-chevron" aria-hidden="true"></span>
+                    </button>
+                    <ul id="about-dropdown" class="nav-dropdown" role="menu" aria-label="About submenu">
+                        <li role="none"><a href="about/our-story.html" role="menuitem" class="nav-dropdown-link">Our
+                                Story</a></li>
+                        <li role="none"><a href="about/player-of-the-year.html" role="menuitem"
+                                class="nav-dropdown-link">Player of the Year</a></li>
+                        <li role="none"><a href="about/ladies.html" role="menuitem" class="nav-dropdown-link">Ladies
+                                Club</a></li>
+                        <li role="none"><a href="about/juniors.html" role="menuitem" class="nav-dropdown-link">Juniors
+                                Club</a></li>
+                        <li role="none"><a href="about/tournaments.html" role="menuitem"
+                                class="nav-dropdown-link">European Tournaments</a></li>
+                        <li role="none"><a href="about/fundraising.html" role="menuitem"
+                                class="nav-dropdown-link">Fundraising</a></li>
+                    </ul>
+                </li>
+                <li role="none"><a href="kit-guide.html" role="menuitem" class="nav-link">Kit Guide</a></li>
+                <li role="none"><a href="membership.html" role="menuitem" class="nav-link">Membership</a></li>
+                <li role="none"><a href="events.html" role="menuitem" class="nav-link">Events</a></li>
+                <li role="none"><a href="connect.html" role="menuitem" class="nav-link">Connect</a></li>
+            </ul>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="nav-mobile-toggle" aria-expanded="false" aria-controls="mobile-menu"
+                aria-label="Toggle menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
             </button>
-            <nav class="nav-menu">
-                <a href="#hero">Home</a>
-                <a href="#sessions">Sessions</a>
-                <a href="#watch">Videos</a>
-                <a href="#social">Connect</a>
-            </nav>
+        </nav>
+
+        <!-- Mobile Nav (accordion) -->
+        <div id="mobile-menu" class="nav-mobile" aria-hidden="true">
+            <ul class="nav-mobile-links">
+                <li><a href="index.html" class="nav-mobile-link is-active">Home</a></li>
+                <li class="nav-mobile-accordion">
+                    <button class="nav-mobile-link nav-accordion-trigger" aria-expanded="false"
+                        aria-controls="about-accordion">
+                        About
+                        <span class="accordion-chevron" aria-hidden="true"></span>
+                    </button>
+                    <ul id="about-accordion" class="nav-accordion-panel" aria-hidden="true">
+                        <li><a href="about/our-story.html" class="nav-accordion-link">Our Story</a></li>
+                        <li><a href="about/player-of-the-year.html" class="nav-accordion-link">Player of the Year</a>
+                        </li>
+                        <li><a href="about/ladies.html" class="nav-accordion-link">Ladies Club</a></li>
+                        <li><a href="about/juniors.html" class="nav-accordion-link">Juniors Club</a></li>
+                        <li><a href="about/tournaments.html" class="nav-accordion-link">European Tournaments</a></li>
+                        <li><a href="about/fundraising.html" class="nav-accordion-link">Fundraising</a></li>
+                    </ul>
+                </li>
+                <li><a href="kit-guide.html" class="nav-mobile-link">Kit Guide</a></li>
+                <li><a href="membership.html" class="nav-mobile-link">Membership</a></li>
+                <li><a href="events.html" class="nav-mobile-link">Events</a></li>
+                <li><a href="connect.html" class="nav-mobile-link">Connect</a></li>
+            </ul>
         </div>
     </header>
 
-    <main>
-        <!-- Pinned Hero + Scrollytelling Section -->
-        <div class="scrolly-container" id="hero">
-            <!-- Hero Background (Pinned) -->
-            <div class="hero-pinned">
-                <div class="hero-card">
-                    <div class="hero-video-container">
-                        <video autoplay muted loop playsinline class="hero-video">
-                            <source src="assets/video/hero-mobile.mp4" type="video/mp4">
-                        </video>
-                        <div class="hero-overlay"></div>
-                        
-                    </div>
-                </div>
+    <main id="main">
+
+        <!-- ========================================
+         SECTION 1: HERO (#top)
+         ======================================== -->
+
+        <section id="top" class="hero">
+            <div class="hero-media">
+                <video class="hero-video" autoplay muted loop playsinline poster="assets/hero1.jpg">
+                    <source src="assets/video/hero-mobile.mp4" type="video/mp4">
+                </video>
+                <div class="hero-overlay"></div>
             </div>
 
-            <!-- Scrolling Chapters (Over Hero) -->
-            <div class="scrolly-chapters">
-
-             <!-- HERO COPY SHOWN ON LAUNCH -->
-              <section class="chapter chapter-hero" data-chapter="intro"></section>
-                    <div class="hero-launch" aria-label="Hero introduction">
-                        <div class="hero-text hero-text--launch">
-                            <h1 class="hero-title">West Wickham<br>Underwater Hockey Club</h1>
-                            <p class="hero-subtitle">South London club, hosting, coaching and games.</p>
-                        </div>
-
-                        <div class="hero-cta hero-cta--launch">
-                            <a href="https://spond.com/landing/group/MGXCH" target="_blank" rel="noopener noreferrer" class="glass-button glass-button-primary">
-                                Enrol with Spond
-                            </a>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Wednesday Chapter -->
-                <section class="chapter chapter-session" data-chapter="wednesday">
-                    <div class="session-badge-number" data-step="Wednesday"></div>
-                    <div class="chapter-content">
-                        <div class="session-layout">
-                            <div class="session-badge">
-                                <a href="https://www.google.com/maps/search/?api=1&query=South%20Norwood%20Leisure%20Centre%2C%20164%20Portland%20Road%2C%20London%20SE25%204PT" 
-                                   target="_blank" 
-                                   rel="noopener noreferrer"
-                                   class="session-image-link">
-                                    <img src="assets/southnorwood-pool.webp" alt="South Norwood Leisure Centre" class="session-image">
-                                    <span class="map-icon">📍</span>
-                                </a>
-                            </div>
-                            <div class="session-info">
-                                <div class="session-day">Wednesday</div>
-                                <div class="session-meta">Members & Guests</div>
-                                <div class="session-time">9PM to 10PM</div>
-                                <a href="https://www.google.com/maps/search/?api=1&query=South%20Norwood%20Leisure%20Centre%2C%20164%20Portland%20Road%2C%20London%20SE25%204PT" 
-                                   target="_blank" 
-                                   rel="noopener noreferrer"
-                                   class="session-location-link">
-                                    <address class="session-address">
-                                        South Norwood Leisure Centre<br>
-                                        164 Portland Road<br>
-                                        London SE25 4PT
-                                    </address>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Thursday Chapter -->
-                <section class="chapter chapter-session" data-chapter="thursday">
-                    <div class="session-badge-number" data-step="Thursday"></div>
-                    <div class="chapter-content">
-                        <div class="session-layout">
-                            <div class="session-badge">
-                                <a href="https://www.google.com/maps/search/?api=1&query=Downham%20Leisure%20Centre%2C%20Moorside%20Road%2C%20London%20BR1%205EW" 
-                                   target="_blank" 
-                                   rel="noopener noreferrer"
-                                   class="session-image-link">
-                                    <img src="assets/downham-pool.webp" alt="Downham Leisure Centre" class="session-image">
-                                    <span class="map-icon">📍</span>
-                                </a>
-                            </div>
-                            <div class="session-info">
-                                <div class="session-day">Thursday</div>
-                                <div class="session-meta">Members & Guests</div>
-                                <div class="session-time">9PM to 10PM</div>
-                                <a href="https://www.google.com/maps/search/?api=1&query=Downham%20Leisure%20Centre%2C%20Moorside%20Road%2C%20London%20BR1%205EW" 
-                                   target="_blank" 
-                                   rel="noopener noreferrer"
-                                   class="session-location-link">
-                                    <address class="session-address">
-                                        Downham Leisure Centre<br>
-                                        Moorside Road<br>
-                                        London BR1 5EW
-                                    </address>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Sunday Chapter -->
-                <section class="chapter chapter-session" data-chapter="sunday">
-                    <div class="session-badge-number" data-step="Sunday"></div>
-                    <div class="chapter-content">
-                        <div class="session-layout">
-                            <div class="session-badge">
-                                <a href="https://www.google.com/maps/search/?api=1&query=De%20Stafford%20Sports%20Centre%2C%20Burntwood%20Lane%2C%20Caterham%20CR3%205YX" 
-                                   target="_blank" 
-                                   rel="noopener noreferrer"
-                                   class="session-image-link">
-                                    <img src="assets/caterham-pool.webp" alt="De Stafford Sports Centre" class="session-image">
-                                    <span class="map-icon">📍</span>
-                                </a>
-                            </div>
-                            <div class="session-info">
-                                <div class="session-day">Sunday</div>
-                                <div class="session-meta">Juniors Only</div>
-                                <div class="session-time">3:30PM to 4:30PM</div>
-                                <a href="https://www.google.com/maps/search/?api=1&query=De%20Stafford%20Sports%20Centre%2C%20Burntwood%20Lane%2C%20Caterham%20CR3%205YX" 
-                                   target="_blank" 
-                                   rel="noopener noreferrer"
-                                   class="session-location-link">
-                                    <address class="session-address">
-                                        De Stafford Sports Centre<br>
-                                        Burntwood Lane<br>
-                                        Caterham CR3 5YX
-                                    </address>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Transition/Spacer for Release -->
-                <div class="scrolly-release"></div>
-
-
-        <!-- Transition Wave -->
-        <div class="transition-wave" aria-hidden="true"></div>
-            </div>
-        </div>
-
-        <!-- Normal Scrolling Content (After Release) -->
-
-        <!-- Watch Section -->
-        <section class="watch-section" id="watch">
-            <div class="container">
-                <div class="video-grid">
-                    <div class="video-wrapper">
-                        <iframe 
-                            src="https://www.youtube.com/embed/lamGHPI_vIk" 
-                            title="K2 Session Aug 18 2024 - A team"
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen
-                            loading="lazy">
-                        </iframe>
-                    </div>
-                    <div class="video-wrapper">
-                        <iframe 
-                            src="https://www.youtube.com/embed/6cZsM1buJvU" 
-                            title="K2 Session Aug 18 2024 - B team"
-                            frameborder="0" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen
-                            loading="lazy">
-                        </iframe>
-                    </div>
+            <div class="hero-content">
+                <div class="hero-icon">
+                    <img src="assets/logo-head.png" alt="WWUWH logo" />
                 </div>
+                <h1 class="hero-title">
+                    <span class="hero-title__west">West</span>
+                    <span class="hero-title__wickham">Wickham</span>
+                    Underwater Hockey Club
+                </h1>
+                <p class="hero-subtitle">South London club, hosting, coaching and games.</p>
+                <a href="#" class="btn-primary hero-cta">Enrol with Spond</a>
+                <!-- TODO: Add actual Spond URL -->
+            </div>
+
+            <div class="hero-scroll-cue">
+                <span class="scroll-cue-text">Scroll</span>
+                <span class="scroll-cue-chevron" aria-hidden="true"></span>
             </div>
         </section>
 
-        <!-- Instagram Section -->
-        <section class="instagram-section">
+        <!-- Transition Wave -->
+        <div class="transition-wave transition-wave" aria-hidden="true"></div>
+
+        <!-- ========================================
+         SECTION 2: SESSIONS (#sessions)
+         ======================================== -->
+        <section id="sessions" class="section section-sessions">
             <div class="container">
-                <div class="instagram-wrapper">
-                    <behold-widget feed-id="P9oK8WYN3W41RYNLK4cK"></behold-widget>
+                <header class="section-header">
+                    <h2 class="section-title">Sessions</h2>
+                    <p class="section-intro">Choose your night. Join the team.</p>
+                </header>
+
+                <div class="session-cards">
+                    <!-- Wednesday -->
+                    <article class="session-card">
+                        <div class="session-card-image">
+                            <img src="assets/southnorwood-pool.webp" alt="South Norwood Leisure Centre pool"
+                                loading="lazy">
+                        </div>
+                        <div class="session-card-content">
+                            <span class="chip-day">Wednesday</span>
+                            <p class="session-audience">Members &amp; Guests</p>
+                            <p class="session-time">9PM to 10PM</p>
+                            <h3 class="session-venue">South Norwood Leisure Centre</h3>
+                            <address class="session-address">
+                                164 Portland Road<br>
+                                London SE25 4PT
+                            </address>
+                            <div class="session-actions">
+                                <a href="https://maps.google.com/?q=164+Portland+Road+London+SE25+4PT" class="btn-link"
+                                    target="_blank" rel="noopener">Open in maps</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Thursday -->
+                    <article class="session-card">
+                        <div class="session-card-image">
+                            <img src="assets/downham-pool.webp" alt="Downham Leisure Centre pool" loading="lazy">
+                        </div>
+                        <div class="session-card-content">
+                            <span class="chip-day">Thursday</span>
+                            <p class="session-audience">Members &amp; Guests</p>
+                            <p class="session-time">9PM to 10PM</p>
+                            <h3 class="session-venue">Downham Leisure Centre</h3>
+                            <address class="session-address">
+                                Moorside Road<br>
+                                London BR1 5EW
+                            </address>
+                            <div class="session-actions">
+                                <a href="https://maps.google.com/?q=Moorside+Road+London+BR1+5EW" class="btn-link"
+                                    target="_blank" rel="noopener">Open in maps</a>
+                            </div>
+                        </div>
+                    </article>
+
+                    <!-- Sunday -->
+                    <article class="session-card">
+                        <div class="session-card-image">
+                            <img src="assets/caterham-pool.webp" alt="De Stafford Sports Centre pool" loading="lazy">
+                        </div>
+                        <div class="session-card-content">
+                            <span class="chip-day">Sunday</span>
+                            <p class="session-audience">Juniors only</p>
+                            <p class="session-time">3:30PM to 4:30PM</p>
+                            <h3 class="session-venue">De Stafford Sports Centre</h3>
+                            <address class="session-address">
+                                Burntwood Lane<br>
+                                Caterham CR3 5YX
+                            </address>
+                            <div class="session-actions">
+                                <a href="https://maps.google.com/?q=Burntwood+Lane+Caterham+CR3+5YX" class="btn-link"
+                                    target="_blank" rel="noopener">Open in maps</a>
+                            </div>
+                        </div>
+                    </article>
                 </div>
-                <a href="https://www.instagram.com/wwuwh/" 
-                   target="_blank" 
-                   rel="noopener noreferrer" 
-                   class="glass-button glass-button-primary instagram-cta">
-                    @wwuwh on Instagram
-                </a>
+
+                <p class="session-note">Please register session attendance by enrolling with Spond.</p>
             </div>
         </section>
 
         <!-- Transition Wave -->
         <div class="transition-wave transition-wave--navy" aria-hidden="true"></div>
 
-        <!-- Social Section -->
-        <section class="social-section" id="social">
+        <!-- ========================================
+         SECTION 3: SCROLLY 01/02/03 (#scrolly-steps)
+         ======================================== -->
+        <section id="scrolly-steps" class="section section-scrolly">
             <div class="container">
-                <div class="social-grid">
-                    <a href="https://www.instagram.com/wwuwh/" 
-                       target="_blank" 
-                       rel="noopener noreferrer" 
-                       class="social-link"
-                       aria-label="Instagram">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                        </svg>
+                <header class="section-header">
+                    <h2 class="section-title">The game beneath the surface</h2>
+                </header>
+
+                <div class="scrolly-wrapper">
+                    <!-- Sticky left rail -->
+                    <div class="scrolly-rail">
+                        <div class="scrolly-progress">
+                            <span class="scrolly-progress-line"></span>
+                        </div>
+                        <ol class="scrolly-numbers">
+                            <li class="scrolly-number" data-step="1">01</li>
+                            <li class="scrolly-number" data-step="2">02</li>
+                            <li class="scrolly-number" data-step="3">03</li>
+                        </ol>
+                    </div>
+
+                    <!-- Right panel (steps) -->
+                    <div class="scrolly-steps">
+                        <!-- Step 01: Play -->
+                        <article class="scrolly-step" data-step="1">
+                            <h3 class="scrolly-step-title">Play</h3>
+                            <p class="scrolly-step-copy">Fast-paced, team-first underwater hockey at the bottom of the
+                                pool.</p>
+                            <p class="scrolly-step-micro">Learn the rhythms. Find your space. Move the puck.</p>
+                        </article>
+
+                        <!-- Step 02: Coach -->
+                        <article class="scrolly-step" data-step="2">
+                            <h3 class="scrolly-step-title">Coach</h3>
+                            <p class="scrolly-step-copy">Skills, positioning, and tactics — built one session at a time.
+                            </p>
+                            <p class="scrolly-step-micro">Better control. Smarter decisions. Cleaner shifts.</p>
+                        </article>
+
+                        <!-- Step 03: Compete -->
+                        <article class="scrolly-step" data-step="3">
+                            <h3 class="scrolly-step-title">Compete</h3>
+                            <p class="scrolly-step-copy">Local, national and European tournaments — and the friendships
+                                that come with them.</p>
+                            <p class="scrolly-step-micro">Turn training into teamwork. Turn teamwork into results.</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transition Wave -->
+        <div class="transition-wave" aria-hidden="true"></div>
+
+        <!-- ========================================
+         SECTION 4: YOUTUBE (#youtube)
+         ======================================== -->
+        <section id="youtube" class="section section-youtube">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">Catch us in action</h2>
+                    <a href="https://www.youtube.com/@wwuwh" class="btn-secondary" target="_blank"
+                        rel="noopener noreferrer">
+                        View our YouTube channel
                     </a>
-                    <a href="https://www.facebook.com/westwickhamuwh/" 
-                       target="_blank" 
-                       rel="noopener noreferrer" 
-                       class="social-link"
-                       aria-label="Facebook">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-                        </svg>
+                </header>
+                <div class="youtube-embed-wrapper">
+                    <div class="embed embed--16x9">
+                        <iframe src="https://www.youtube.com/embed/lamGHPI_vIk" title="K2 Session Aug 18 2024 - A team"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen loading="lazy">
+                        </iframe>
+                    </div>
+                    <div class="embed embed--16x9">
+                        <iframe src="https://www.youtube.com/embed/6cZsM1buJvU" title="K2 Session Aug 18 2024 - B team"
+                            frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen loading="lazy"></iframe>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+         SECTION 5: INSTAGRAM (#instagram)
+         ======================================== -->
+        <section id="instagram" class="section section-instagram">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">Keep up to date</h2>
+                    <a href="https://www.instagram.com/wwuwh/" target="_blank" rel="noopener noreferrer"
+                        class="btn-secondary instagram-cta">
+                        @wwuwh on Instagram
                     </a>
-                    <a href="https://www.tiktok.com/@westwickhamuwh" 
-                       target="_blank" 
-                       rel="noopener noreferrer" 
-                       class="social-link"
-                       aria-label="TikTok">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-                        </svg>
+                </header>
+                <div class="instagram-embed-wrapper">
+                    <div class="instagram-wrapper">
+                        <behold-widget feed-id="P9oK8WYN3W41RYNLK4cK"></behold-widget>
+                    </div>
+                </div>
+        </section>
+
+        <!-- ========================================
+         SECTION 6: PATHWAYS / QUICK LINKS (#pathways)
+         ======================================== -->
+        <section id="pathways" class="section section-pathways">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">Find your way in</h2>
+                </header>
+
+                <div class="pathway-grid">
+                    <a href="about/our-story.html" class="pathway-tile">
+                        <h3 class="pathway-tile-title">New to UWH?</h3>
+                        <p class="pathway-tile-desc">Learn about the sport and how we play.</p>
+                        <span class="pathway-tile-arrow" aria-hidden="true"></span>
                     </a>
-                    <a href="https://www.x.com/westwickhamuwh" 
-                       target="_blank" 
-                       rel="noopener noreferrer" 
-                       class="social-link"
-                       aria-label="X (Twitter)">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-                        </svg>
+
+                    <a href="kit-guide.html" class="pathway-tile">
+                        <h3 class="pathway-tile-title">What kit do I need?</h3>
+                        <p class="pathway-tile-desc">Everything you need to get started.</p>
+                        <span class="pathway-tile-arrow" aria-hidden="true"></span>
                     </a>
-                    <a href="https://www.youtube.com/@westwickhamuwh1293" 
-                       target="_blank" 
-                       rel="noopener noreferrer" 
-                       class="social-link"
-                       aria-label="YouTube">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                        </svg>
+
+                    <a href="membership.html" class="pathway-tile">
+                        <h3 class="pathway-tile-title">Ready to join?</h3>
+                        <p class="pathway-tile-desc">Membership tiers and how to sign up.</p>
+                        <span class="pathway-tile-arrow" aria-hidden="true"></span>
+                    </a>
+
+                    <a href="events.html" class="pathway-tile">
+                        <h3 class="pathway-tile-title">What's coming up?</h3>
+                        <p class="pathway-tile-desc">Tournaments and events calendar.</p>
+                        <span class="pathway-tile-arrow" aria-hidden="true"></span>
+                    </a>
+
+                    <a href="connect.html" class="pathway-tile">
+                        <h3 class="pathway-tile-title">Find us online</h3>
+                        <p class="pathway-tile-desc">Social links and how to get in touch.</p>
+                        <span class="pathway-tile-arrow" aria-hidden="true"></span>
                     </a>
                 </div>
             </div>
         </section>
 
-        <!-- Footer -->
-        <footer class="site-footer">
+        <!-- Transition Wave -->
+        <div class="transition-wave transition-wave--navy" aria-hidden="true"></div>
+
+        <!-- ========================================
+         SECTION 7: FOOTER CTA (#cta)
+         ======================================== -->
+        <section id="cta" class="section section-cta">
             <div class="container">
-                <p>&copy; 2025 West Wickham Underwater Hockey Club</p>
-                <p class="footer-note">Affiliated with the British Octopush Association</p>
+                <h2 class="cta-title">Ready to get involved?</h2>
+                <p class="cta-line">Start with a session. We'll help you with the rest.</p>
+                <a href="#" class="btn-primary btn-large">Enrol with Spond</a>
+                <!-- TODO: Add actual Spond URL -->
             </div>
-        </footer>
+        </section>
+
     </main>
 
-    <!-- Behold Instagram Widget -->
-    <script type="module" src="https://w.behold.so/widget.js"></script>
-    
-    <!-- Scroll Interactions -->
-    <script src="scroll.js"></script>
-      </div>
+    <!-- ========================================
+       FOOTER
+       ======================================== -->
+
+    <footer class="site-footer">
+        <div class="container footer-container">
+
+            <div class="footer-brand">
+                <img src="assets/logo-white.png" alt="WWUWH Logo" class="footer-logo">
+            </div>
+
+            <nav class="footer-nav" aria-label="Footer navigation">
+                <ul class="footer-nav-list">
+                    <li><a href="index.html" class="footer-nav-link">Home</a></li>
+                    <li><a href="about.html" class="footer-nav-link">About</a></li>
+                    <li><a href="kit-guide.html" class="footer-nav-link">Kit Guide</a></li>
+                    <li><a href="membership.html" class="footer-nav-link">Membership</a></li>
+                    <li><a href="events.html" class="footer-nav-link">Events</a></li>
+                    <li><a href="connect.html" class="footer-nav-link">Connect</a></li>
+                </ul>
+            </nav>
+
+            <div class="footer-socials">
+                <a href="https://www.facebook.com/wwuwh" class="social-btn" aria-label="Facebook" target="_blank"
+                    rel="noopener noreferrer">
+                    <span class="social-icon social-icon--facebook" aria-hidden="true"></span>
+                </a>
+
+                <a href="https://www.youtube.com/@wwuwh" class="social-btn" aria-label="YouTube" target="_blank"
+                    rel="noopener noreferrer">
+                    <span class="social-icon social-icon--youtube" aria-hidden="true"></span>
+                </a>
+
+                <a href="https://www.instagram.com/wwuwh/" class="social-btn" aria-label="Instagram" target="_blank"
+                    rel="noopener noreferrer">
+                    <span class="social-icon social-icon--instagram" aria-hidden="true"></span>
+                </a>
+
+                <a href="https://twitter.com/wwuwh" class="social-btn" aria-label="Twitter" target="_blank"
+                    rel="noopener noreferrer">
+                    <span class="social-icon social-icon--twitter" aria-hidden="true"></span>
+                </a>
+
+                <a href="#" class="social-btn" aria-label="WhatsApp" target="_blank" rel="noopener noreferrer">
+                    <span class="social-icon social-icon--whatsapp" aria-hidden="true"></span>
+                </a>
+                <!-- TODO: Add actual WhatsApp click-to-chat URL -->
+            </div>
+
+            <div class="footer-legal">
+                <p class="footer-copyright">&copy; 2025 West Wickham Underwater Hockey Club</p>
+                <p class="footer-note">Affiliated with the British Octopush Association</p>
+                <a href="privacy.html" class="footer-legal-link">Privacy Policy</a>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- Cookie Banner -->
+    <div id="cookie-banner" class="cookie-banner" role="dialog" aria-labelledby="cookie-title" aria-hidden="true">
+        <div class="cookie-banner-content">
+            <h3 id="cookie-title" class="cookie-title">This website uses cookies</h3>
+            <p class="cookie-text">We use cookies to analyse website traffic and optimise your website experience. By
+                accepting our use of cookies, your data will be aggregated with all other user data.</p>
+            <div class="cookie-actions">
+                <button class="btn-secondary btn-small" data-cookie-action="decline">Decline</button>
+                <button class="btn-primary btn-small" data-cookie-action="accept">Accept</button>
+            </div>
+        </div>
     </div>
+
+    <!-- Scripts -->
+    <script src="assets.js"></script>
+    <script src="js/nav.js" defer></script>
+    <script src="js/scroll.js" defer></script>
+
+    <!-- Behold Instagram Widget -->
+    <script src="https://w.behold.so/widget.js" type="module"></script>
 </body>
+
 </html>
