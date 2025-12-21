@@ -256,6 +256,7 @@ The club raised **£20,380 for MNDA**, and the team didn’t stop at the target 
 ---
 
 ## KIT GUIDE
+## KIT GUIDE
 
 ### Page opener
 **Title:** Kit Guide  
@@ -268,81 +269,198 @@ You don’t need everything on day one — but the right kit makes the sport saf
 - Fins
 - Mouth guard (recommended)
 
-### Sections (use anchors on page)
-#### Fins
+---
+
+### Fins
 **Copy:**  
-Fins are the engine. Beginners often start with affordable full-foot fins, while advanced players may move to higher-performance materials. Fit matters most — try options and ask for advice.
+Fins are essential for enhancing speed and agility in the water. Whether you’re a beginner or an advanced player, the right fins can make a significant difference in game.
 
-#### Masks
-**Copy:**  
-Choose a mask with a reliable seal and comfortable strap. Good silicone and a proper fit reduce leaks and fogging.
+**Key notes**
+- Styles range from affordable full-foot plastic/rubber fins for beginners to high-performance (and more expensive) fibreglass / carbon fibre fins for advanced players.
+- Fins must meet British Octopush Association (BOA) guidelines.
+- Seek advice from the local underwater hockey community to try on and find the best fit.
 
-#### Snorkels
-**Copy:**  
-A comfortable snorkel helps you breathe efficiently between dives. Prioritise comfort, durability, and ease of clearing water quickly.
-
-#### Sticks (Pushers)
-**Copy:**  
-Stick choice depends on your position and style. Forwards often prefer agile offensive shapes; backs may prefer longer, straighter options for reach and defence. All sticks should meet BOA guidelines.
-
-#### Gloves
-**Copy:**  
-Gloves protect your hands and improve grip. Choose a snug fit that matches your role — dexterity for forwards, extra protection for backs — and ensure compliance with BOA guidelines.
-
-#### Mouth Guard
-**Copy:**  
-Mouth guards protect teeth and gums. A snug fit is essential for protection without compromising breathing or focus. Options range from boil-and-bite to advanced designs.
-
-#### Hats (Caps)
-**Copy:**  
-Caps help with safety and identification, typically with ear protection and player numbers. A secure fit keeps the cap in place during fast play and supports consistent team kit standards.
-
-#### Fin Retainers
-**Copy:**  
-Retainers keep fins secure during bursts of speed and contact. Choose a comfortable strap style that works with your fins and stays put.
-
-#### Socks / Foot protection
-**Copy:**  
-Neoprene socks and protective tape can reduce blisters and improve comfort inside fins. Choose the thickness that still allows a secure fin fit.
-
-#### Swimwear
-**Copy:**  
-A secure, streamlined suit helps performance and comfort. Many players choose club- or country-branded suits for unity and identification.
-
-#### Pucks
-**Copy:**  
-Underwater hockey pucks are designed to stay on the pool bottom and slide cleanly. Use compliant pucks for fair play and consistent handling.
-
-#### Goals
-**Copy:**  
-Goals should be durable and safe — smooth surfaces and compliant sizing help protect players and keep play consistent.
-
-### Underwater Hockey shops (list)
-- BOA Shop (UK): shop.gbuwh.co.uk
-- Britbat: www.britbat.co.uk
-- BentFish (UK): www.bentfishdesign.com
-- True Blue (Australia): www.true-blue.com.au
-- CanAm Underwater Hockey Gear (US): www.canamuwhgear.com
-- Core UWH Gear (Slovenia): coreuwhgear.com
-- Hockeysub (France): www.hockeysub.com
-- Brier Fins (Belgium): shop.gbuwh.co.uk
-- BentFish (US): www.bentfishusa.com
-- UV Sport (Denmark): sportsbutikken.dk
-- Leader Fins (Estonia): www.leaderfins.com
-- Mat Mas Fins (Italy): mat-mas.eu/
-- Dorsal (New Zealand): www.dorsalgear.co.nz
-- Najade Fins (Hungary): www.najadefins.org
-- Waterway Fins: finswimworld.com
-
-### Underwater hockey websites
-- British Octopush Association (BOA): www.gbuwh.co.uk/
-- Underwater Hockey Switzerland: www.uwh.ch/
-
-**Optional closing line:**
-- Your kit doesn’t make you a player. Your consistency does.
+**Suggested image (asset):** `/assets/kit/fins.webp`
 
 ---
 
+### Masks
+**Copy:**  
+Masks are essential for clear vision and comfort during play. The right mask can enhance both performance and enjoyment by ensuring a secure fit and optimal visibility.
+
+**Key notes**
+- Options range from affordable single-lens masks to pricier frameless or curved masks.
+- A proper fit with a good seal is crucial to prevent leaks and fogging.
+- Look for high-quality silicone masks with easy-to-adjust straps.
+- Higher quality masks can be more expensive, but offer better fits and durability — a worthwhile investment.
+
+**Suggested image (asset):** `/assets/kit/masks.webp`
+
+---
+
+### Snorkels
+**Copy:**  
+A snorkel is vital for comfortable breathing during gameplay. The right snorkel can greatly enhance your performance in play.
+
+**Key notes**
+- Options include traditional snorkels (simple, cost-effective), dry snorkels (with a valve to prevent water entry), and semi-dry snorkels (with a splash guard to reduce water intake).
+- Focus on comfort (shape, attachment), ease of quickly clearing water when rising, and durability.
+
+**Suggested image (asset):** `/assets/kit/snorkels.webp`
+
+---
+
+### Sticks
+**Copy:**  
+Sticks are crucial for effective puck control and gameplay in underwater hockey. The right stick can significantly impact a player’s performance based on position and playing style.
+
+**Key notes**
+- Options range from offensive sticks like the **Carve** by Bentfish Designs (popular among forwards) to defensive sticks that are longer and straighter (ideal for backs).
+- Selecting a stick that matches the player’s role — agile and responsive for forwards, longer and stronger for defensive play — is essential.
+- All sticks must meet BOA guidelines.
+- A well-chosen stick enhances puck control, shot accuracy, and overall effectiveness in the water.
+
+**Suggested image (asset):** `/assets/kit/sticks.webp`
+
+---
+
+### Gloves
+**Copy:**  
+Gloves play a vital role in underwater hockey, offering protection and enhancing grip during play. Selecting the right gloves is essential for performance and compliance with BOA guidelines.
+
+**Key notes**
+- According to BOA guidelines, gloves should typically be blue or dark in colour to avoid confusion with the puck.
+- Gloves are available in various materials (including silicone), from basic to high-end specialised designs.
+- Material affects grip and durability, while a snug, comfortable fit supports puck handling and stick control.
+- Forwards may prioritise dexterity; backs may prefer extra protection. Choose gloves that suit your role and meet BOA standards.
+
+**Suggested image (asset):** `/assets/kit/gloves.webp`
+
+---
+
+### Mouth Guard
+**Copy:**  
+Mouth guards are essential for protecting teeth and gums during underwater hockey. Selecting the right mouth guard is crucial for safety while maintaining comfort and focus.
+
+**Key notes**
+- Options range from basic boil-and-bite models (low cost) to more advanced designs like the S.E.G.
+- A well-fitting mouth guard is vital for effective protection without compromising breathing or concentration.
+- Ensure the mouth guard adheres to BOA guidelines for safety.
+
+**Suggested image (asset):** `/assets/kit/mouthguard.webp`
+
+---
+
+### Hats
+**Copy:**  
+Hats are crucial for player identification and safety in underwater hockey, often featuring team colours or club/country branding. Proper selection of a hat helps maintain uniformity and protection during play.
+
+**Key notes**
+- Hats usually include ear guards and are made from materials like latex or neoprene, with varying levels of customisation and quality.
+- A well-fitting hat should stay in place during play and provide sufficient ear protection.
+- Hats often display numbers (1–15) for player identification. Choose a hat that follows your league/BOA guidelines.
+- Whether generic or club/country branded, the right hat supports team identity and player safety.
+
+**Suggested image (asset):** `/assets/kit/hats.webp`
+
+---
+
+### Fin Retainers
+**Copy:**  
+Fin retainers help keep fins securely in place during fast-paced underwater hockey matches. Proper retainers prevent equipment issues and maintain performance.
+
+**Key notes**
+- Available in various styles and materials (rubber or neoprene straps), sometimes with club/country branding.
+- A secure and comfortable fit is essential to prevent fins slipping off in critical moments.
+- Ensure retainers are compatible with your fins and meet local league/BOA guidelines.
+
+**Suggested image (asset):** `/assets/kit/fin-retainers.webp`
+
+---
+
+### Socks
+**Copy:**  
+Neoprene socks and specialised tape provide additional foot protection and comfort inside fins. The right foot protection can reduce blisters and abrasions and improve comfort during play.
+
+**Key notes**
+- Available in various thicknesses, sometimes with club/country branding. Prices vary by material quality and customisation.
+- Choose the right balance of cushioning and grip without compromising fin fit.
+- Socks/tape should align with local league/BOA guidelines.
+
+**Suggested image (asset):** `/assets/kit/socks.webp`
+
+---
+
+### Swimwear
+**Copy:**  
+Competitive swimwear for underwater hockey can improve performance and help display club or national pride through branding. A good suit supports team unity and identification while offering performance benefits.
+
+**Key notes**
+- Custom suits often feature logos or team colours for club/country affiliation.
+- Fit and drag reduction matter most for performance.
+- Prices vary depending on customisation and material quality.
+- Ensure swimwear adheres to local league/BOA guidelines for competition standards.
+
+**Suggested image (asset):** `/assets/kit/swimwear.webp`
+
+---
+
+### Pucks
+**Copy:**  
+Underwater hockey pucks are designed for visibility and performance, typically weighing around **1.2kg** so they remain at the bottom of the pool. The right puck supports accurate passing and shooting.
+
+**Key notes**
+- Pucks come in bright colours for improved visibility and may feature club/country branding.
+- Made from materials such as rubber or coated lead; weight and composition affect glide and handling.
+- Pucks must meet local league/BOA guidelines for consistency and fair play.
+
+**Suggested image (asset):** `/assets/kit/pucks.webp`
+
+---
+
+### Goals
+**Copy:**  
+Underwater hockey goals are crucial for a safe and standardised playing environment. Typically **3 metres** each, goals should be durable and safe for players.
+
+**Key notes**
+- Often made from stainless steel to prevent rust, with seam-welded construction and smooth surfaces to minimise injury risk.
+- Designed without cutting edges to reduce hazards during gameplay.
+- Goals must meet local league/BOA safety and sizing guidelines.
+
+**Suggested image (asset):** `/assets/kit/goals.webp`
+
+---
+
+### Underwater Hockey Shops
+- BOA Shop (UK): shop.gbuwh.co.uk  
+- Britbat: www.britbat.co.uk  
+- BentFish (UK): www.bentfishdesign.com  
+- True Blue (Aus): www.true-blue.com.au  
+- CanAm Underwater Hockey Gear (US): www.canamuwhgear.com  
+- Core UWH Gear (Slovenian): coreuwhgear.com  
+- Hockeysub (FR): www.hockeysub.com  
+- Brier Fins (Belgian): shop.gbuwh.co.uk  
+- BentFish (US): www.bentfishusa.com  
+- UV Sport (Danish): sportsbutikken.dk  
+- Leader Fins (Estonian): www.leaderfins.com  
+- Mat Mas Fins (IT): mat-mas.eu/  
+- Dorsal (NZ): www.dorsalgear.co.nz  
+- Najade Fins (Hungarian): www.najadefins.org  
+- Waterway Fins: finswimworld.com  
+
+---
+
+### Underwater Hockey Websites
+- British Octopush Association (BOA): www.gbuwh.co.uk/  
+- Underwater Hockey Switzerland: www.uwh.ch/  
+
+---
+
+### Page end
+**Note:** Use the same global site footer component as Home (logo, nav links, social links, copyright, affiliation note).
+
+
+---
 ## MEMBERSHIP
 
 ### Page opener
@@ -350,33 +468,87 @@ Goals should be durable and safe — smooth surfaces and compliant sizing help p
 **Copy:**  
 To keep sessions running, support coaching, and build the future of the club, WWUWH operates a tiered membership for different ages and playing needs.
 
-### Membership tiers table
-**Heading:** West Wickham Underwater Hockey Club — Membership Tiers (2025)  
-> Insert the current tiers table here (as per existing WWUWH site / BOA listing).
+---
 
-### Membership renewal note (must be clear)
-Memberships expire on **31 August** each year. Annual fees are **pro-rated** to a common renewal date.
+### Membership Fees
+**Heading:** West Wickham Underwater Hockey Club – Membership Tiers (2025)  
+**Renewal note (must be clear):** Memberships expire on **31 August** each year. Annual fees are **pro-rated** to a common renewal date.
 
-### Additional information (use numbered notes)
-1) **Monthly ongoing fees:** Membership fees run monthly (no payment holidays) to cover club and pool costs.  
-2) **Additional charges:** Tournaments, extra sessions, equipment, team kit and similar costs are paid separately by participants.  
-3) **Students:** Full-time students under 25 may have a student tier. Student members may pause payments in July and August if returning home (student members only).  
-4) **Juniors:** Junior membership is for under-18s. As juniors progress, they may be invited into adult sessions (no change to junior fee) subject to agreement with the junior coach/manager.  
-5) **Guest players:** Guest players are welcome (BOA members and/or covered by the BOA ‘Have a Go’ scheme). Members get booking priority. Guest attendance is requested via Spond and accepted subject to space and experience.  
-6) **Club transition:** Existing BOA members can join WWUWH and transfer BOA affiliation at the start of the BOA year (from 1 September).  
-7) **BOA registration:** New players must register with the sport’s governing body and select “West Wickham - South London” as their club.
+#### Membership tiers table
+| Category | Type | Fee | Swim options | Benefits² |
+|---|---|---:|---|---|
+| Multi Swim Membership | Adult | **£48.00 per month¹** | Monday, Wednesday and Thursday | Full member benefits (see below) |
+| Multi Swim Membership | Student | **£35.00 per month³** | Monday, Wednesday and Thursday | Full member benefits (see below) |
+| Single Swim Membership | Adult | **£31.00 per month¹** | Monday **or** Wednesday **or** Thursday | Full member benefits (see below) |
+| Single Swim Membership | Student | **£20.00 per month¹** | Monday **or** Wednesday **or** Thursday | Full member benefits (see below) |
+| Junior Membership | Junior | **£30.00 per month¹ ⁴** | Sunday | Full member benefits (see below) |
+| Non-member | Guest | **£10.00 paid in advance⁵** | Monday, Wednesday and Thursday | Guest benefits (see below) |
 
-### Our vision (short, modernised)
+#### Full member benefits²
+- Club sessions: advanced priority booking on the **Spond** app.
+- Inclusive BOA membership commencing September each year.⁶ ⁷
+- BOA public liability insurance.⁶ ⁷
+- BOA personal accident insurance.⁶ ⁷
+- Use of club equipment and training aids.
+- Vote at AGM and Player of The Year (PoTY) events.
+- Eligibility for Player of The Year.
+- Club entertainments donations.
+- Access to national squad training and selections.
+
+#### Guest benefits⁵
+- Use of club equipment and training aids.
+
+---
+
+### Additional Information
+1) **Membership¹:** Our membership fees are monthly ongoing (i.e. no payment holidays) to ensure we remain competitive whilst covering club costs / pools. To ease administration & accounting, please make **Standing Orders** to West Wickham Underwater Hockey Club.  
+2) **Additional Charges²:** Competitions, tournament entry fees, additional sessions (e.g. Putney, K2) team match trunks, player equipment, etc. is payable separately by all participating players. Please make payments to our club account and include a suitable reference to explain/detail (e.g. name, date, etc.) transaction.  
+3) **Students³:** We are keen to support Students and offer membership tier for full-time students under 25 years old (e.g. Sixth form, College and University students). Our membership is aligned to the BOA membership year (akin to the academic year) which commences on **1 September**. We acknowledge that some students may not be in London/South-East during the summer months and offer (for Student members only) the option to stop payments for **July and August** if returning home.  
+4) **Junior⁴:** Our Junior membership provides an entry level for young players (under 18 years) to enjoy our sport. As Junior players get older and as part of their progression, they will be encouraged to participate in adult sessions (no change to the Junior membership fee) subject to agreement with the junior team coach/manager.  
+5) **Guest Players⁵:** We welcome Guest players, of all abilities providing they are BOA members and/or supported under the BOA ‘Have a Go’ scheme. However, Membership players will always get priority for booking any club sessions. Guests (both experienced and new) can apply to join sessions (via our **Spond** booking app). Acceptance by the Membership Secretary and/or Captain is subject to space & relevant experience for sessions.  
+6) **Club Transition⁶:** Existing BOA members wanting to join West Wickham UWH can join our Membership scheme, then transition their BOA membership to West Wickham at the start of the next BOA year, commencing **1 September**.  
+7) **BOA Registration⁷:** New Players will need to register with the sporting body at **www.gbuwh.co.uk**. Follow the registration process and select **“West Wickham - South London”** as your club.
+
+---
+
+### Our Vision
 **Title:** Our Vision  
 **Copy:**  
-We aim to offer the best underwater hockey in London and the South-East, alongside a welcoming, active social scene. Our focus is an inclusive environment — continually investing in players, coaching, and the future of the sport.
+West Wickham strive to offer the best Underwater Hockey in London and the South-East, coupled with an active and enjoyable social scene. Our aim is to provide an inclusive club environment and continually invest in the development of players, our club and the future of our fantastic sport.
 
-### Joining CTAs
-- Primary: Spond app
-- Secondary: BOA Membership / Registration
+**Supporting copy:**  
+To continue offering unparalleled sporting opportunities (for men, women, young, senior, etc.) relies wholly on a loyal and committed membership. We operate a tiered club membership designed for players of all abilities and age groups enabling us to embrace and support the principles set out above.
 
-**Inspirational line (optional):**
-- Commit to the team — and the team commits to you.
+---
+
+### BOA enrolment / registration
+**Title:** Register with the BOA  
+**Copy:**  
+New to the sport? Register with the British Octopush Association and choose **“West Wickham - South London”** as your club. This opens in a new tab.
+
+**Primary CTA label:** Register on BOA  
+**Primary CTA link:** https://www.gbuwh.co.uk/register
+
+**Optional embed (implementation note):**  
+Some sites block embedding via security headers. Use the embed as a progressive enhancement, but always include the CTA link above as the reliable route.
+
+```html
+<!-- BOA registration embed (optional) -->
+<div class="boa-register">
+  <a class="btn-secondary" href="https://www.gbuwh.co.uk/register" target="_blank" rel="noopener noreferrer">
+    Register on BOA
+  </a>
+
+  <div class="boa-register-embed">
+    <iframe
+      src="https://www.gbuwh.co.uk/register"
+      title="BOA Registration"
+      loading="lazy"
+      referrerpolicy="no-referrer"
+    ></iframe>
+  </div>
+</div>
+
 
 ---
 
