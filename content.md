@@ -137,31 +137,72 @@ Micro line: Turn training into teamwork. Turn teamwork into results.
 **Kicker:** Formed in 1973
 
 **Copy (history):**  
-West Wickham Underwater Hockey Club began in 1973, founded by divers from the West Wickham (BSAC) diving club. Over the years we’ve grown into a welcoming club with members across ages and backgrounds — from social players to those competing at the highest level.
+West Wickham Underwater Hockey Club was established in 1973 by a passionate group of divers from the West Wickham (BSAC) diving club. Since then, we have grown into an inclusive club, boasting a diverse collection of members of different ages and backgrounds. The club prides itself on hosting both social and competitive players, with several active members being part of the elite international squad.
 
-A merger in the early years strengthened the club’s depth and competitiveness, and West Wickham quickly established itself on the UK national ladder. Across the decades, club players have helped shape our story through championship wins and international representation.
+**Legacy team photos (content note):**  
+Include a small gallery of legacy team photos near the top of the page (image-led, minimal captions).
 
-### Introduction to the sport
+**Copy (early growth):**  
+In our early years, a significant merger with players from Bromley enriched our talent pool, fostering a competitive edge. Our quick establishment in the UK National Ladder set the foundation for decades of success. Throughout the 1980s, notable players like Steve Baldwin, Paul Cook, Pete Coleman, and Paul Allen propelled the club to new heights, earning national championships and representing Great Britain on the international stage.
+
+**Timeline carousel (content note):**  
+Add a horizontal, right-scrolling image strip showcasing all 13 timeline images:
+- `/assets/club-journey-01.webp`
+- `/assets/club-journey-02.webp`
+- `/assets/club-journey-03.webp`
+- `/assets/club-journey-04.webp`
+- `/assets/club-journey-05.webp`
+- `/assets/club-journey-06.webp`
+- `/assets/club-journey-07.webp`
+- `/assets/club-journey-08.webp`
+- `/assets/club-journey-09.webp`
+- `/assets/club-journey-10.webp`
+- `/assets/club-journey-11.webp`
+- `/assets/club-journey-12.webp`
+- `/assets/club-journey-13.webp`
+
+**Copy (media then vs now):**  
+The club has always shared the sport beyond the pool. From the days of printed “Octopush News” booklets, we’ve evolved into modern coverage — local news headlines, regional features (including BBC regional news), and the day-to-day stories, clips, and match moments shared across Instagram and Facebook.
+
+**Copy (branding evolution):**  
+Our identity has changed as the club has grown: from the West Wickham reds, through the Dacor Dive sponsorship era, to the legacy wave mark — and into today’s modern WWUWH logo system.
+
+**Copy (1990s and 2000s):**  
+The 1990s and 2000s saw continued excellence with our members securing top positions in national and international tournaments. In 1998, we clinched the National Champions title and consistently maintained a top-three ranking.
+
+---
+
+### Introduction to the Sport
 **Title:** Introduction to the sport  
 **Copy:**  
-Underwater Hockey (UWH), also known as Octopush, is a limited-contact team sport played on the bottom of a swimming pool. Two teams use a short stick (pusher) to move a puck into the opposing goal — with all the action underwater.
+Underwater Hockey (UWH), also known as Octopush, is a globally played limited-contact sport where two teams compete to manoeuvre a puck across the bottom of a swimming pool into the opposing team’s goal using a hockey stick (pusher).
 
-**Key facts (bullets):**
-- Invented as a winter training game for divers, UWH blends swimming, fitness, and breath-hold in a unique environment.
-- Squads typically have up to 10 players, with 6 in the water at a time, using rolling substitutions.
+Invented by Alan Blake in 1954 as a winter activity to keep members engaged in his diving club, UWH blends swimming skills, fitness, and breath-holding in a unique, underwater environment.
 
-**Inspirational line (optional):**  
-Quiet above. Chaos below. That’s the magic.
+Teams consist of up to 10 players, with 6 in the water at any time. The game is fast-paced, utilising a tag system for substitutions, enhancing its excitement and intensity.
 
-### Growth of the sport (optional stats block)
+The sport takes hockey to a whole new dimension with the playing area being the bottom of a swimming pool. It’s a truly unique sport requiring the use of snorkelling gear (mask, fins, and snorkel), combining swimming skills, good fitness, and breath-holding as all the action is underwater.
+
+Underwater hockey is a great way to keep fit — taking swimming (widely recognised as excellent for health and fitness) to the next level through a truly unique team sport. The low-contact nature makes it very safe, giving it broad appeal with men’s, women’s, and junior teams — with players from 8 years upwards.
+
+---
+
+### Growth of the Sport
 **Title:** Growth of the sport  
 **Copy:**  
-From its early expansion alongside the rise of scuba diving, underwater hockey became a global sport with national leagues and international championships.
+The 1970s and 80s saw the sport’s first major expansion, fuelled by the rise of scuba diving. Underwater hockey spread globally, becoming popular in Australia, Canada, France, the Netherlands, New Zealand, the USA, and South Africa. Today, it’s a well-organised global sport with national and international events, culminating in the World Championship.
 
-**Stat bullets (as a simple display):**
-- 5,400+ UK registered players  
-- 110 UK teams; 1,000+ teams worldwide  
-- World Championships have grown from 6 teams (1980) to 80 teams (2013)
+**Key stats (display as simple bullets):**
+- 5,400+ UK registered players.
+- 110 teams in the UK and over 1,000 teams worldwide.
+- From 6 teams at the first World Championship in 1980 to 80 teams in Eger, Hungary in 2013.
+
+**Reference link:** https://www.cmas.org/hockey
+
+---
+
+### Page end
+**Note:** Use the same global site footer component as Home (logo, nav links, social links, copyright, affiliation note).
 
 ---
 
@@ -170,33 +211,164 @@ From its early expansion alongside the rise of scuba diving, underwater hockey b
 ### Page opener
 **Title:** Player of the Year  
 **Copy:**  
-Each year the club comes together to celebrate the season. Members vote for the player who best represents WWUWH — our top club honour.
+Each year, West Wickham Underwater Hockey Club comes together to celebrate the season’s achievements.
 
-**Optional supporting lines:**
+Members cast a vote for who they believe should be awarded **Player of the Year** — our club’s top honour.
+
+**Optional supporting lines (pick 1):**
 - Commitment. Teamwork. Impact.
 - The award for the person who lifts everyone else.
+- Consistency under pressure. Class in the water.
 
-**Content block: Winners list**
-- Add a year-by-year list (or cards) once data is available.
-- Include photos where possible.
+---
+
+### Winners
+**Heading:** Winners list
+
+> Note: 2021 was impacted by COVID.
+
+| Year | Winner |
+|---:|:---|
+| 2025 | D. Onken |
+| 2024 | M. Johnson |
+| 2023 | D. Parsloe |
+| 2022 | M. Johnson |
+| 2021 | COVID |
+| 2020 | R. Wignall |
+| 2019 | D. Parsloe |
+| 2018 | K. Speed |
+| 2017 | J. Christen |
+| 2016 | E. Russell |
+| 2015 | S. Allen |
+| 2014 | J. Greenhalgh |
+| 2013 | K. Speed |
+| 2012 | C. Alwin |
+| 2011 | S. Allen |
+| 2010 | P. Allen |
+| 2009 | S. Allen |
+| 2008 | M. Brooks |
+| 2007 | J. Allen |
+| 2006 | S. Allen |
+| 2005 | B. Crimp |
+| 2004 | R. Howard |
+| 2003 | K. Speed |
+| 2002 | S. Baldwin |
+| 2001 | P. Cole |
+| 2000 | M. Sheffield |
+| 1999 | P. Cole |
+| 1998 | D. Beha |
+| 1997 | P. Allen |
+| 1996 | P. Coleman |
+| 1995 | S. Baldwin |
+| 1994 | R. Mole |
+| 1993 | R. Baldwin |
+| 1992 | D. Nunn |
+| 1991 | P. Cook |
+| 1990 | K. Speed |
+| 1989 | P. Allen |
+| 1988 | M. Brooks |
+| 1987 | P. Cook |
+| 1986 | P. Cole |
+| 1985 | S. Baldwin |
+| 1984 | P. Allen |
+| 1983 | M. Sherret |
+
+---
+
+### Page end
+**Footer note:** Use the same global site footer as Home (logo, links, social, copyright).
+
 
 ---
 
 ## ABOUT — LADIES CLUB
 
-> The current page is image-led; copy below is new (inspirational + practical) while keeping WWUWH tone.
-
 ### Page opener
 **Title:** Ladies Club  
+**Kicker:** Strength • Skill • Sisterhood
+
+**Copy (intro):**  
+The ladies community within West Wickham Underwater Hockey Club has long been a beacon of strength, collaboration, and calm confidence under pressure. Underwater hockey has always been a sport where teamwork matters more than size, and where technique, awareness, and resilience win games — qualities our women bring in abundance.
+
+This page celebrates our commitment to creating space for women to train, compete, and thrive — not as a side programme, but as a core part of the club’s identity.
+
+---
+
+### Why it matters
+**Title:** Why women’s underwater hockey matters  
 **Copy:**  
-Underwater hockey is for everyone — and our women’s community is a huge part of the club. Whether you’re stepping into the pool for the first time or building towards competition, you’ll find support, coaching, and a team that backs you.
+Women’s training environments build confidence, accelerate skill development, and strengthen community. Dedicated opportunities help players learn faster, push their limits safely, and bring new tactical perspectives into the wider club.
 
-**CTA block**
-- Primary CTA: Enrol with Spond
-- Secondary CTA: Contact us (Connect)
+When more women play, the whole club improves — the pace rises, communication sharpens, and our understanding of style, technique, and decision-making grows. Diversity makes us better.
 
-**Optional pull-quote**
-- “Confidence isn’t loud. It’s consistent.”
+---
+
+### Swickham Ladies
+**Title:** Swickham Ladies  
+**Kicker:** West Wickham × Sussex Underwater Hockey Club
+
+**Copy:**  
+Our successful alliance with Sussex Underwater Hockey Club is a proud example of what happens when great communities come together. Competing as **Swickham Ladies**, we’ve built a supportive, high-performance environment rooted in inclusivity and excellence in women’s underwater hockey.
+
+At the **British Octopush Association (BOA) Women’s Nationals 2025**, Swickham Ladies continued to rise — securing **third place in 2025** and proving that commitment, consistency, and team culture deliver results.
+
+---
+
+### Training and development
+**Title:** Dedicated training  
+**Copy:**  
+Alongside competition, we prioritise training opportunities that support women at every stage — from first session confidence-building to tournament preparation. Expect focused skills work, tactical understanding, and the kind of communication that turns individual ability into team momentum.
+
+**Optional pull-quote (use as a design feature):**  
+“Strong teams are built on trust — and trust is built one session at a time.”
+
+---
+
+### Pathway to the top
+**Title:** From club sessions to GB selection  
+**Copy:**  
+We’re proud that a number of female players connected to West Wickham have been selected to play at **GB level**, bringing home medals and raising the standard for everyone. Their journeys show what’s possible when talent meets the right environment: supportive teammates, structured development, and meaningful competition.
+
+---
+
+### Gallery
+**Title:** Moments that made us  
+**Copy (short):**  
+A few highlights from training, tournaments, and the community that keeps growing.
+
+**Gallery assets (content note):**  
+Use these images in a creative, non-carousel layout:
+- `/assets/ladies/GB-Squad-2019.jpg`
+- `/assets/ladies/Sussex-Wickham-Ladies-2018.jpg`
+- `/assets/ladies/Sussex-Wickham-Ladies-2019.jpg`
+- `/assets/ladies/Sussex-Wickham-Ladies-Nationals-2019.jpg`
+- `/assets/ladies/Sussex-Wickham-Ladies-training-2019.jpg`
+- `/assets/ladies/Wickham-Ladies-Parma-2018.jpg`
+- `/assets/ladies/Wickham-B-Semis-2022.jpg`
+
+**Creative display direction (choose one):**
+1) **“Polaroid wall” collage** — staggered tiles with slight rotation, soft shadows, and small caption chips (Year / Event). On mobile, it becomes a neat 2-column grid.  
+2) **“Spotlight + strip”** — one large featured photo (GB Squad 2019) with a slim vertical strip of smaller photos beside it (desktop), collapsing to stacked cards on mobile.  
+3) **“Timeline moments”** — a vertical list of 4–5 “moment cards” with alternating left/right image alignment, each with a short caption line (Training / Nationals / Parma / Semis / GB).
+
+(Keep captions minimal and tasteful; focus on atmosphere.)
+
+---
+
+### Join the women’s community
+**Title:** Train with us  
+**Copy:**  
+Whether you’re brand new to underwater hockey or returning to competition, you’ll find encouragement, coaching, and a team that wants you to succeed. Come learn the sport, sharpen your style, and help shape the future of women’s underwater hockey — together.
+
+**CTAs (labels):**
+- Primary: Enrol with Spond
+- Secondary: Connect with us
+
+---
+
+### Page end
+**Footer note:** Use the same global site footer component as Home (logo, nav links, social links, copyright, affiliation note).
+
 
 ---
 

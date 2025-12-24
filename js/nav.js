@@ -240,3 +240,23 @@
     init();
   }
 })();
+
+// Toggle "is-stuck" on the Kit TOC so the extended background only appears when sticky
+(() => {
+  const toc = document.querySelector(".kit-toc");
+  if (!toc) return;
+
+  const header = document.querySelector(".site-header");
+  if (!header) return;
+
+  const update = () => {
+    const headerBottom = header.getBoundingClientRect().bottom;
+    const tocTop = toc.getBoundingClientRect().top;
+    const stuck = tocTop <= headerBottom + 1;
+    toc.classList.toggle("is-stuck", stuck);
+  };
+
+  update();
+  window.addEventListener("scroll", update, { passive: true });
+  window.addEventListener("resize", update);
+})();
