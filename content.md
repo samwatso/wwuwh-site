@@ -391,18 +391,152 @@ De Stafford Sports Centre, Burntwood Lane, Caterham CR3 5YX
 
 ---
 
+---
+
 ## ABOUT — EUROPEAN TOURNAMENTS
 
 ### Page opener
 **Title:** European Tournaments  
+**Kicker:** Play abroad. Come back sharper.
+
+**Intro copy:**  
+West Wickham Underwater Hockey Club takes pride in organising and travelling to tournaments across the UK and Europe. These weekends are where fitness meets finesse — new pools, new styles, new teammates — and where the strongest friendships are often made between games.
+
+**Support line (optional):**  
+Competitive on court. Social off it. Always one club.
+
+---
+
+### Why we travel
+**Section title:** Why tournaments matter  
+**Copy (short):**  
+Tournaments give players the fastest route to growth: higher tempo games, different tactics, and the pressure that turns training into instinct. Just as importantly, they’re a chance to experience the international underwater hockey community — welcoming, diverse, and brilliantly competitive.
+
+**Bullets (scannable):**
+- Sharpen skills against unfamiliar playing styles  
+- Build team chemistry through intense match blocks  
+- Represent the club — and bring the energy home  
+- Discover new cities, new clubs, new friends
+
+---
+
+### Tournaments we regularly attend
+**Section title:** Regular stops on the circuit  
+**Intro line:** A selection of UK + European tournaments our members often attend.
+
+#### UK
+- Orkney  
+- Leeds  
+- Guildford — Barbipush  
+- Sheffield  
+- Sussex  
+
+#### Germany
+- Berlin  
+
+#### Netherlands
+- Mosseltoernooi  
+- Breda  
+
+#### Belgium
+- Brussels — Ho Ho Hockey  
+
+#### Czechia
+- Prague  
+- České Budějovice — BUD PIG CUP  
+
+#### France
+- Paris — Moresports  
+- Nantes  
+
+#### Hungary
+- Budapest  
+
+#### Slovenia
+- Kranj  
+
+#### Switzerland
+- Leman  
+
+#### Spain
+- Barcelona  
+
+#### Italy
+- Parma  
+
+**Micro line (optional):**  
+Different pools. Same puck. Same team.
+
+---
+
+### Find more events worldwide
+**Section title:** More events worldwide  
 **Copy:**  
-WWUWH organises and takes part in European and UK tournaments, giving players the chance to compete, improve, and build friendships across the underwater hockey community. These events blend serious competition with a strong social spirit — and they’re a big part of what makes the sport special.
+If you’re planning your next trip, these calendars are great starting points — and they’re updated more frequently than any static list.
 
-**Section title:** Tournaments we regularly attend  
-- (Add tournament tiles/list here — placeholder until you compile the names and dates.)
+**Primary reference:**  
+- UWH Map — Events: https://www.uwhmap.com/events
 
-**Inspirational line (optional):**
-- Different pools. Same puck. Same team.
+**More event links:**  
+- CMAS Underwater Hockey Events: https://www.cmas.org/underwater-hockey-events.html  
+- UWH Portal Events: https://uwhportal.com/events  
+- GBUWH Events (UK): https://www.gbuwh.co.uk/events  
+- UWH Australia Events: https://underwaterhockeyaustralia.org.au/events/  
+- UWH New Zealand Events: https://www.underwaterhockeynz.com/EVENTS-1/CALENDAR  
+- UWH Society of America: https://www.underwater-society.org/uwh  
+
+---
+
+### Photo set
+**Section title:** Tournament moments  
+**Copy (short):**  
+From pool decks to podiums — a few snapshots from the road.
+
+**Assets (tournaments gallery):**
+- /assets/touraments/europe.jpg  
+- /assets/touraments/europe1.jpg  
+- /assets/touraments/berlin.jpg  
+- /assets/touraments/mosseltourni.jpg  
+- /assets/touraments/brada.jpg  
+- /assets/touraments/hohohockey.jpg  
+- /assets/touraments/hohohockey1.jpg  
+- /assets/touraments/prague.jpg  
+- /assets/touraments/Wickham-Prague-2021.jpg  
+- /assets/touraments/Budapest 2018.jpg  
+- /assets/touraments/West-Wickham-finishing-3rd-Kranj-UWH-Tournament 2020.jpg  
+- /assets/touraments/Parma-2022.jpg  
+- /assets/touraments/palma.jpg  
+- /assets/touraments/palma1.jpg  
+- /assets/touraments/susex.jpg  
+- /assets/touraments/Barbipush-Guilford-2017.jpg  
+- /assets/touraments/barbipush.jpg  
+
+---
+
+### Creative layout idea (for the page build)
+**Concept:** “Pinboard Map” (not a carousel)  
+- Use a simple **UK + Europe silhouette SVG** as a background panel.  
+- Place clickable “pins” for each location (London/UK events + Europe cities).  
+- Clicking a pin opens a **mini lightbox** with 1–3 photos + a short caption (“Berlin”, “Parma”, “Kranj — 3rd place”, etc.).  
+- Keep it lightweight: pins are absolutely positioned; photos pulled from the list above.  
+- Accessibility: pins are buttons with proper labels; lightbox closes with Escape.
+
+**Fallback (mobile):** a clean **masonry grid** of images with location tags (Berlin / Prague / Parma / etc.).
+
+---
+
+### Closing CTA
+**Title:** Want to join a tournament trip?  
+**Copy:**  
+Start with a session, then tell us what you’re aiming for — social tournaments, competitive squads, or your first trip abroad. We’ll point you to the right team and the right kit.
+
+**Primary CTA:** Enrol with Spond  
+
+---
+
+### Page end
+**Footer note:** Use the same global site footer component as Home (logo, nav links, social links, copyright, affiliation note).
+
 
 ---
 

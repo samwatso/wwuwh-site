@@ -3,10 +3,10 @@
 // Loaded before other scripts so window.ASSETS is available everywhere.
 
 window.ASSETS = {
-  version: 6,
+  version: 7,
   generatedFrom: "assets-manifest.csv",
   // Optional: update this when you regenerate the manifest
-  generatedAtUtc: "2025-12-23T22:58:47.788071+00:00",
+  generatedAtUtc: "2025-12-24T23:26:38.139030+00:00",
 
   paths: {
     // Core media
@@ -45,6 +45,9 @@ window.ASSETS = {
     // Club history / archive imagery
     historyImages: {
       teamPhoto1980: "assets/history/team-photo-1980.webp",
+      teamPhoto2000: "assets/history/team-photo-2000.webp",
+      teamPhotoWorldChampionship1980: "assets/history/team-photo-world-championship-1980.webp",
+
       clubJourney1: "assets/history/club-journey-1.webp",
       clubJourney2: "assets/history/club-journey-2.webp",
       clubJourney3: "assets/history/club-journey-3.webp",
@@ -58,14 +61,33 @@ window.ASSETS = {
       clubJourney11: "assets/history/club-journey-11.webp",
       clubJourney12: "assets/history/club-journey-12.webp",
       clubJourney13: "assets/history/club-journey-13.webp",
+
       clubMedia: "assets/history/club-media.webp",
-      legacyLogo: "assets/history/legacy-logo.webp",
-      teamPhoto2000: "assets/history/team-photo-2000.webp",
-      teamPhotoWorldChampionship1980: "assets/history/team-photo-world-championship-1980.webp"
+
+      // New history imagery (jpg/png)
+      octopushNews8090: "assets/history/80-90-Octopush-News.jpg",
+      kentNewspapers2013: "assets/history/Kent-Newspapers-2013.jpg",
+      steveMedalsYears: "assets/history/Steve-Medals-years.jpg",
+      wickhamNationals1998: "assets/history/Wickham-Nationals-1998.jpg",
+      wickhamSquad2003: "assets/history/Wickham-Squad 2003.jpg",
+      dacorLogo: "assets/history/dacor-logo.jpg",
+      legacyLogoJpg: "assets/history/legacy-logo.jpg",
+      legacyPng: "assets/history/legacy.png",
+      nationalLadder1984Teamphoto: "assets/history/national-ladder-1984-teamphoto.jpg",
+      nationalLadder1984Png: "assets/history/national-ladder-1984.png",
+      news2019: "assets/history/news-2019.jpg",
+      originalLogo: "assets/history/original-logo.jpg",
+
+      // Keep the older legacy webp too (used elsewhere)
+      legacyLogoWebp: "assets/history/legacy-logo.webp"
     },
 
     // Ladies imagery
     ladiesImages: {
+      heroLadies: "assets/ladies/ladies.jpg",
+      swickhamLadies: "assets/ladies/swickham-ladies.jpg",
+      swickham: "assets/ladies/swickham.jpg",
+
       sussexWickhamLadies2018: "assets/ladies/Sussex-Wickham-Ladies-2018.jpg",
       sussexWickhamLadies2019: "assets/ladies/Sussex-Wickham-Ladies-2019.jpg",
       sussexWickhamLadiesNationals2019: "assets/ladies/Sussex-Wickham-Ladies-Nationals-2019.jpg",
@@ -85,6 +107,28 @@ window.ASSETS = {
       poty2019: "assets/poty/poty-2019.jpg",
       poty2025: "assets/poty/poty-2025.JPG",
       potyTrophie: "assets/poty/poty-trophie.webp"
+    },
+
+    // Tournaments imagery (note: folder name is "touraments" per manifest)
+    tournamentImages: {
+      barbipushGuilford2017: "assets/touraments/Barbipush-Guilford-2017.jpg",
+      budapest2018: "assets/touraments/Budapest 2018.jpg",
+      parma2022: "assets/touraments/Parma-2022.jpg",
+      westWickhamKranj2020: "assets/touraments/West-Wickham-finishing-3rd-Kranj-UWH-Tournament 2020.jpg",
+      wickhamPrague2021: "assets/touraments/Wickham-Prague-2021.jpg",
+
+      barbipush: "assets/touraments/barbipush.jpg",
+      berlin: "assets/touraments/berlin.jpg",
+      brada: "assets/touraments/brada.jpg",
+      europe: "assets/touraments/europe.jpg",
+      europe1: "assets/touraments/europe1.jpg",
+      hohohockey: "assets/touraments/hohohockey.jpg",
+      hohohockey1: "assets/touraments/hohohockey1.jpg",
+      mosseltourni: "assets/touraments/mosseltourni.jpg",
+      palma: "assets/touraments/palma.jpg",
+      palma1: "assets/touraments/palma1.jpg",
+      prague: "assets/touraments/prague.jpg",
+      sussex: "assets/touraments/susex.jpg"
     },
 
     video: {
@@ -113,7 +157,8 @@ window.ASSETS = {
     js: {
       nav: "js/nav.js",
       scroll: "js/scroll.js",
-      poty: "js/poty.js"
+      poty: "js/poty.js",
+      cookies: "js/cookies.js"
     },
 
     // Page routes (static folder pages)
@@ -147,21 +192,27 @@ window.ASSETS = {
     "about/fundraising/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:21.408840+00:00" },
     "about/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:16.612433+00:00" },
     "about/juniors/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:21.408736+00:00" },
-    "about/ladies/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:21.408689+00:00" },
-    "about/our-story/index.html": { size_bytes: 28440, modified_utc: "2025-12-23T22:33:14.276988+00:00" },
-    "about/player-of-the-year/index.html": { size_bytes: 30067, modified_utc: "2025-12-23T22:33:21.397613+00:00" },
+    "about/ladies/index.html": { size_bytes: 20287, modified_utc: "2025-12-24T00:27:58.100486+00:00" },
+    "about/our-story/index.html": { size_bytes: 28326, modified_utc: "2025-12-24T00:43:32.599046+00:00" },
+    "about/player-of-the-year/index.html": { size_bytes: 29621, modified_utc: "2025-12-24T00:26:22.106374+00:00" },
 
-    "assets-manifest.txt": { size_bytes: 4622, modified_utc: "2025-12-23T21:53:55.876464+00:00" },
-    "assets.js": { size_bytes: 11692, modified_utc: "2025-12-23T21:56:27.110571+00:00" },
+    "assets-manifest.txt": { size_bytes: 5226, modified_utc: "2025-12-23T23:00:03.687864+00:00" },
+    "assets.js": { size_bytes: 13263, modified_utc: "2025-12-23T23:02:18.921230+00:00" },
 
     "assets/caterham-pool.webp": { size_bytes: 43502, modified_utc: "2025-12-14T00:54:25.171659+00:00" },
     "assets/downham-pool.webp": { size_bytes: 46952, modified_utc: "2025-12-14T00:54:25.171888+00:00" },
-    "assets/southnorwood-pool.webp": { size_bytes: 54180, modified_utc: "2025-12-14T00:54:25.174840+00:00" },
-
+    "assets/fonts/Azonix.otf": { size_bytes: 12076, modified_utc: "2025-12-14T00:54:25.172204+00:00" },
+    "assets/fonts/Nexa Light.otf": { size_bytes: 30004, modified_utc: "2025-12-14T00:54:25.172471+00:00" },
     "assets/hero1.jpg": { size_bytes: 364536, modified_utc: "2025-12-14T00:54:25.173099+00:00" },
     "assets/hero2.jpg": { size_bytes: 258984, modified_utc: "2025-12-14T00:54:25.173986+00:00" },
 
-    // History assets
+    // History assets (new + existing)
+    "assets/history/80-90-Octopush-News.jpg": { size_bytes: 169718, modified_utc: "2025-12-24T23:25:46.083743+00:00" },
+    "assets/history/Kent-Newspapers-2013.jpg": { size_bytes: 348753, modified_utc: "2025-12-24T23:09:35.603081+00:00" },
+    "assets/history/Steve-Medals-years.jpg": { size_bytes: 2169749, modified_utc: "2025-12-24T23:10:23.977457+00:00" },
+    "assets/history/Wickham-Nationals-1998.jpg": { size_bytes: 1662140, modified_utc: "2025-12-24T23:25:25.018366+00:00" },
+    "assets/history/Wickham-Squad 2003.jpg": { size_bytes: 3479045, modified_utc: "2025-12-24T23:10:28.775393+00:00" },
+
     "assets/history/club-journey-1.webp": { size_bytes: 44582, modified_utc: "2025-12-23T18:58:53.395166+00:00" },
     "assets/history/club-journey-2.webp": { size_bytes: 58998, modified_utc: "2025-12-23T18:59:34.067718+00:00" },
     "assets/history/club-journey-3.webp": { size_bytes: 135368, modified_utc: "2025-12-23T18:59:58.759810+00:00" },
@@ -175,8 +226,16 @@ window.ASSETS = {
     "assets/history/club-journey-11.webp": { size_bytes: 119748, modified_utc: "2025-12-23T19:02:11.538466+00:00" },
     "assets/history/club-journey-12.webp": { size_bytes: 260356, modified_utc: "2025-12-23T19:02:28.054134+00:00" },
     "assets/history/club-journey-13.webp": { size_bytes: 122880, modified_utc: "2025-12-23T19:02:43.286188+00:00" },
+
     "assets/history/club-media.webp": { size_bytes: 74254, modified_utc: "2025-12-23T19:03:09.555758+00:00" },
+    "assets/history/dacor-logo.jpg": { size_bytes: 308613, modified_utc: "2025-12-24T23:25:48.975015+00:00" },
+    "assets/history/legacy-logo.jpg": { size_bytes: 26384, modified_utc: "2025-12-24T23:25:40.245768+00:00" },
     "assets/history/legacy-logo.webp": { size_bytes: 48156, modified_utc: "2025-12-23T19:03:21.012986+00:00" },
+    "assets/history/legacy.png": { size_bytes: 88880, modified_utc: "2025-12-24T23:11:01.009417+00:00" },
+    "assets/history/national-ladder-1984-teamphoto.jpg": { size_bytes: 1054376, modified_utc: "2025-12-24T23:10:43.017911+00:00" },
+    "assets/history/national-ladder-1984.png": { size_bytes: 69033, modified_utc: "2025-12-24T23:10:55.322027+00:00" },
+    "assets/history/news-2019.jpg": { size_bytes: 134785, modified_utc: "2025-12-24T23:13:13.642650+00:00" },
+    "assets/history/original-logo.jpg": { size_bytes: 435458, modified_utc: "2025-12-24T23:25:53.082844+00:00" },
     "assets/history/team-photo-1980.webp": { size_bytes: 28066, modified_utc: "2025-12-23T18:57:56.434784+00:00" },
     "assets/history/team-photo-2000.webp": { size_bytes: 40984, modified_utc: "2025-12-23T19:03:42.561678+00:00" },
     "assets/history/team-photo-world-championship-1980.webp": { size_bytes: 38000, modified_utc: "2025-12-23T19:04:26.976730+00:00" },
@@ -195,14 +254,17 @@ window.ASSETS = {
     "assets/kit/sticks.webp": { size_bytes: 23832, modified_utc: "2025-12-21T00:16:52.988048+00:00" },
     "assets/kit/swimwear.webp": { size_bytes: 11760, modified_utc: "2025-12-21T00:15:57.609956+00:00" },
 
-    // Ladies assets
-    "assets/ladies/Sussex-Wickham-Ladies-2018.jpg": { size_bytes: 251189, modified_utc: "2023-10-20T21:39:50+00:00" },
+    // Ladies assets (updated)
+    "assets/ladies/Sussex-Wickham-Ladies-2018.jpg": { size_bytes: 328615, modified_utc: "2025-12-23T23:30:04.676010+00:00" },
     "assets/ladies/Sussex-Wickham-Ladies-2019.jpg": { size_bytes: 140196, modified_utc: "2023-10-20T21:27:20+00:00" },
-    "assets/ladies/Sussex-Wickham-Ladies-Nationals-2019.jpg": { size_bytes: 72273, modified_utc: "2023-10-20T21:27:55+00:00" },
+    "assets/ladies/Sussex-Wickham-Ladies-Nationals-2019.jpg": { size_bytes: 121888, modified_utc: "2025-12-23T23:30:26.431030+00:00" },
     "assets/ladies/Sussex-Wickham-Ladies-training-2019.jpg": { size_bytes: 94798, modified_utc: "2023-10-20T21:28:48+00:00" },
     "assets/ladies/Wickham-B-Semis-2022.jpg": { size_bytes: 196758, modified_utc: "2023-10-20T21:15:39+00:00" },
-    "assets/ladies/Wickham-Ladies-Parma-2018.jpg": { size_bytes: 114819, modified_utc: "2023-10-20T21:33:37+00:00" },
-    "assets/ladies/gb-squad-2019.jpg": { size_bytes: 182890, modified_utc: "2023-10-20T21:20:00+00:00" },
+    "assets/ladies/Wickham-Ladies-Parma-2018.jpg": { size_bytes: 162241, modified_utc: "2025-12-23T23:30:48.939060+00:00" },
+    "assets/ladies/gb-squad-2019.jpg": { size_bytes: 191414, modified_utc: "2025-12-23T23:29:49.395383+00:00" },
+    "assets/ladies/ladies.jpg": { size_bytes: 222746, modified_utc: "2025-12-24T23:07:39.401360+00:00" },
+    "assets/ladies/swickham-ladies.jpg": { size_bytes: 286335, modified_utc: "2025-12-24T23:26:38.139030+00:00" },
+    "assets/ladies/swickham.jpg": { size_bytes: 477715, modified_utc: "2025-12-24T23:07:53.391852+00:00" },
 
     // Logos
     "assets/logo-head.png": { size_bytes: 75728, modified_utc: "2025-12-20T00:55:32.375054+00:00" },
@@ -220,18 +282,38 @@ window.ASSETS = {
     "assets/poty/poty-2025.JPG": { size_bytes: 236609, modified_utc: "2025-07-04T22:31:46+00:00" },
     "assets/poty/poty-trophie.webp": { size_bytes: 86024, modified_utc: "2025-12-23T21:51:13.194716+00:00" },
 
+    // Tournament assets (folder "touraments")
+    "assets/touraments/Barbipush-Guilford-2017.jpg": { size_bytes: 365408, modified_utc: "2023-10-20T21:43:31+00:00" },
+    "assets/touraments/Budapest 2018.jpg": { size_bytes: 286602, modified_utc: "2023-10-20T21:35:59+00:00" },
+    "assets/touraments/Parma-2022.jpg": { size_bytes: 262760, modified_utc: "2025-12-24T23:09:47.078450+00:00" },
+    "assets/touraments/West-Wickham-finishing-3rd-Kranj-UWH-Tournament 2020.jpg": { size_bytes: 420811, modified_utc: "2023-10-20T21:18:25+00:00" },
+    "assets/touraments/Wickham-Prague-2021.jpg": { size_bytes: 198503, modified_utc: "2023-10-20T21:15:54+00:00" },
+    "assets/touraments/barbipush.jpg": { size_bytes: 370653, modified_utc: "2025-12-24T23:09:31.531597+00:00" },
+    "assets/touraments/berlin.jpg": { size_bytes: 398934, modified_utc: "2025-12-24T23:08:31.184625+00:00" },
+    "assets/touraments/brada.jpg": { size_bytes: 324727, modified_utc: "2025-12-24T23:08:55.568484+00:00" },
+    "assets/touraments/europe.jpg": { size_bytes: 551365, modified_utc: "2025-12-24T23:09:06.712426+00:00" },
+    "assets/touraments/europe1.jpg": { size_bytes: 348526, modified_utc: "2025-12-24T23:08:34.219971+00:00" },
+    "assets/touraments/hohohockey.jpg": { size_bytes: 285360, modified_utc: "2025-12-24T23:09:27.359589+00:00" },
+    "assets/touraments/hohohockey1.jpg": { size_bytes: 112808, modified_utc: "2025-12-24T23:09:09.163950+00:00" },
+    "assets/touraments/mosseltourni.jpg": { size_bytes: 1405037, modified_utc: "2025-12-24T23:08:27.178026+00:00" },
+    "assets/touraments/palma.jpg": { size_bytes: 230651, modified_utc: "2025-12-24T23:08:59.422812+00:00" },
+    "assets/touraments/palma1.jpg": { size_bytes: 644169, modified_utc: "2025-12-24T23:08:43.508153+00:00" },
+    "assets/touraments/prague.jpg": { size_bytes: 273072, modified_utc: "2025-12-24T23:08:52.078131+00:00" },
+    "assets/touraments/susex.jpg": { size_bytes: 82680, modified_utc: "2025-12-24T23:09:03.573268+00:00" },
+
     "assets/video/hero-mobile.mp4": { size_bytes: 5052765, modified_utc: "2025-12-14T00:54:25.179183+00:00" },
 
     // Site/content + runtime
     "content.md": { size_bytes: 32099, modified_utc: "2025-12-23T22:58:47.788071+00:00" },
-    "css/styles.css": { size_bytes: 79610, modified_utc: "2025-12-23T22:33:16.585159+00:00" },
+    "css/styles.css": { size_bytes: 170280, modified_utc: "2025-12-24T22:48:08.987218+00:00" },
     "events/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:16.612568+00:00" },
-    "index.html": { size_bytes: 24124, modified_utc: "2025-12-21T00:53:31.020865+00:00" },
+    "index.html": { size_bytes: 24448, modified_utc: "2025-12-24T00:12:10.900851+00:00" },
+    "js/cookies.js": { size_bytes: 535, modified_utc: "2025-12-24T00:11:52.890473+00:00" },
     "js/nav.js": { size_bytes: 8805, modified_utc: "2025-12-23T18:55:26.704603+00:00" },
     "js/poty.js": { size_bytes: 2878, modified_utc: "2025-12-23T22:31:58.362075+00:00" },
     "js/scroll.js": { size_bytes: 10332, modified_utc: "2025-12-19T22:47:17.647767+00:00" },
-    "kit/index.html": { size_bytes: 31781, modified_utc: "2025-12-23T22:37:16.573681+00:00" },
-    "membership/index.html": { size_bytes: 23062, modified_utc: "2025-12-23T18:55:22.157063+00:00" },
+    "kit/index.html": { size_bytes: 32214, modified_utc: "2025-12-24T00:26:02.610429+00:00" },
+    "membership/index.html": { size_bytes: 24114, modified_utc: "2025-12-24T00:27:54.768423+00:00" },
     "privacy/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:16.612684+00:00" },
     "reference-notes.md": { size_bytes: 6543, modified_utc: "2025-12-19T20:42:48.424429+00:00" },
     "site-brief.md": { size_bytes: 8660, modified_utc: "2025-12-19T20:39:27.067166+00:00" },

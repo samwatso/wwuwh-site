@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="West Wickham Underwater Hockey Club travels to tournaments across the UK and Europe. Discover our regular stops and tournament moments.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Tournaments – West Wickham UWH">
+    <meta property="og:description" content="Tournaments across the UK and Europe – where fitness meets finesse.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/assets/touraments/europe.jpg">
+
+    <title>Tournaments – West Wickham Underwater Hockey Club</title>
+
+    <!-- Fonts preload -->
+    <link rel="preload" href="/assets/fonts/Azonix.otf" as="font" type="font/otf" crossorigin>
+    <link rel="preload" href="/assets/fonts/Nexa Light.otf" as="font" type="font/otf" crossorigin>
+
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body class="page-tournaments">
+    <!-- Skip link -->
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Header / Nav -->
+    <header class="site-header">
+        <nav class="nav-container glass-nav" aria-label="Main navigation">
+            <div class="nav-left">
+                <a href="/index.html" class="nav-logo">
+                    <img src="/assets/logo-simple.png" alt="WWUWH Logo" class="logo-img">
+                </a>
+
+                <div class="nav-wordmark" aria-label="West Wickham">
+                    <span class="nav-wordmark__west">West</span>
+                    <span class="nav-wordmark__wickham">Wickham</span>
+                    <span class="nav-wordmark__uwh">UWH</span>
+                </div>
+            </div>
+
+            <!-- Desktop Nav -->
+            <ul class="nav-links" role="menubar">
+                <li role="none"><a href="/" role="menuitem" class="nav-link">Home</a></li>
+                <li role="none" class="nav-item-dropdown">
+                    <button class="nav-link nav-dropdown-trigger" aria-expanded="false" aria-haspopup="true"
+                        aria-controls="about-dropdown">
+                        About
+                        <span class="dropdown-chevron" aria-hidden="true"></span>
+                    </button>
+                    <ul id="about-dropdown" class="nav-dropdown" role="menu" aria-label="About submenu">
+                        <li role="none"><a href="/about/our-story/" role="menuitem" class="nav-dropdown-link">Our
+                                Story</a></li>
+                        <li role="none"><a href="/about/player-of-the-year/" role="menuitem"
+                                class="nav-dropdown-link">Player of the
+                                Year</a></li>
+                        <li role="none"><a href="/about/ladies/" role="menuitem" class="nav-dropdown-link">Ladies
+                                Club</a></li>
+                        <li role="none"><a href="/about/juniors/" role="menuitem" class="nav-dropdown-link">Juniors
+                                Club</a></li>
+                        <li role="none"><a href="/about/tournaments/" role="menuitem"
+                                class="nav-dropdown-link is-active">Tournaments</a></li>
+                        <li role="none"><a href="/about/fundraising/" role="menuitem"
+                                class="nav-dropdown-link">Fundraising</a></li>
+                    </ul>
+                </li>
+                <li role="none"><a href="/kit/" role="menuitem" class="nav-link">Kit Guide</a></li>
+                <li role="none"><a href="/membership/" role="menuitem" class="nav-link">Membership</a></li>
+                <li role="none"><a href="/events/" role="menuitem" class="nav-link">Events</a></li>
+                <li role="none"><a href="https://wwsocials.s3.eu-west-2.amazonaws.com/index.html" role="menuitem"
+                        class="nav-link">Connect</a></li>
+            </ul>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="nav-mobile-toggle" aria-expanded="false" aria-controls="mobile-menu"
+                aria-label="Toggle menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </nav>
+
+        <!-- Mobile Nav (accordion) -->
+        <div id="mobile-menu" class="nav-mobile" aria-hidden="true">
+            <ul class="nav-mobile-links">
+                <li><a href="/index.html" class="nav-mobile-link">Home</a></li>
+                <li class="nav-mobile-accordion">
+                    <button class="nav-mobile-link nav-accordion-trigger" aria-expanded="false"
+                        aria-controls="about-accordion">
+                        About
+                        <span class="accordion-chevron" aria-hidden="true"></span>
+                    </button>
+                    <ul id="about-accordion" class="nav-accordion-panel" aria-hidden="true">
+                        <li><a href="/about/our-story/" class="nav-accordion-link">Our Story</a></li>
+                        <li><a href="/about/player-of-the-year/" class="nav-accordion-link">Player of the Year</a></li>
+                        <li><a href="/about/ladies/" class="nav-accordion-link">Ladies Club</a></li>
+                        <li><a href="/about/juniors/" class="nav-accordion-link">Juniors Club</a></li>
+                        <li><a href="/about/tournaments/" class="nav-accordion-link is-active">Tournaments</a>
+                        </li>
+                        <li><a href="/about/fundraising/" class="nav-accordion-link">Fundraising</a></li>
+                    </ul>
+                </li>
+                <li><a href="/kit/" class="nav-mobile-link">Kit Guide</a></li>
+                <li><a href="/membership/" class="nav-mobile-link">Membership</a></li>
+                <li><a href="/events/" class="nav-mobile-link">Events</a></li>
+                <li><a href="https://wwsocials.s3.eu-west-2.amazonaws.com/index.html"
+                        class="nav-mobile-link">Connect</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main id="main">
+
+        <!-- ========================================
+         PAGE HEADER / HERO
+         ======================================== -->
+        <section class="page-header tournaments-header">
+            <div class="container">
+                <span class="chip-badge tournaments-kicker">Play abroad. Come back sharper.</span>
+                <h1 class="page-title">Tournaments</h1>
+                <p class="page-intro">
+                    West Wickham takes pride in organising and travelling to tournaments across the UK and Europe.
+                    These weekends are where fitness meets finesse – new pools, new styles, new teammates – and where
+                    the strongest friendships are often made between games.
+                </p>
+                <p class="tournaments-micro">Different pools. Same puck. Same team.</p>
+            </div>
+        </section>
+
+        <!-- ========================================
+         WHY TOURNAMENTS MATTER
+         ======================================== -->
+        <section class="section section-why">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">Why Tournaments Matter</h2>
+                </header>
+                <div class="why-content">
+                    <p class="why-intro">
+                        Tournaments give players the fastest route to growth: higher tempo games, different tactics,
+                        and the pressure that turns training into instinct. Just as importantly, they're a chance to
+                        experience the international underwater hockey community – welcoming, diverse, and brilliantly
+                        competitive.
+                    </p>
+                    <ul class="why-list">
+                        <li>Sharpen skills against unfamiliar playing styles</li>
+                        <li>Build team chemistry through intense match blocks</li>
+                        <li>Represent the club – and bring the energy home</li>
+                        <li>Discover new cities, new clubs, new friends</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+         REGULAR STOPS ON THE CIRCUIT
+         ======================================== -->
+        <section class="section section-circuit">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">Regular Stops on the Circuit</h2>
+                    <p class="section-intro">A selection of UK + European tournaments our members often attend.</p>
+                </header>
+
+                <div class="country-grid">
+                    <!-- UK -->
+                    <div class="country-card">
+                        <h3 class="country-card-title">
+                            <span class="country-flag" aria-hidden="true">🇬🇧</span>
+                            UK
+                        </h3>
+                        <ul class="country-card-list">
+                            <li>Orkney</li>
+                            <li>Leeds</li>
+                            <li>Guildford – Barbipush</li>
+                            <li>Sheffield</li>
+                            <li>Sussex</li>
+                        </ul>
+                    </div>
+
+                    <!-- Germany -->
+                    <div class="country-card">
+                        <h3 class="country-card-title">
+                            <span class="country-flag" aria-hidden="true">🇩🇪</span>
+                            Germany
+                        </h3>
+                        <ul class="country-card-list">
+                            <li>Berlin</li>
+                        </ul>
+                    </div>
+
+                    <!-- Netherlands -->
+                    <div class="country-card">
+                        <h3 class="country-card-title">
+                            <span class="country-flag" aria-hidden="true">🇳🇱</span>
+                            Netherlands
+                        </h3>
+                        <ul class="country-card-list">
+                            <li>Mosseltoernooi</li>
+                            <li>Breda</li>
+                        </ul>
+                    </div>
+
+                    <!-- Belgium -->
+                    <div class="country-card">
+                        <h3 class="country-card-title">
+                            <span class="country-flag" aria-hidden="true">🇧🇪</span>
+                            Belgium
+                        </h3>
+                        <ul class="country-card-list">
+                            <li>Brussels – Ho Ho Hockey</li>
+                        </ul>
+                    </div>
+
+                    <!-- Czechia -->
+                    <div class="country-card">
+                        <h3 class="country-card-title">
+                            <span class="country-flag" aria-hidden="true">🇨🇿</span>
+                            Czechia
+                        </h3>
+                        <ul class="country-card-list">
+                            <li>Prague</li>
+                            <li>České Budějovice – BUD PIG CUP</li>
+                        </ul>
+                    </div>
+
+                    <!-- France -->
+                    <div class="country-card">
+                        <h3 class="country-card-title">
+                            <span class="country-flag" aria-hidden="true">🇫🇷</span>
+                            France
+                        </h3>
+                        <ul class="country-card-list">
+                            <li>Paris – Moresports</li>
+                            <li>Nantes</li>
+                        </ul>
+                    </div>
+
+                    <!-- Hungary -->
+                    <div class="country-card">
+                        <h3 class="country-card-title">
+                            <span class="country-flag" aria-hidden="true">🇭🇺</span>
+                            Hungary
+                        </h3>
+                        <ul class="country-card-list">
+                            <li>Budapest</li>
+                        </ul>
+                    </div>
+
+                    <!-- Slovenia -->
+                    <div class="country-card">
+                        <h3 class="country-card-title">
+                            <span class="country-flag" aria-hidden="true">🇸🇮</span>
+                            Slovenia
+                        </h3>
+                        <ul class="country-card-list">
+                            <li>Kranj</li>
+                        </ul>
+                    </div>
+
+                    <!-- Switzerland -->
+                    <div class="country-card">
+                        <h3 class="country-card-title">
+                            <span class="country-flag" aria-hidden="true">🇨🇭</span>
+                            Switzerland
+                        </h3>
+                        <ul class="country-card-list">
+                            <li>Leman</li>
+                        </ul>
+                    </div>
+
+                    <!-- Spain -->
+                    <div class="country-card">
+                        <h3 class="country-card-title">
+                            <span class="country-flag" aria-hidden="true">🇪🇸</span>
+                            Spain
+                        </h3>
+                        <ul class="country-card-list">
+                            <li>Barcelona</li>
+                        </ul>
+                    </div>
+
+                    <!-- Italy -->
+                    <div class="country-card">
+                        <h3 class="country-card-title">
+                            <span class="country-flag" aria-hidden="true">🇮🇹</span>
+                            Italy
+                        </h3>
+                        <ul class="country-card-list">
+                            <li>Parma</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ========================================
+     PINBOARD MAP (Desktop) / GALLERY (Mobile)
+     Uses: /assets/maps/europe-silhouette.svg
+     ======================================== -->
+        <section class="section section-map">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">Tournament Moments</h2>
+                    <p class="section-intro">From pool decks to podiums – a few snapshots from the road.</p>
+                </header>
+
+                <!-- Desktop: Interactive Map Panel -->
+                <div class="map-panel" aria-label="Interactive map of tournament locations">
+                    <div class="map-stage" role="img" aria-label="Map of Europe showing tournament locations">
+                        <img class="map-img" src="/assets/maps/europe-silhouette.svg"
+                            alt="Europe and UK map with country borders" loading="lazy" />
+
+                        <!-- UK -->
+                        <button type="button" class="map-pin map-pin--uk" aria-label="UK tournaments: Sussex, Guildford"
+                            data-location="uk"
+                            data-images="/assets/touraments/susex.jpg,/assets/touraments/Barbipush-Guilford-2017.jpg,/assets/touraments/barbipush.jpg"
+                            data-caption="UK Tournaments – Sussex &amp; Guildford Barbipush">
+                            <span class="map-pin-dot"></span>
+                            <span class="map-pin-label">UK</span>
+                        </button>
+
+                        <!-- Berlin -->
+                        <button type="button" class="map-pin map-pin--berlin" aria-label="Berlin tournament photos"
+                            data-location="berlin" data-images="/assets/touraments/berlin.jpg"
+                            data-caption="Berlin, Germany">
+                            <span class="map-pin-dot"></span>
+                            <span class="map-pin-label">Berlin</span>
+                        </button>
+
+                        <!-- NL/BE -->
+                        <button type="button" class="map-pin map-pin--benelux"
+                            aria-label="Netherlands and Belgium tournaments" data-location="benelux"
+                            data-images="/assets/touraments/mosseltourni.jpg,/assets/touraments/hohohockey.jpg,/assets/touraments/hohohockey1.jpg"
+                            data-caption="Mosseltoernooi (NL) &amp; Ho Ho Hockey (BE)">
+                            <span class="map-pin-dot"></span>
+                            <span class="map-pin-label">NL/BE</span>
+                        </button>
+
+                        <!-- Breda -->
+                        <button type="button" class="map-pin map-pin--breda" aria-label="Breda tournament"
+                            data-location="breda" data-images="/assets/touraments/brada.jpg"
+                            data-caption="Breda, Netherlands">
+                            <span class="map-pin-dot"></span>
+                            <span class="map-pin-label">Breda</span>
+                        </button>
+
+                        <!-- Prague -->
+                        <button type="button" class="map-pin map-pin--prague" aria-label="Prague tournament photos"
+                            data-location="prague"
+                            data-images="/assets/touraments/prague.jpg,/assets/touraments/Wickham-Prague-2021.jpg"
+                            data-caption="Prague, Czechia – 2021">
+                            <span class="map-pin-dot"></span>
+                            <span class="map-pin-label">Prague</span>
+                        </button>
+
+                        <!-- Budapest -->
+                        <button type="button" class="map-pin map-pin--budapest" aria-label="Budapest tournament photos"
+                            data-location="budapest" data-images="/assets/touraments/Budapest 2018.jpg"
+                            data-caption="Budapest, Hungary – 2018">
+                            <span class="map-pin-dot"></span>
+                            <span class="map-pin-label">Budapest</span>
+                        </button>
+
+                        <!-- Kranj -->
+                        <button type="button" class="map-pin map-pin--kranj" aria-label="Kranj tournament photos"
+                            data-location="kranj"
+                            data-images="/assets/touraments/West-Wickham-finishing-3rd-Kranj-UWH-Tournament 2020.jpg"
+                            data-caption="Kranj, Slovenia – 3rd Place, 2020">
+                            <span class="map-pin-dot"></span>
+                            <span class="map-pin-label">Kranj</span>
+                        </button>
+
+                        <!-- Parma -->
+                        <button type="button" class="map-pin map-pin--parma" aria-label="Parma tournament photos"
+                            data-location="parma" data-images="/assets/touraments/Parma-2022.jpg"
+                            data-caption="Parma, Italy – 2022">
+                            <span class="map-pin-dot"></span>
+                            <span class="map-pin-label">Parma</span>
+                        </button>
+
+                        <!-- Spain -->
+                        <button type="button" class="map-pin map-pin--spain" aria-label="Spain tournament photos"
+                            data-location="spain"
+                            data-images="/assets/touraments/palma.jpg,/assets/touraments/palma1.jpg"
+                            data-caption="Spain">
+                            <span class="map-pin-dot"></span>
+                            <span class="map-pin-label">Spain</span>
+                        </button>
+                    </div>
+                </div>
+
+
+                <!-- Mobile: Masonry Gallery -->
+                <div class="gallery-mobile" aria-label="Tournament photo gallery">
+                    <figure class="gallery-item">
+                        <img src="/assets/touraments/europe.jpg" alt="West Wickham team at European tournament"
+                            loading="lazy">
+                        <figcaption class="gallery-caption"><span class="gallery-location">Europe</span></figcaption>
+                    </figure>
+
+                    <figure class="gallery-item">
+                        <img src="/assets/touraments/berlin.jpg" alt="Berlin tournament" loading="lazy">
+                        <figcaption class="gallery-caption"><span class="gallery-location">Berlin</span></figcaption>
+                    </figure>
+
+                    <figure class="gallery-item">
+                        <img src="/assets/touraments/mosseltourni.jpg" alt="Mosseltoernooi tournament Netherlands"
+                            loading="lazy">
+                        <figcaption class="gallery-caption"><span class="gallery-location">Netherlands</span>
+                        </figcaption>
+                    </figure>
+
+                    <figure class="gallery-item">
+                        <img src="/assets/touraments/hohohockey.jpg" alt="Ho Ho Hockey tournament Brussels"
+                            loading="lazy">
+                        <figcaption class="gallery-caption"><span class="gallery-location">Brussels</span></figcaption>
+                    </figure>
+
+                    <figure class="gallery-item">
+                        <img src="/assets/touraments/prague.jpg" alt="Prague tournament" loading="lazy">
+                        <figcaption class="gallery-caption"><span class="gallery-location">Prague</span></figcaption>
+                    </figure>
+
+                    <figure class="gallery-item">
+                        <img src="/assets/touraments/Wickham-Prague-2021.jpg" alt="West Wickham team at Prague 2021"
+                            loading="lazy">
+                        <figcaption class="gallery-caption"><span class="gallery-location">Prague 2021</span>
+                        </figcaption>
+                    </figure>
+
+                    <figure class="gallery-item">
+                        <img src="/assets/touraments/Budapest 2018.jpg" alt="Budapest tournament 2018" loading="lazy">
+                        <figcaption class="gallery-caption"><span class="gallery-location">Budapest 2018</span>
+                        </figcaption>
+                    </figure>
+
+                    <figure class="gallery-item">
+                        <img src="/assets/touraments/West-Wickham-finishing-3rd-Kranj-UWH-Tournament 2020.jpg"
+                            alt="West Wickham 3rd place Kranj 2020" loading="lazy">
+                        <figcaption class="gallery-caption"><span class="gallery-location">Kranj 2020 – 3rd</span>
+                        </figcaption>
+                    </figure>
+
+                    <figure class="gallery-item">
+                        <img src="/assets/touraments/Parma-2022.jpg" alt="Parma tournament 2022" loading="lazy">
+                        <figcaption class="gallery-caption"><span class="gallery-location">Parma 2022</span>
+                        </figcaption>
+                    </figure>
+
+                    <figure class="gallery-item">
+                        <img src="/assets/touraments/susex.jpg" alt="Sussex tournament" loading="lazy">
+                        <figcaption class="gallery-caption"><span class="gallery-location">Sussex</span></figcaption>
+                    </figure>
+
+                    <figure class="gallery-item">
+                        <img src="/assets/touraments/Barbipush-Guilford-2017.jpg" alt="Barbipush Guildford 2017"
+                            loading="lazy">
+                        <figcaption class="gallery-caption"><span class="gallery-location">Guildford 2017</span>
+                        </figcaption>
+                    </figure>
+
+                    <figure class="gallery-item">
+                        <img src="/assets/touraments/palma.jpg" alt="Palma tournament Spain" loading="lazy">
+                        <figcaption class="gallery-caption"><span class="gallery-location">Spain</span></figcaption>
+                    </figure>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ========================================
+         MORE EVENTS WORLDWIDE
+         ======================================== -->
+        <section class="section section-events-worldwide">
+            <div class="container">
+                <header class="section-header">
+                    <h2 class="section-title">More Events Worldwide</h2>
+                    <p class="section-intro">
+                        Planning your next trip? These calendars are great starting points – and they're updated more
+                        frequently than any static list.
+                    </p>
+                </header>
+
+                <div class="events-links-wrapper">
+                    <a href="https://www.uwhmap.com/events" target="_blank" rel="noopener noreferrer"
+                        class="btn-primary btn-large events-primary-link">
+                        <span class="events-link-icon" aria-hidden="true">🗺️</span>
+                        UWH Map – Events
+                        <span class="external-icon" aria-hidden="true"></span>
+                    </a>
+
+                    <ul class="events-list">
+                        <li>
+                            <a href="https://www.cmas.org/underwater-hockey-events.html" target="_blank"
+                                rel="noopener noreferrer" class="events-link">
+                                CMAS Underwater Hockey Events
+                                <span class="external-icon" aria-hidden="true"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://uwhportal.com/events" target="_blank" rel="noopener noreferrer"
+                                class="events-link">
+                                UWH Portal Events
+                                <span class="external-icon" aria-hidden="true"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.gbuwh.co.uk/events" target="_blank" rel="noopener noreferrer"
+                                class="events-link">
+                                GBUWH Events (UK)
+                                <span class="external-icon" aria-hidden="true"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://underwaterhockeyaustralia.org.au/events/" target="_blank"
+                                rel="noopener noreferrer" class="events-link">
+                                UWH Australia Events
+                                <span class="external-icon" aria-hidden="true"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.underwaterhockeynz.com/EVENTS-1/CALENDAR" target="_blank"
+                                rel="noopener noreferrer" class="events-link">
+                                UWH New Zealand Events
+                                <span class="external-icon" aria-hidden="true"></span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://www.underwater-society.org/uwh" target="_blank" rel="noopener noreferrer"
+                                class="events-link">
+                                UWH Society of America
+                                <span class="external-icon" aria-hidden="true"></span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Transition Wave -->
+        <div class="transition-wave transition-wave--navy" aria-hidden="true"></div>
+
+        <!-- ========================================
+         CLOSING CTA
+         ======================================== -->
+        <section id="cta" class="section section-cta">
+            <div class="container">
+                <h2 class="cta-title">Want to join a tournament trip?</h2>
+                <p class="cta-line">Start with a session, then tell us what you're aiming for – social tournaments,
+                    competitive squads, or your first trip abroad. We'll point you to the right team and the right kit.
+                </p>
+                <div class="cta-buttons">
+                    <a href="#" class="btn-primary btn-large">Enrol with Spond</a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================
+       FOOTER
+       ======================================== -->
+    <footer class="site-footer">
+        <div class="container footer-container">
+
+            <div class="footer-brand">
+                <img src="/assets/logo-white.png" alt="WWUWH Logo" class="footer-logo">
+            </div>
+
+            <nav class="footer-nav" aria-label="Footer navigation">
+                <ul class="footer-nav-list">
+                    <li><a href="/index.html" class="footer-nav-link">Home</a></li>
+                    <li><a href="/about/" class="footer-nav-link">About</a></li>
+                    <li><a href="/kit/" class="footer-nav-link">Kit Guide</a></li>
+                    <li><a href="/membership/" class="footer-nav-link">Membership</a></li>
+                    <li><a href="/events/" class="footer-nav-link">Events</a></li>
+                    <li><a href="https://wwsocials.s3.eu-west-2.amazonaws.com/index.html"
+                            class="footer-nav-link">Connect</a></li>
+                </ul>
+            </nav>
+
+            <div class="footer-socials">
+                <a href="https://www.facebook.com/westwickhamuwh/" class="social-btn" aria-label="Facebook"
+                    target="_blank" rel="noopener noreferrer">
+                    <span class="social-icon social-icon--facebook" aria-hidden="true"></span>
+                </a>
+
+                <a href="https://www.youtube.com/@westwickhamuwh1293" class="social-btn" aria-label="YouTube"
+                    target="_blank" rel="noopener noreferrer">
+                    <span class="social-icon social-icon--youtube" aria-hidden="true"></span>
+                </a>
+
+                <a href="https://www.instagram.com/wwuwh/" class="social-btn" aria-label="Instagram" target="_blank"
+                    rel="noopener noreferrer">
+                    <span class="social-icon social-icon--instagram" aria-hidden="true"></span>
+                </a>
+
+                <a href="https://www.x.com/westwickhamuwh" class="social-btn" aria-label="Twitter" target="_blank"
+                    rel="noopener noreferrer">
+                    <span class="social-icon social-icon--twitter" aria-hidden="true"></span>
+                </a>
+
+                <a href="https://www.tiktok.com/@westwickhamuwh" class="social-btn" aria-label="TikTok" target="_blank"
+                    rel="noopener noreferrer">
+                    <span class="social-icon social-icon--tiktok" aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div class="footer-legal">
+                <p class="footer-copyright">&copy; 2025 West Wickham Underwater Hockey Club</p>
+                <p class="footer-note">Affiliated with the British Octopush Association</p>
+                <a href="/privacy/" class="footer-legal-link">Privacy Policy</a>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- ========================================
+       LIGHTBOX MODAL (for map pins)
+       ======================================== -->
+    <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-labelledby="lightbox-caption"
+        aria-hidden="true">
+        <div class="lightbox-backdrop"></div>
+        <div class="lightbox-content">
+            <button class="lightbox-close" aria-label="Close lightbox">
+                <span aria-hidden="true">×</span>
+            </button>
+            <div class="lightbox-images">
+                <!-- Images injected by JS -->
+            </div>
+            <p id="lightbox-caption" class="lightbox-caption"></p>
+            <div class="lightbox-nav" aria-label="Image navigation">
+                <button class="lightbox-prev" aria-label="Previous image">
+                    <span aria-hidden="true">‹</span>
+                </button>
+                <span class="lightbox-counter"></span>
+                <button class="lightbox-next" aria-label="Next image">
+                    <span aria-hidden="true">›</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cookie Banner -->
+    <div id="cookie-banner" class="cookie-banner" role="dialog" aria-labelledby="cookie-title" aria-hidden="true">
+        <div class="cookie-banner-content">
+            <h3 id="cookie-title" class="cookie-title">This website uses cookies</h3>
+            <p class="cookie-text">We use cookies to analyse website traffic and optimise your website experience. By
+                accepting our use of cookies, your data will be aggregated with all other user data.</p>
+            <div class="cookie-actions">
+                <button class="btn-secondary btn-small" data-cookie-action="decline">Decline</button>
+                <button class="btn-primary btn-small" data-cookie-action="accept">Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/assets.js"></script>
+    <script src="/js/nav.js" defer></script>
+    <script src="/js/tournaments.js" defer></script>
+    <script src="/js/cookies.js" defer></script>
+
+</body>
+
+</html>
