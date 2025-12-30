@@ -11,7 +11,7 @@
   // CONFIG
   // ========================================
   const CONFIG = {
-    apiEndpoint: '/api/calendar.json',
+    apiEndpoint: 'https://wwuwh-calendar.sammartinwatson.workers.dev/api/calendar.json',
     icalUrl: 'https://calendar.google.com/calendar/ical/wwickhamuwh%40gmail.com/public/basic.ics',
     maxChipsPerDay: 3,
     weekdays: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
