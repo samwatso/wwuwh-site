@@ -1019,10 +1019,78 @@ html
 
 ### Page opener
 **Title:** Events  
-**Copy:**  
-From major competitions to friendly matches, events run throughout the year. For the latest listings and registration details, use the British Octopush Association events page.
+**Intro:** Keep up with WWUWH — club sessions, tournaments, socials and key dates. Browse upcoming events below, and subscribe to the calendar so it always stays up to date.
 
-**CTA:** BOA Events
+### Primary CTAs
+- **Subscribe to calendar (iCal / Apple / Outlook):** https://calendar.google.com/calendar/ical/wwickhamuwh%40gmail.com/public/basic.ics
+- **Open Google Calendar:** https://calendar.google.com/calendar/embed?src=wwickhamuwh%40gmail.com&ctz=Europe%2FLondon
+
+### Calendar (custom, site-themed — Option B1)
+**Section title:** Club Calendar  
+**Section intro:** A clean month view that shows **event title + location only**. Tap an event to see the title/location, then subscribe for full details and updates.
+
+**Implementation notes (for build)**
+- Render a **month grid** with weeks starting **Monday**.
+- Calendar UI is **custom HTML/CSS** to match site theme (no Google iframe on-page).
+- Event data is loaded from a **site endpoint** (JSON), generated from the public Google Calendar ICS feed via a Cloudflare Worker.
+
+**Data source**
+- Public ICS feed (source of truth):  
+  https://calendar.google.com/calendar/ical/wwickhamuwh%40gmail.com/public/basic.ics
+
+**Site endpoint (produced by Worker)**
+- Fetch events from: `/api/calendar.json`
+
+**Display rules**
+- Show **only**:
+  - Event title
+  - Event location (if present)
+- Do **not** show description/body text by default.
+- If an event spans multiple days, show it across all relevant dates (or show a start-day chip with a “multi-day” indicator).
+- If multiple events occur on one day, stack up to 3 and then show “+N more”.
+
+**Interaction**
+- Month navigation: previous / next month.
+- Clicking/tapping an event opens a small modal/panel showing:
+  - Title
+  - Location
+  - Date/time (optional — keep minimal)
+  - A button: “Subscribe to calendar” (links to the ICS)
+- Provide an “Add to calendar” hint: subscribing is recommended so changes sync automatically.
+
+
+### Helpful note (small print)
+**Copy:** Subscribing adds events to your own calendar and keeps them updated automatically. If you prefer, you can also open the Google Calendar view in your browser.
+
+### BOA Events (external reference)
+**Section title:** BOA Events  
+**Copy:** For national event listings and official competition details, use the British Octopush Association events page.
+
+**CTA:**  
+- **View BOA events:** https://www.gbuwh.co.uk/events
+
+---
+
+### Find more events worldwide
+**Section title:** More events worldwide  
+**Copy:**  
+If you’re planning your next trip, these calendars are great starting points — and they’re updated more frequently than any static list.
+
+**Primary reference:**  
+- UWH Map — Events: https://www.uwhmap.com/events
+
+**More event links:**  
+- CMAS Underwater Hockey Events: https://www.cmas.org/underwater-hockey-events.html  
+- UWH Portal Events: https://uwhportal.com/events  
+- GBUWH Events (UK): https://www.gbuwh.co.uk/events  
+- UWH Australia Events: https://underwaterhockeyaustralia.org.au/events/  
+- UWH New Zealand Events: https://www.underwaterhockeynz.com/EVENTS-1/CALENDAR  
+- UWH Society of America: https://www.underwater-society.org/uwh  
+
+---
+
+## Footer
+Use the same footer section as the Home page (including the CTA + transition wave + footer-note).
 
 ---
 

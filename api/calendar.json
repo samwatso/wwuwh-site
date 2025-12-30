@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Connect with West Wickham Underwater Hockey Club – all our official social media links in one place.">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="Connect with WWUWH">
+    <meta property="og:description" content="All our official links in one place.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="/assets/hero1.jpg">
+
+    <title>Connect – West Wickham Underwater Hockey Club</title>
+
+    <!-- Fonts preload -->
+    <link rel="preload" href="/assets/fonts/Azonix.otf" as="font" type="font/otf" crossorigin>
+    <link rel="preload" href="/assets/fonts/Nexa Light.otf" as="font" type="font/otf" crossorigin>
+
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+
+<body class="page-connect">
+    <!-- Skip link -->
+    <a href="#main" class="skip-link">Skip to main content</a>
+
+    <!-- Header / Nav -->
+    <header class="site-header">
+        <nav class="nav-container glass-nav" aria-label="Main navigation">
+            <div class="nav-left">
+                <a href="/index.html" class="nav-logo">
+                    <img src="/assets/logo-simple.png" alt="WWUWH Logo" class="logo-img">
+                </a>
+
+                <div class="nav-wordmark" aria-label="West Wickham">
+                    <span class="nav-wordmark__west">West</span>
+                    <span class="nav-wordmark__wickham">Wickham</span>
+                    <span class="nav-wordmark__uwh">UWH</span>
+                </div>
+            </div>
+
+            <!-- Desktop Nav -->
+            <ul class="nav-links" role="menubar">
+                <li role="none"><a href="/" role="menuitem" class="nav-link">Home</a></li>
+                <li role="none" class="nav-item-dropdown">
+                    <button class="nav-link nav-dropdown-trigger" aria-expanded="false" aria-haspopup="true"
+                        aria-controls="about-dropdown">
+                        About
+                        <span class="dropdown-chevron" aria-hidden="true"></span>
+                    </button>
+                    <ul id="about-dropdown" class="nav-dropdown" role="menu" aria-label="About submenu">
+                        <li role="none"><a href="/about/our-story/" role="menuitem" class="nav-dropdown-link">Our
+                                Story</a></li>
+                        <li role="none"><a href="/about/player-of-the-year/" role="menuitem"
+                                class="nav-dropdown-link">Player of the
+                                Year</a></li>
+                        <li role="none"><a href="/about/ladies/" role="menuitem" class="nav-dropdown-link">Ladies
+                                Club</a></li>
+                        <li role="none"><a href="/about/juniors/" role="menuitem" class="nav-dropdown-link">Juniors
+                                Club</a></li>
+                        <li role="none"><a href="/about/tournaments/" role="menuitem"
+                                class="nav-dropdown-link is-active">Tournaments</a></li>
+                        <li role="none"><a href="/about/fundraising/" role="menuitem"
+                                class="nav-dropdown-link">Fundraising</a></li>
+                    </ul>
+                </li>
+                <li role="none"><a href="/kit/" role="menuitem" class="nav-link">Kit Guide</a></li>
+                <li role="none"><a href="/membership/" role="menuitem" class="nav-link">Membership</a></li>
+                <li role="none"><a href="/events/" role="menuitem" class="nav-link">Events</a></li>
+                <li role="none"><a href="/connect/" role="menuitem"
+                        class="nav-link">Connect</a></li>
+            </ul>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="nav-mobile-toggle" aria-expanded="false" aria-controls="mobile-menu"
+                aria-label="Toggle menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </nav>
+
+        <!-- Mobile Nav (accordion) -->
+        <div id="mobile-menu" class="nav-mobile" aria-hidden="true">
+            <ul class="nav-mobile-links">
+                <li><a href="/index.html" class="nav-mobile-link">Home</a></li>
+                <li class="nav-mobile-accordion">
+                    <button class="nav-mobile-link nav-accordion-trigger" aria-expanded="false"
+                        aria-controls="about-accordion">
+                        About
+                        <span class="accordion-chevron" aria-hidden="true"></span>
+                    </button>
+                    <ul id="about-accordion" class="nav-accordion-panel" aria-hidden="true">
+                        <li><a href="/about/our-story/" class="nav-accordion-link">Our Story</a></li>
+                        <li><a href="/about/player-of-the-year/" class="nav-accordion-link">Player of the Year</a></li>
+                        <li><a href="/about/ladies/" class="nav-accordion-link">Ladies Club</a></li>
+                        <li><a href="/about/juniors/" class="nav-accordion-link">Juniors Club</a></li>
+                        <li><a href="/about/tournaments/" class="nav-accordion-link is-active">Tournaments</a>
+                        </li>
+                        <li><a href="/about/fundraising/" class="nav-accordion-link">Fundraising</a></li>
+                    </ul>
+                </li>
+                <li><a href="/kit/" class="nav-mobile-link">Kit Guide</a></li>
+                <li><a href="/membership/" class="nav-mobile-link">Membership</a></li>
+                <li><a href="/events/" class="nav-mobile-link">Events</a></li>
+                <li><a href="/connect/"
+                        class="nav-mobile-link">Connect</a></li>
+            </ul>
+        </div>
+    </header>
+
+    <main id="main">
+
+        <!-- Page Header -->
+        <section class="connect-hero">
+            <div class="container">
+                <h1 class="connect-hero-title">Connect with us</h1>
+                <p class="connect-hero-intro">All our official links in one place.</p>
+            </div>
+        </section>
+
+        <!-- Links Panel -->
+        <section class="connect-links">
+            <div class="container">
+                <div class="connect-panel">
+
+                    <!-- WhatsApp (Primary) -->
+                    <a href="https://wa.me/+447837554270" class="connect-link connect-link--primary" target="_blank"
+                        rel="noopener noreferrer" aria-label="Message us on WhatsApp">
+                        <span class="connect-link-icon connect-link-icon--whatsapp" aria-hidden="true"></span>
+                        <span class="connect-link-text">
+                            <span class="connect-link-name">WhatsApp</span>
+                            <span class="connect-link-desc">Message us</span>
+                        </span>
+                        <span class="connect-link-arrow" aria-hidden="true"></span>
+                    </a>
+
+                    <!-- Divider -->
+                    <div class="connect-divider">
+                        <span class="connect-divider-text">Follow & watch</span>
+                    </div>
+
+                    <!-- Instagram -->
+                    <a href="http://www.instagram.com/wwuwh" class="connect-link" target="_blank"
+                        rel="noopener noreferrer" aria-label="Follow us on Instagram">
+                        <span class="connect-link-icon connect-link-icon--instagram" aria-hidden="true"></span>
+                        <span class="connect-link-text">
+                            <span class="connect-link-name">Instagram</span>
+                            <span class="connect-link-desc">Updates & clips</span>
+                        </span>
+                        <span class="connect-link-arrow" aria-hidden="true"></span>
+                    </a>
+
+                    <!-- Facebook -->
+                    <a href="https://www.facebook.com/westwickhamuwh" class="connect-link" target="_blank"
+                        rel="noopener noreferrer" aria-label="Follow us on Facebook">
+                        <span class="connect-link-icon connect-link-icon--facebook" aria-hidden="true"></span>
+                        <span class="connect-link-text">
+                            <span class="connect-link-name">Facebook</span>
+                            <span class="connect-link-desc">News & events</span>
+                        </span>
+                        <span class="connect-link-arrow" aria-hidden="true"></span>
+                    </a>
+
+                    <!-- YouTube -->
+                    <a href="https://www.youtube.com/channel/UCdokEqYEbzyqtcgUGdhz6xw/featured" class="connect-link"
+                        target="_blank" rel="noopener noreferrer" aria-label="Subscribe on YouTube">
+                        <span class="connect-link-icon connect-link-icon--youtube" aria-hidden="true"></span>
+                        <span class="connect-link-text">
+                            <span class="connect-link-name">YouTube</span>
+                            <span class="connect-link-desc">Match footage</span>
+                        </span>
+                        <span class="connect-link-arrow" aria-hidden="true"></span>
+                    </a>
+
+                    <!-- TikTok -->
+                    <a href="https://www.tiktok.com/@westwickhamuwh" class="connect-link" target="_blank"
+                        rel="noopener noreferrer" aria-label="Follow us on TikTok">
+                        <span class="connect-link-icon connect-link-icon--tiktok" aria-hidden="true"></span>
+                        <span class="connect-link-text">
+                            <span class="connect-link-name">TikTok</span>
+                            <span class="connect-link-desc">Short clips</span>
+                        </span>
+                        <span class="connect-link-arrow" aria-hidden="true"></span>
+                    </a>
+
+                    <!-- X (Twitter) -->
+                    <a href="https://x.com/WestWickhamUWH" class="connect-link" target="_blank"
+                        rel="noopener noreferrer" aria-label="Follow us on X (formerly Twitter)">
+                        <span class="connect-link-icon connect-link-icon--twitter" aria-hidden="true"></span>
+                        <span class="connect-link-text">
+                            <span class="connect-link-name">X</span>
+                            <span class="connect-link-desc">Quick updates</span>
+                        </span>
+                        <span class="connect-link-arrow" aria-hidden="true"></span>
+                    </a>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Transition Wave -->
+        <div class="transition-wave transition-wave--navy" aria-hidden="true"></div>
+
+        <!-- Footer CTA -->
+        <section id="cta" class="section section-cta">
+            <div class="container">
+                <h2 class="cta-title">Ready to get involved?</h2>
+                <p class="cta-line">Start with a session. We'll help you with the rest.</p>
+                <a href="#" class="btn-primary btn-large">Enrol with Spond</a>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="container footer-container">
+
+            <div class="footer-brand">
+                <img src="/assets/logo-white.png" alt="WWUWH Logo" class="footer-logo">
+            </div>
+
+            <nav class="footer-nav" aria-label="Footer navigation">
+                <ul class="footer-nav-list">
+                    <li><a href="/index.html" class="footer-nav-link">Home</a></li>
+                    <li><a href="/about/" class="footer-nav-link">About</a></li>
+                    <li><a href="/kit/" class="footer-nav-link">Kit Guide</a></li>
+                    <li><a href="/membership/" class="footer-nav-link">Membership</a></li>
+                    <li><a href="/events/" class="footer-nav-link">Events</a></li>
+                    <li><a href="/connect/" class="footer-nav-link">Connect</a></li>
+                </ul>
+            </nav>
+
+            <div class="footer-socials">
+                <a href="https://www.facebook.com/westwickhamuwh/" class="social-btn" aria-label="Facebook"
+                    target="_blank" rel="noopener noreferrer">
+                    <span class="social-icon social-icon--facebook" aria-hidden="true"></span>
+                </a>
+
+                <a href="https://www.youtube.com/@westwickhamuwh1293" class="social-btn" aria-label="YouTube"
+                    target="_blank" rel="noopener noreferrer">
+                    <span class="social-icon social-icon--youtube" aria-hidden="true"></span>
+                </a>
+
+                <a href="https://www.instagram.com/wwuwh/" class="social-btn" aria-label="Instagram" target="_blank"
+                    rel="noopener noreferrer">
+                    <span class="social-icon social-icon--instagram" aria-hidden="true"></span>
+                </a>
+
+                <a href="https://www.x.com/westwickhamuwh" class="social-btn" aria-label="Twitter" target="_blank"
+                    rel="noopener noreferrer">
+                    <span class="social-icon social-icon--twitter" aria-hidden="true"></span>
+                </a>
+
+                <a href="https://www.tiktok.com/@westwickhamuwh" class="social-btn" aria-label="TikTok" target="_blank"
+                    rel="noopener noreferrer">
+                    <span class="social-icon social-icon--tiktok" aria-hidden="true"></span>
+                </a>
+            </div>
+
+            <div class="footer-legal">
+                <p class="footer-copyright">&copy; 2025 West Wickham Underwater Hockey Club</p>
+                <p class="footer-note">Affiliated with the British Octopush Association</p>
+                <a href="/privacy/" class="footer-legal-link">Privacy Policy</a>
+            </div>
+
+        </div>
+    </footer>
+
+    <!-- Cookie Banner -->
+    <div id="cookie-banner" class="cookie-banner" role="dialog" aria-labelledby="cookie-title" aria-hidden="true">
+        <div class="cookie-banner-content">
+            <h3 id="cookie-title" class="cookie-title">This website uses cookies</h3>
+            <p class="cookie-text">We use cookies to analyse website traffic and optimise your website experience. By
+                accepting our use of cookies, your data will be aggregated with all other user data.</p>
+            <div class="cookie-actions">
+                <button class="btn-secondary btn-small" data-cookie-action="decline">Decline</button>
+                <button class="btn-primary btn-small" data-cookie-action="accept">Accept</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/nav.js" defer></script>
+    <script src="/js/cookies.js" defer></script>
+</body>
+
+</html>

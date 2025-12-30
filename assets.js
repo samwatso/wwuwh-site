@@ -1,13 +1,12 @@
-```js
 // assets.js — generated from assets-manifest.csv
 // Single source of truth for asset paths used in HTML/JS.
 // Loaded before other scripts so window.ASSETS is available everywhere.
 
 window.ASSETS = {
-  version: 8,
+  version: 9,
   generatedFrom: "assets-manifest.csv",
   // Optional: update this when you regenerate the manifest
-  generatedAtUtc: "2025-12-30T00:46:51.152464+00:00",
+  generatedAtUtc: "2025-12-30T03:43:24.334661+00:00",
 
   paths: {
     // Core media
@@ -30,13 +29,13 @@ window.ASSETS = {
     // Fundraising imagery
     fundraisingImages: {
       hero: "assets/fundraising/fundraising_hero.webp",
-      groupShot1: "assets/fundraising/fundraising1.webp",
-      groupShot2: "assets/fundraising/fundraising2.webp",
-      poolShot1: "assets/fundraising/fundraising3.webp",
-      poolShot2: "assets/fundraising/fundraising4.webp",
-      poolShot3: "assets/fundraising/fundraising5.webp",
-      ceremony1: "assets/fundraising/fundraising6.webp",
-      ceremony2: "assets/fundraising/fundraising7.webp"
+      fundraising1: "assets/fundraising/fundraising1.webp",
+      fundraising2: "assets/fundraising/fundraising2.webp",
+      fundraising3: "assets/fundraising/fundraising3.webp",
+      fundraising4: "assets/fundraising/fundraising4.webp",
+      fundraising5: "assets/fundraising/fundraising5.webp",
+      fundraising6: "assets/fundraising/fundraising6.webp",
+      fundraising7: "assets/fundraising/fundraising7.webp"
     },
 
     // Maps / SVG
@@ -147,6 +146,11 @@ window.ASSETS = {
       sussex: "assets/touraments/susex.jpg"
     },
 
+    // Data / API
+    api: {
+      calendar: "api/calendar.json"
+    },
+
     video: {
       heroMobile: "assets/video/hero-mobile.mp4"
     },
@@ -185,6 +189,7 @@ window.ASSETS = {
       kit: "kit/index.html",
       events: "events/index.html",
       privacy: "privacy/index.html",
+      connect: "connect/index.html",
 
       about: {
         fundraising: "about/fundraising/index.html",
@@ -204,15 +209,17 @@ window.ASSETS = {
 
   // Optional metadata block (useful for debugging/cache-busting)
   meta: {
-    "about/fundraising/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:21.408840+00:00" },
+    "about/fundraising/index.html": { size_bytes: 48447, modified_utc: "2025-12-30T03:18:25.092765+00:00" },
     "about/juniors/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:21.408736+00:00" },
-    "about/ladies/index.html": { size_bytes: 20261, modified_utc: "2025-12-25T01:57:31.892593+00:00" },
-    "about/our-story/index.html": { size_bytes: 28267, modified_utc: "2025-12-25T01:54:51.518542+00:00" },
-    "about/player-of-the-year/index.html": { size_bytes: 29562, modified_utc: "2025-12-25T01:54:31.751184+00:00" },
-    "about/tournaments/index.html": { size_bytes: 34318, modified_utc: "2025-12-25T01:52:03.749535+00:00" },
+    "about/ladies/index.html": { size_bytes: 25874, modified_utc: "2025-12-30T03:17:43.455222+00:00" },
+    "about/our-story/index.html": { size_bytes: 28070, modified_utc: "2025-12-30T03:17:24.812154+00:00" },
+    "about/player-of-the-year/index.html": { size_bytes: 29355, modified_utc: "2025-12-30T03:17:12.393562+00:00" },
+    "about/tournaments/index.html": { size_bytes: 34226, modified_utc: "2025-12-30T03:17:04.540184+00:00" },
 
-    "assets-manifest.txt": { size_bytes: 7715, modified_utc: "2025-12-24T23:34:59.500741+00:00" },
-    "assets.js": { size_bytes: 19350, modified_utc: "2025-12-24T23:40:58.686120+00:00" },
+    "api/calendar.json": { size_bytes: 15155, modified_utc: "2025-12-30T03:16:55.613922+00:00" },
+
+    "assets-manifest.txt": { size_bytes: 8476, modified_utc: "2025-12-30T03:43:24.334661+00:00" },
+    "assets.js": { size_bytes: 21095, modified_utc: "2025-12-30T01:01:37.953995+00:00" },
 
     "assets/caterham-pool.webp": { size_bytes: 43502, modified_utc: "2025-12-14T00:54:25.171659+00:00" },
     "assets/downham-pool.webp": { size_bytes: 46952, modified_utc: "2025-12-14T00:54:25.171888+00:00" },
@@ -335,22 +342,25 @@ window.ASSETS = {
 
     "assets/video/hero-mobile.mp4": { size_bytes: 5052765, modified_utc: "2025-12-14T00:54:25.179183+00:00" },
 
-    // Site/content + runtime
-    "content.md": { size_bytes: 36049, modified_utc: "2025-12-24T23:38:13.769919+00:00" },
-    "css/styles.css": { size_bytes: 186491, modified_utc: "2025-12-25T01:57:29.251770+00:00" },
+    // Pages / content / runtime
+    "connect/index.html": { size_bytes: 15155, modified_utc: "2025-12-30T03:16:55.613922+00:00" },
+    "content.md": { size_bytes: 44723, modified_utc: "2025-12-30T18:58:56.157073+00:00" },
+    "css/styles.css": { size_bytes: 215636, modified_utc: "2025-12-30T03:41:18.968132+00:00" },
     "events/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:16.612568+00:00" },
-    "index.html": { size_bytes: 24380, modified_utc: "2025-12-30T00:46:51.152464+00:00" },
+    "index.html": { size_bytes: 24174, modified_utc: "2025-12-30T18:51:46.166478+00:00" },
+
     "js/cookies.js": { size_bytes: 535, modified_utc: "2025-12-24T00:11:52.890473+00:00" },
     "js/nav.js": { size_bytes: 8805, modified_utc: "2025-12-23T18:55:26.704603+00:00" },
     "js/poty.js": { size_bytes: 2878, modified_utc: "2025-12-23T22:31:58.362075+00:00" },
     "js/scroll.js": { size_bytes: 10332, modified_utc: "2025-12-19T22:47:17.647767+00:00" },
     "js/tournaments.js": { size_bytes: 7158, modified_utc: "2025-12-25T00:07:47.917601+00:00" },
-    "kit/index.html": { size_bytes: 32155, modified_utc: "2025-12-25T01:54:24.349548+00:00" },
-    "membership/index.html": { size_bytes: 24055, modified_utc: "2025-12-25T01:54:14.928251+00:00" },
+
+    "kit/index.html": { size_bytes: 31958, modified_utc: "2025-12-30T03:16:25.604867+00:00" },
+    "membership/index.html": { size_bytes: 23854, modified_utc: "2025-12-30T03:16:14.715163+00:00" },
     "privacy/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:16.612684+00:00" },
+
     "reference-notes.md": { size_bytes: 6543, modified_utc: "2025-12-19T20:42:48.424429+00:00" },
     "site-brief.md": { size_bytes: 8660, modified_utc: "2025-12-19T20:39:27.067166+00:00" },
     "theme.md": { size_bytes: 4971, modified_utc: "2025-12-14T22:03:26.770161+00:00" }
   }
 };
-```
