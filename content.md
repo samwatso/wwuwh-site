@@ -542,22 +542,179 @@ Start with a session, then tell us what you’re aiming for — social tournamen
 
 ## ABOUT — FUNDRAISING
 
-### Page opener
-**Title:** Fundraising  
-**Story title:** Channel swim for the Motor Neurone Disease Association
+**title**: Fundraising
+description: Channel swim for the Motor Neurone Disease Association — West Wickham UWH’s biggest charity challenge.
+permalink: /about/fundraising/
+layout: page
+pageClass: page-fundraising
+hero:
+  image: /assets/fundraising/fundraising_hero.webp
+  alt: "West Wickham UWH — Swim the Channel Underwater fundraiser"
+  kicker: "Fundraising"
+  title: "Channel Swim for MNDA"
+  intro: "On 31 May 2018, West Wickham Underwater Hockey Club took on our biggest charity event yet: swimming the distance of the English Channel and back underwater — in just one hour — to support our founding member Paul Cook."
+---
 
-**Copy (story):**  
-On 31 May 2018, WWUWH took on our biggest charity challenge: collectively swimming the equivalent of the English Channel and back underwater (66,600m) in just one hour — wearing standard underwater hockey kit and holding our breath between lengths. The swim was in support of founding member Paul Cook following his Motor Neurone Disease diagnosis.
+## The challenge
 
-The club raised **£20,380 for MNDA**, and the team didn’t stop at the target — completing the channel distance three times.
+On **31 May 2018**, West Wickham Underwater Hockey Club embarked on our biggest charity event yet: to collectively swim the distance of the English Channel and back underwater (**66,600m**) wearing standard UWH equipment (**mask, snorkel and fins**) whilst holding our breath — **all within just 1 hour**.
 
-**Sponsors (list):**
-- The CRM Agency
+This challenge was created in support of one of our founding members, **Paul Cook**, who was diagnosed with **Motor Neurone Disease**.
+
+We were delighted to raise **£20,380** for **MNDA**, and swam the distance of the English Channel not twice, but **three times**.
+
+---
+
+## Why we did it
+
+Paul started his UWH playing career at West Wickham in **1974**, aged just **14**. He captained our Elite team for **17 years**, winning the **National Championship** three times and the **European Club Championship** once. Paul represented **Great Britain** at **five World Championships**, winning **two Silver** and **two Bronze** medals.
+
+It was special to have Paul with us at our Christmas session — and as anybody who knows Paul will tell you, he couldn’t just watch. He was encouraging his two children **Beth & Harry**, and even got involved in the match and scored.
+
+We’re raising money for pioneering **Stem Cell treatment** for Paul, and for future research and support provided by the **Motor Neurone Disease Association (MNDA)**.
+
+---
+
+## Together, in and out of the pool
+
+This event showed what a club can do when everyone pulls together. From planning and fundraising, to filling lanes with swimmers and supporters, the whole club came together — not just to complete the challenge, but to do it safely, fairly, and as one team.
+
+### How it was measured
+
+To keep the swim accurate and accountable:
+
+- **Lane ropes** were used to keep swimmers flowing smoothly and safely.
+- Each swimmer had a **dedicated counter/monitor** to track lengths and confirm totals.
+- Distances were recorded in **widths** and converted into **metres** for the final results.
+- Team groupings (hat colours and team letters) were also tracked to keep the atmosphere competitive and fun.
+
+After the hour was up, we celebrated the donation total together — and held an award moment for the **most metres swum**, won by **James**.
+
+---
+
+## Event gallery
+
+### Hero
+- /assets/fundraising/fundraising_hero.webp
+
+### Team & pool moments
+- /assets/fundraising/fundraising1.webp
+- /assets/fundraising/fundraising2.webp
+- /assets/fundraising/fundraising3.webp
+- /assets/fundraising/fundraising4.webp
+- /assets/fundraising/fundraising5.webp
+
+### Ceremony
+- /assets/fundraising/fundraising6.webp
+- /assets/fundraising/fundraising7.webp
+
+---
+
+## Corporate sponsors
+
+- THE CRM Agency — https://www.the-crmagency.com/
 - Cisco
 - Santander
 
-**Optional closing line:**
-- When we move together, we can go further than anyone expects.
+---
+
+## Results
+
+### Individual totals
+
+| Rank | Name | Total widths swam | Total metres swam |
+|---:|---|---:|---:|
+| 1 | James Christen | 173 | 3460 |
+| 2 | Scott Allen | 172 | 3440 |
+| 3 | Maddy Hollick | 170 | 3400 |
+| 4 | Cameron Blackwell | 140 | 2800 |
+| 5 | Joezef | 140 | 2800 |
+| 6 | Karl Speed | 138 | 2760 |
+| 7 | Sam Watson | 136.5 | 2730 |
+| 8 | Christopher Alwin | 134 | 2680 |
+| 9 | Taz Joubert | 134 | 2680 |
+| 10 | Polly | 130 | 2600 |
+| 11 | Sebastian (WL) | 128 | 2560 |
+| 12 | Jess Berlyn | 128 | 2560 |
+| 13 | Jason Glass | 126 | 2520 |
+| 14 | Olivia Dawes | 126 | 2520 |
+| 15 | Jos Greenhalgh | 126 | 2520 |
+| 16 | Becs Henley | 126 | 2520 |
+| 17 | Aron Lindsay | 124 | 2480 |
+| 18 | Andrew Gray | 122 | 2440 |
+| 19 | Alan Underwood | 120 | 2400 |
+| 20 | Steve Baldwin | 120 | 2400 |
+| 21 | Ellie Russell | 120 | 2400 |
+| 22 | Alison Wheeler | 118 | 2360 |
+| 23 | Ben Talbot (SUWH) | 116 | 2320 |
+| 24 | Paul Pizzey | 114.5 | 2290 |
+| 25 | Sue Davies | 112 | 2240 |
+| 26 | Peter Hodge | 108 | 2160 |
+| 27 | Paul Allen | 107 | 2140 |
+| 28 | Mike Stokes | 106 | 2120 |
+| 29 | Adamina Carden | 104 | 2080 |
+| 30 | Kit Giroux | 104 | 2080 |
+| 31 | Matthea | 102 | 2040 |
+| 32 | Martin Gaynor | 102 | 2040 |
+| 33 | Maddy Talbot | 100 | 2000 |
+| 34 | Sophie S (Bristol) | 97 | 1940 |
+| 35 | Bethany Cook | 90 | 1800 |
+| 36 | Tony Mouriad | 90 | 1800 |
+| 37 | Lilli Speed (J) | 88 | 1760 |
+| 38 | Ivan Wood (J) | 84 | 1680 |
+| 39 | Gary Bunting | 84 | 1680 |
+| 40 | Esme Glass (J) | 84 | 1680 |
+| 41 | Paul Cole | 82 | 1640 |
+| 42 | Alan Quarterman | 76 | 1520 |
+| 43 | Paul Fowler | 66 | 1320 |
+| 44 | Joe Dyson (J) | 58 | 1160 |
+| 45 | Elise Wood (J) | 54 | 1080 |
+| 46 | Cookie | 4 | 80 |
+|  | **Grand total** | **5,084** | **101,680** |
+
+---
+
+### Hat colour team totals
+
+| Hat colour | Total metres swam |
+|---|---:|
+| Pink | 25,680 |
+| Blue | 25,140 |
+| White | 24,730 |
+| Yellow | 24,110 |
+| **Grand total** | **99,660** |
+
+---
+
+### Team totals
+
+| Team | Total metres swam |
+|---|---:|
+| A | 13,100 |
+| B | 10,280 |
+| C | 10,120 |
+| D | 9,460 |
+| E | 9,460 |
+| F | 8,200 |
+| G | 8,160 |
+| H | 8,960 |
+| I | 7,880 |
+| J | 7,600 |
+| K | 6,520 |
+| Bristol | 1,940 |
+| **Grand total** | **101,680** |
+
+---
+
+## Thank you
+
+To every swimmer, counter, supporter, organiser, sponsor, and friend of the club — thank you. This challenge will always be one of the proudest examples of what West Wickham UWH can do when we come together.
+
+---
+
+### Page end
+**Note:** Use the same global site footer component as Home (logo, nav links, social links, copyright, affiliation note).
+
 
 ---
 
@@ -838,7 +995,7 @@ New to the sport? Register with the British Octopush Association and choose **�
 **Optional embed (implementation note):**  
 Some sites block embedding via security headers. Use the embed as a progressive enhancement, but always include the CTA link above as the reliable route.
 
-```html
+html
 <!-- BOA registration embed (optional) -->
 <div class="boa-register">
   <a class="btn-secondary" href="https://www.gbuwh.co.uk/register" target="_blank" rel="noopener noreferrer">
@@ -873,17 +1030,34 @@ From major competitions to friendly matches, events run throughout the year. For
 
 ### Page opener
 **Title:** Connect  
-**Copy:** Connect with us on social media
+**Copy:** All our official links in one place — quick to open from a QR code.
 
-**Buttons (label + helper line)**
-- Facebook — Check us out on Facebook
-- YouTube — Catch us in action on YouTube
-- Instagram — Keep up to date on Instagram
-- Twitter/X — Follow us on Twitter
-- WhatsApp — Message us to get involved
+# Connect with us
 
-**Optional footer line:**
-- New here? Message us — we’ll tell you what to bring and what to expect.
+A quick link hub for West Wickham Underwater Hockey Club — perfect from a QR code.
+
+## Follow & watch
+
+- **Instagram** — updates, matchday moments and training clips  
+  http://www.instagram.com/wwuwh
+
+- **Facebook** — events, posts and club news  
+  https://www.facebook.com/westwickhamuwh
+
+- **YouTube** — videos, highlights and features  
+  https://www.youtube.com/channel/UCdokEqYEbzyqtcgUGdhz6xw/featured
+
+- **X (Twitter)** — quick updates and announcements  
+  https://x.com/WestWickhamUWH
+
+## Message us
+
+- **WhatsApp** — quickest way to get in touch  
+  https://wa.me/+447837554270
+
+---
+
+*If you’re new and want to try a session, message us on WhatsApp and we’ll help you get started.*
 
 ---
 

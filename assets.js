@@ -1,12 +1,13 @@
+```js
 // assets.js — generated from assets-manifest.csv
 // Single source of truth for asset paths used in HTML/JS.
 // Loaded before other scripts so window.ASSETS is available everywhere.
 
 window.ASSETS = {
-  version: 7,
+  version: 8,
   generatedFrom: "assets-manifest.csv",
   // Optional: update this when you regenerate the manifest
-  generatedAtUtc: "2025-12-24T23:26:38.139030+00:00",
+  generatedAtUtc: "2025-12-30T00:46:51.152464+00:00",
 
   paths: {
     // Core media
@@ -24,6 +25,23 @@ window.ASSETS = {
       caterhamPool: "assets/caterham-pool.webp",
       downhamPool: "assets/downham-pool.webp",
       southNorwoodPool: "assets/southnorwood-pool.webp"
+    },
+
+    // Fundraising imagery
+    fundraisingImages: {
+      hero: "assets/fundraising/fundraising_hero.webp",
+      groupShot1: "assets/fundraising/fundraising1.webp",
+      groupShot2: "assets/fundraising/fundraising2.webp",
+      poolShot1: "assets/fundraising/fundraising3.webp",
+      poolShot2: "assets/fundraising/fundraising4.webp",
+      poolShot3: "assets/fundraising/fundraising5.webp",
+      ceremony1: "assets/fundraising/fundraising6.webp",
+      ceremony2: "assets/fundraising/fundraising7.webp"
+    },
+
+    // Maps / SVG
+    maps: {
+      europeSilhouette: "assets/maps/europe-silhouette.svg"
     },
 
     // Kit imagery (used on kit pages / cards)
@@ -64,7 +82,7 @@ window.ASSETS = {
 
       clubMedia: "assets/history/club-media.webp",
 
-      // New history imagery (jpg/png)
+      // Additional history imagery (jpg/png)
       octopushNews8090: "assets/history/80-90-Octopush-News.jpg",
       kentNewspapers2013: "assets/history/Kent-Newspapers-2013.jpg",
       steveMedalsYears: "assets/history/Steve-Medals-years.jpg",
@@ -72,14 +90,12 @@ window.ASSETS = {
       wickhamSquad2003: "assets/history/Wickham-Squad 2003.jpg",
       dacorLogo: "assets/history/dacor-logo.jpg",
       legacyLogoJpg: "assets/history/legacy-logo.jpg",
+      legacyLogoWebp: "assets/history/legacy-logo.webp",
       legacyPng: "assets/history/legacy.png",
       nationalLadder1984Teamphoto: "assets/history/national-ladder-1984-teamphoto.jpg",
       nationalLadder1984Png: "assets/history/national-ladder-1984.png",
       news2019: "assets/history/news-2019.jpg",
-      originalLogo: "assets/history/original-logo.jpg",
-
-      // Keep the older legacy webp too (used elsewhere)
-      legacyLogoWebp: "assets/history/legacy-logo.webp"
+      originalLogo: "assets/history/original-logo.jpg"
     },
 
     // Ladies imagery
@@ -158,7 +174,8 @@ window.ASSETS = {
       nav: "js/nav.js",
       scroll: "js/scroll.js",
       poty: "js/poty.js",
-      cookies: "js/cookies.js"
+      cookies: "js/cookies.js",
+      tournaments: "js/tournaments.js"
     },
 
     // Page routes (static folder pages)
@@ -170,13 +187,12 @@ window.ASSETS = {
       privacy: "privacy/index.html",
 
       about: {
-        index: "about/index.html",
-        ourStory: "about/our-story/index.html",
-        ladies: "about/ladies/index.html",
-        juniors: "about/juniors/index.html",
         fundraising: "about/fundraising/index.html",
+        juniors: "about/juniors/index.html",
+        ladies: "about/ladies/index.html",
+        ourStory: "about/our-story/index.html",
         playerOfTheYear: "about/player-of-the-year/index.html",
-        europeanTournaments: "about/european-tournaments/index.html"
+        tournaments: "about/tournaments/index.html"
       }
     },
 
@@ -188,25 +204,36 @@ window.ASSETS = {
 
   // Optional metadata block (useful for debugging/cache-busting)
   meta: {
-    "about/european-tournaments/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:21.408793+00:00" },
     "about/fundraising/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:21.408840+00:00" },
-    "about/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:16.612433+00:00" },
     "about/juniors/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:21.408736+00:00" },
-    "about/ladies/index.html": { size_bytes: 20287, modified_utc: "2025-12-24T00:27:58.100486+00:00" },
-    "about/our-story/index.html": { size_bytes: 28326, modified_utc: "2025-12-24T00:43:32.599046+00:00" },
-    "about/player-of-the-year/index.html": { size_bytes: 29621, modified_utc: "2025-12-24T00:26:22.106374+00:00" },
+    "about/ladies/index.html": { size_bytes: 20261, modified_utc: "2025-12-25T01:57:31.892593+00:00" },
+    "about/our-story/index.html": { size_bytes: 28267, modified_utc: "2025-12-25T01:54:51.518542+00:00" },
+    "about/player-of-the-year/index.html": { size_bytes: 29562, modified_utc: "2025-12-25T01:54:31.751184+00:00" },
+    "about/tournaments/index.html": { size_bytes: 34318, modified_utc: "2025-12-25T01:52:03.749535+00:00" },
 
-    "assets-manifest.txt": { size_bytes: 5226, modified_utc: "2025-12-23T23:00:03.687864+00:00" },
-    "assets.js": { size_bytes: 13263, modified_utc: "2025-12-23T23:02:18.921230+00:00" },
+    "assets-manifest.txt": { size_bytes: 7715, modified_utc: "2025-12-24T23:34:59.500741+00:00" },
+    "assets.js": { size_bytes: 19350, modified_utc: "2025-12-24T23:40:58.686120+00:00" },
 
     "assets/caterham-pool.webp": { size_bytes: 43502, modified_utc: "2025-12-14T00:54:25.171659+00:00" },
     "assets/downham-pool.webp": { size_bytes: 46952, modified_utc: "2025-12-14T00:54:25.171888+00:00" },
+
     "assets/fonts/Azonix.otf": { size_bytes: 12076, modified_utc: "2025-12-14T00:54:25.172204+00:00" },
     "assets/fonts/Nexa Light.otf": { size_bytes: 30004, modified_utc: "2025-12-14T00:54:25.172471+00:00" },
+
+    // Fundraising assets
+    "assets/fundraising/fundraising1.webp": { size_bytes: 140596, modified_utc: "2025-12-30T00:31:07.145507+00:00" },
+    "assets/fundraising/fundraising2.webp": { size_bytes: 138582, modified_utc: "2025-12-30T00:31:16.398663+00:00" },
+    "assets/fundraising/fundraising3.webp": { size_bytes: 103484, modified_utc: "2025-12-30T00:31:24.637378+00:00" },
+    "assets/fundraising/fundraising4.webp": { size_bytes: 130400, modified_utc: "2025-12-30T00:31:43.495616+00:00" },
+    "assets/fundraising/fundraising5.webp": { size_bytes: 67030, modified_utc: "2025-12-30T00:31:53.211916+00:00" },
+    "assets/fundraising/fundraising6.webp": { size_bytes: 103782, modified_utc: "2025-12-30T00:32:00.769374+00:00" },
+    "assets/fundraising/fundraising7.webp": { size_bytes: 42064, modified_utc: "2025-12-30T00:32:17.387453+00:00" },
+    "assets/fundraising/fundraising_hero.webp": { size_bytes: 93938, modified_utc: "2025-12-30T00:30:36.118584+00:00" },
+
     "assets/hero1.jpg": { size_bytes: 364536, modified_utc: "2025-12-14T00:54:25.173099+00:00" },
     "assets/hero2.jpg": { size_bytes: 258984, modified_utc: "2025-12-14T00:54:25.173986+00:00" },
 
-    // History assets (new + existing)
+    // History assets
     "assets/history/80-90-Octopush-News.jpg": { size_bytes: 169718, modified_utc: "2025-12-24T23:25:46.083743+00:00" },
     "assets/history/Kent-Newspapers-2013.jpg": { size_bytes: 348753, modified_utc: "2025-12-24T23:09:35.603081+00:00" },
     "assets/history/Steve-Medals-years.jpg": { size_bytes: 2169749, modified_utc: "2025-12-24T23:10:23.977457+00:00" },
@@ -254,7 +281,7 @@ window.ASSETS = {
     "assets/kit/sticks.webp": { size_bytes: 23832, modified_utc: "2025-12-21T00:16:52.988048+00:00" },
     "assets/kit/swimwear.webp": { size_bytes: 11760, modified_utc: "2025-12-21T00:15:57.609956+00:00" },
 
-    // Ladies assets (updated)
+    // Ladies assets
     "assets/ladies/Sussex-Wickham-Ladies-2018.jpg": { size_bytes: 328615, modified_utc: "2025-12-23T23:30:04.676010+00:00" },
     "assets/ladies/Sussex-Wickham-Ladies-2019.jpg": { size_bytes: 140196, modified_utc: "2023-10-20T21:27:20+00:00" },
     "assets/ladies/Sussex-Wickham-Ladies-Nationals-2019.jpg": { size_bytes: 121888, modified_utc: "2025-12-23T23:30:26.431030+00:00" },
@@ -272,6 +299,9 @@ window.ASSETS = {
     "assets/logo-white.png": { size_bytes: 149480, modified_utc: "2025-12-20T00:23:11.893260+00:00" },
     "assets/logo.png": { size_bytes: 112897, modified_utc: "2025-12-20T00:21:59.065428+00:00" },
 
+    // Maps
+    "assets/maps/europe-silhouette.svg": { size_bytes: 35175, modified_utc: "2025-12-25T01:39:32.747092+00:00" },
+
     // POTY assets
     "assets/poty/poty-2012.jpg": { size_bytes: 104754, modified_utc: "2023-10-20T21:55:02+00:00" },
     "assets/poty/poty-2015.jpg": { size_bytes: 233439, modified_utc: "2023-10-20T21:50:23+00:00" },
@@ -281,6 +311,8 @@ window.ASSETS = {
     "assets/poty/poty-2019.jpg": { size_bytes: 217956, modified_utc: "2023-10-20T21:19:03+00:00" },
     "assets/poty/poty-2025.JPG": { size_bytes: 236609, modified_utc: "2025-07-04T22:31:46+00:00" },
     "assets/poty/poty-trophie.webp": { size_bytes: 86024, modified_utc: "2025-12-23T21:51:13.194716+00:00" },
+
+    "assets/southnorwood-pool.webp": { size_bytes: 54180, modified_utc: "2025-12-14T00:54:25.174840+00:00" },
 
     // Tournament assets (folder "touraments")
     "assets/touraments/Barbipush-Guilford-2017.jpg": { size_bytes: 365408, modified_utc: "2023-10-20T21:43:31+00:00" },
@@ -304,19 +336,21 @@ window.ASSETS = {
     "assets/video/hero-mobile.mp4": { size_bytes: 5052765, modified_utc: "2025-12-14T00:54:25.179183+00:00" },
 
     // Site/content + runtime
-    "content.md": { size_bytes: 32099, modified_utc: "2025-12-23T22:58:47.788071+00:00" },
-    "css/styles.css": { size_bytes: 170280, modified_utc: "2025-12-24T22:48:08.987218+00:00" },
+    "content.md": { size_bytes: 36049, modified_utc: "2025-12-24T23:38:13.769919+00:00" },
+    "css/styles.css": { size_bytes: 186491, modified_utc: "2025-12-25T01:57:29.251770+00:00" },
     "events/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:16.612568+00:00" },
-    "index.html": { size_bytes: 24448, modified_utc: "2025-12-24T00:12:10.900851+00:00" },
+    "index.html": { size_bytes: 24380, modified_utc: "2025-12-30T00:46:51.152464+00:00" },
     "js/cookies.js": { size_bytes: 535, modified_utc: "2025-12-24T00:11:52.890473+00:00" },
     "js/nav.js": { size_bytes: 8805, modified_utc: "2025-12-23T18:55:26.704603+00:00" },
     "js/poty.js": { size_bytes: 2878, modified_utc: "2025-12-23T22:31:58.362075+00:00" },
     "js/scroll.js": { size_bytes: 10332, modified_utc: "2025-12-19T22:47:17.647767+00:00" },
-    "kit/index.html": { size_bytes: 32214, modified_utc: "2025-12-24T00:26:02.610429+00:00" },
-    "membership/index.html": { size_bytes: 24114, modified_utc: "2025-12-24T00:27:54.768423+00:00" },
+    "js/tournaments.js": { size_bytes: 7158, modified_utc: "2025-12-25T00:07:47.917601+00:00" },
+    "kit/index.html": { size_bytes: 32155, modified_utc: "2025-12-25T01:54:24.349548+00:00" },
+    "membership/index.html": { size_bytes: 24055, modified_utc: "2025-12-25T01:54:14.928251+00:00" },
     "privacy/index.html": { size_bytes: 0, modified_utc: "2025-12-21T00:02:16.612684+00:00" },
     "reference-notes.md": { size_bytes: 6543, modified_utc: "2025-12-19T20:42:48.424429+00:00" },
     "site-brief.md": { size_bytes: 8660, modified_utc: "2025-12-19T20:39:27.067166+00:00" },
     "theme.md": { size_bytes: 4971, modified_utc: "2025-12-14T22:03:26.770161+00:00" }
   }
 };
+```
