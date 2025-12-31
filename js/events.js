@@ -26,6 +26,7 @@
   // ========================================
   let state = {
     events: [],
+    activeEvent: null, // Currently selected event for modal
     currentDate: new Date(),
     viewYear: new Date().getFullYear(),
     viewMonth: new Date().getMonth(),
@@ -51,6 +52,7 @@
     dom.modalTitle = document.getElementById('event-modal-title');
     dom.modalLocation = dom.modal?.querySelector('.event-modal-location');
     dom.modalTime = dom.modal?.querySelector('.event-modal-time');
+    dom.addEventBtn = dom.modal?.querySelector('[data-add-event]');
   }
 
   // ========================================
@@ -360,6 +362,9 @@
   function openEventModal(event) {
     if (!dom.modal) return;
 
+    // Store the active event for ICS download
+    state.activeEvent = event;
+
     // Populate modal
     if (dom.modalTitle) {
       dom.modalTitle.textContent = event.title;
@@ -397,6 +402,7 @@
 
     dom.modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    state.activeEvent = null;
   }
 
   // ========================================
@@ -430,6 +436,117 @@
   }
 
   // ========================================
+  // ICS GENERATION
+  // ========================================
+
+  /**
+   * Escape special characters for ICS format
+   * ICS requires escaping: backslash, semicolon, comma, newlines
+   */
+  function escapeICS(str) {
+    if (!str) return '';
+    return str
+      .replace(/\\/g, '\\\\')
+      .replace(/;/g, '\\;')
+      .replace(/,/g, '\\,')
+      .replace(/\n/g, '\\n');
+  }
+
+  /**
+   * Format a Date object to ICS datetime format (UTC)
+   * Format: YYYYMMDDTHHMMSSZ
+   */
+  function formatICSDate(date) {
+    const d = new Date(date);
+    const year = d.getUTCFullYear();
+    const month = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(d.getUTCDate()).padStart(2, '0');
+    const hours = String(d.getUTCHours()).padStart(2, '0');
+    const minutes = String(d.getUTCMinutes()).padStart(2, '0');
+    const seconds = String(d.getUTCSeconds()).padStart(2, '0');
+    return `${year}${month}${day}T${hours}${minutes}${seconds}Z`;
+  }
+
+  /**
+   * Generate a UID for an event if not present
+   */
+  function generateUID(event) {
+    if (event.id) return event.id;
+    // Generate a unique ID based on event details and timestamp
+    const base = `${event.title}-${event.start}`.replace(/[^a-zA-Z0-9]/g, '');
+    return `${base}-${Date.now()}@wwuwh.co.uk`;
+  }
+
+  /**
+   * Create a slug from event title for filename
+   */
+  function createSlug(title) {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .substring(0, 50);
+  }
+
+  /**
+   * Generate ICS content for a single event
+   */
+  function generateICS(event) {
+    const uid = escapeICS(generateUID(event));
+    const dtstamp = formatICSDate(new Date());
+    const dtstart = formatICSDate(new Date(event.start));
+    const dtend = formatICSDate(new Date(event.end));
+    const summary = escapeICS(event.title);
+    const location = event.location ? `LOCATION:${escapeICS(event.location)}\r\n` : '';
+
+    const ics = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//West Wickham UWH//Events Calendar//EN',
+      'CALSCALE:GREGORIAN',
+      'METHOD:PUBLISH',
+      'BEGIN:VEVENT',
+      `UID:${uid}`,
+      `DTSTAMP:${dtstamp}`,
+      `DTSTART:${dtstart}`,
+      `DTEND:${dtend}`,
+      `SUMMARY:${summary}`,
+      location ? location.trim() : null,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].filter(Boolean).join('\r\n');
+
+    return ics;
+  }
+
+  /**
+   * Download ICS file for the active event
+   */
+  function downloadEventICS() {
+    if (!state.activeEvent) return;
+
+    const event = state.activeEvent;
+    const icsContent = generateICS(event);
+    const slug = createSlug(event.title);
+    const filename = `wwuwh-${slug}.ics`;
+
+    // Create blob and trigger download
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // Clean up the URL object
+    setTimeout(() => URL.revokeObjectURL(url), 100);
+  }
+
+  // ========================================
   // EVENT HANDLERS
   // ========================================
 
@@ -459,6 +576,14 @@
         if (e.key === 'Escape' && dom.modal.getAttribute('aria-hidden') === 'false') {
           closeEventModal();
         }
+      });
+    }
+
+    // Add event button (download single ICS)
+    if (dom.addEventBtn) {
+      dom.addEventBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        downloadEventICS();
       });
     }
 

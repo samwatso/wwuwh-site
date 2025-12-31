@@ -374,22 +374,100 @@ Whether you’re brand new to underwater hockey or returning to competition, you
 
 ## ABOUT — JUNIORS CLUB
 
-> The current page is primarily images; copy below is new, aligned to the Sunday juniors session.
-
 ### Page opener
 **Title:** Juniors Club  
+**Kicker:** Built for confidence. Powered by teamwork.  
+
 **Copy:**  
-Our juniors programme is a fun, safe way to learn underwater hockey fundamentals — teamwork, confidence in the water, and game sense — with progression pathways into adult sessions as players develop.
+Our juniors programme is where the next generation of underwater hockey players begin — learning water confidence, safe technique, and the habits that turn “having a go” into real game skill. It’s fun, fast-paced, and carefully coached, with clear progression for players who want to keep growing.
 
-**Session reminder (repeat, because parents need it):**
-Sunday — Juniors only — 3:30PM to 4:30PM  
-De Stafford Sports Centre, Burntwood Lane, Caterham CR3 5YX
-
-**CTA block**
-- Primary CTA: Enrol with Spond
-- Secondary CTA: Connect with us
+### Safety + coaching
+**Copy:**  
+Sessions are led by **DBS-checked junior coaches** who create a positive, structured environment. We focus on learning safely, building confidence in the water, and helping each player progress at their own pace — while still feeling part of a team.
 
 ---
+
+### Session details (repeat, because parents need it)
+**Sunday — Juniors only — 3:30PM to 4:30PM**  
+**De Stafford Sports Centre**  
+Burntwood Lane  
+Caterham **CR3 5YX**
+
+**CTA block**
+- Primary CTA: Enrol with Spond  
+- Secondary CTA: Connect with us  
+
+---
+
+### The Juniors Journey
+**Title:** The Juniors Journey  
+**Intro:** A simple pathway from first session to confident competition — and, for those who want it, the chance to aim for regional squads and GB trials.
+
+**Journey steps (for a graphic/timeline):**
+1) **First session** — kit, safety, breath-control, pool confidence  
+2) **Skill-building** — fins technique, puck control, passing  
+3) **Game sense** — space, communication, small-sided games  
+4) **Tactics** — structure, roles, decision-making under pressure  
+5) **Competition** — BOA Junior Regionals & Nationals experiences  
+6) **Performance pathway** — development towards **GB U19** and **GB U24** opportunities  
+
+**Optional pull-quote:**  
+**“Progress isn’t instant — it’s consistent.”**
+
+---
+
+### Development that shows up on match day
+**Title:** Training that travels  
+**Copy:**  
+We’re proud of how our juniors continue to shine at **BOA Junior Nationals** and **Junior Regionals** — not only through results, but through confidence, teamwork, and composure in high-tempo games. With the right support and commitment, junior players can grow into competitive athletes and earn selection opportunities for **GB Under 19s** and **GB Under 24s** squads.
+
+---
+
+### Thank you, coaches
+**Title:** The people behind the progress  
+**Copy:**  
+Junior development doesn’t happen by accident — it happens because coaches show up, week after week, to teach, encourage, and guide new players through every milestone. We’re hugely grateful for the time, patience, and dedication our junior coaching team gives to the club. Their commitment is a vital part of every junior player’s journey in underwater hockey.
+
+---
+
+### Juniors in action
+**Title:** Juniors in action  
+**Intro:** A few snapshots from coaching, tactics sessions, regional events, and podium moments.
+
+**Assets (gallery):**
+- /assets/junior/Instructor-Alan-2017.jpg.jpg  
+- /assets/junior/Instructor-Ellie-2017.jpg  
+- /assets/junior/Instructor-Jason-2017.jpg  
+- /assets/junior/Tactics-2018.jpg  
+- /assets/junior/Regionals-2019.jpg  
+- /assets/junior/Louis-Medals.jpg  
+
+**Creative layout direction (pick one; not a carousel):**
+- **Option A — Journey Path:** a vertical “path” line with milestone cards; alternate left/right on desktop; stacked on mobile.  
+- **Option B — Spotlight + Steps:** 1 large spotlight image (Louis-Medals) + smaller “step” cards (Coaching / Tactics / Regionals).  
+- **Option C — Coach Cards + Highlights:** 3 coach portrait cards (Alan/Ellie/Jason) above a clean grid of action images (Tactics/Regionals/Medals).  
+
+**Suggested caption chips:**
+- Coaching • 2017  
+- Tactics • 2018  
+- Regionals • 2019  
+- Medals • Milestone moment  
+
+---
+
+### Closing CTA
+**Title:** Ready to get started?  
+**Copy:**  
+If your junior swimmer is curious, we’ll help with the basics — kit, confidence, and first-session nerves included. Come try a session and see what the sport is all about.
+
+**CTA labels:**
+- Primary: Enrol with Spond  
+- Secondary: Connect with us  
+
+---
+
+### Page end
+**Footer:** Use the same global footer as the Home page (CTA section + transition wave + footer links/social).
 
 ---
 
