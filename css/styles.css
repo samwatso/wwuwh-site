@@ -5826,84 +5826,62 @@ p,
 }
 
 /* ----------------------------------------
-   COOKIE BANNER — Desktop override (floating card + fully hidden)
-   Paste AFTER the base cookie styles above
+   COOKIE BANNER
    ---------------------------------------- */
+.cookie-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 2000;
+  padding: var(--space-md);
+  background: var(--color-white);
+  border-top: 1px solid var(--grey-300);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+  transform: translateY(100%);
+  transition: transform var(--transition-base);
+}
+
+.cookie-banner[aria-hidden="false"] {
+  transform: translateY(0);
+}
+
+.cookie-banner-content {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
 
 @media (min-width: 768px) {
-
-  /* Make the banner a bottom-right floating card */
-  .cookie-banner {
-    left: auto;
-    right: var(--space-md);
-    bottom: var(--space-md);
-    top: auto;
-
-    width: min(460px, calc(100vw - (var(--space-md) * 2)));
-    max-width: 460px;
-    padding: var(--space-lg);
-
-    border-radius: 28px;
-    border: 1px solid rgba(255, 255, 255, 0.22);
-    border-top: 1px solid rgba(255, 255, 255, 0.22);
-
-    /* IMPORTANT: fully hide in default state (aria-hidden="true") */
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-
-    /* Move far enough down that even shadows can’t “peek” */
-    transform: translateY(calc(100% + 120px));
-
-    /* No shadow while hidden */
-    box-shadow: none;
-
-    transition:
-      transform var(--transition-base),
-      opacity var(--transition-base),
-      visibility 0s linear var(--transition-base);
-  }
-
-  /* Show state */
-  .cookie-banner[aria-hidden="false"] {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translateY(0);
-
-    /* Shadow only when visible */
-    box-shadow: 0 18px 60px rgba(0, 0, 0, 0.45);
-
-    transition:
-      transform var(--transition-base),
-      opacity var(--transition-base),
-      visibility 0s;
-  }
-
-  /* Desktop layout: stack title > text > buttons (like your screenshot) */
   .cookie-banner-content {
-    max-width: none;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    /* override your row layout */
-    align-items: flex-start;
-    /* left aligned */
-    gap: var(--space-sm);
-  }
-
-  .cookie-text {
-    flex: none;
-    /* prevent row behaviour leftovers */
-  }
-
-  .cookie-actions {
-    width: 100%;
-    justify-content: flex-start;
-    gap: var(--space-md);
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-lg);
   }
 }
 
+.cookie-title {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 300;
+  color: var(--color-navy);
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.cookie-text {
+  font-size: 0.875rem;
+  color: var(--grey-700);
+  flex: 1;
+}
+
+.cookie-actions {
+  display: flex;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
 
 /* ----------------------------------------
    UTILITY: VISUALLY HIDDEN
