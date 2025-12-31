@@ -69,8 +69,7 @@
                 <li role="none"><a href="/kit/" role="menuitem" class="nav-link">Kit Guide</a></li>
                 <li role="none"><a href="/membership/" role="menuitem" class="nav-link">Membership</a></li>
                 <li role="none"><a href="/events/" role="menuitem" class="nav-link">Events</a></li>
-                <li role="none"><a href="/connect/" role="menuitem"
-                        class="nav-link">Connect</a></li>
+                <li role="none"><a href="/connect/" role="menuitem" class="nav-link">Connect</a></li>
             </ul>
 
             <!-- Mobile Menu Toggle -->
@@ -105,8 +104,7 @@
                 <li><a href="/kit/" class="nav-mobile-link">Kit Guide</a></li>
                 <li><a href="/membership/" class="nav-mobile-link">Membership</a></li>
                 <li><a href="/events/" class="nav-mobile-link">Events</a></li>
-                <li><a href="/connect/"
-                        class="nav-mobile-link">Connect</a></li>
+                <li><a href="/connect/" class="nav-mobile-link">Connect</a></li>
             </ul>
         </div>
     </header>
@@ -464,6 +462,23 @@
     </div>
 
     <!-- Scripts -->
+    <script>
+        // Hero video fade-in (runs immediately, before deferred scripts)
+        (function () {
+            var video = document.querySelector('.hero-video');
+            var media = document.querySelector('.hero-media');
+            if (!video || !media) return;
+            function show() {
+                video.classList.add('is-loaded');
+                media.classList.add('is-loaded');
+            }
+            if (video.readyState >= 3) { show(); return; }
+            video.addEventListener('canplaythrough', show, { once: true });
+            video.addEventListener('loadeddata', show, { once: true });
+            setTimeout(function () { if (!video.classList.contains('is-loaded')) show(); }, 2000);
+        })();
+    </script>
+
     <script src="assets.js"></script>
     <script src="js/nav.js" defer></script>
     <script src="js/scroll.js" defer></script>

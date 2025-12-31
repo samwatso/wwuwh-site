@@ -946,6 +946,15 @@ p,
   position: absolute;
   inset: 0;
   background: var(--hero-overlay);
+  opacity: 0;
+  visibility: hidden;  /* Added - fully hides the gradient */
+  transition: opacity 0.8s ease-out, visibility 0s linear 0.8s;
+}
+
+.hero-media.is-loaded .hero-overlay {
+  opacity: 1;
+  visibility: visible;  /* Shows with video */
+  transition: opacity 0.8s ease-out, visibility 0s linear 0s;
 }
 
 .hero-content {
@@ -2023,13 +2032,13 @@ p,
 
 .cookie-actions .btn-secondary {
   background: rgba(255, 255, 255, 0.10);
-  color: var(--color-white);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: var(--color-navy);
+  border: 1px solid var(--color-navy);
 }
 
 .cookie-actions .btn-secondary:hover {
   background: rgba(255, 255, 255, 0.16);
-  border-color: rgba(255, 255, 255, 0.55);
+  border-color: var(--color-water);
 }
 
 .cookie-actions .btn-secondary:focus-visible,
@@ -5842,10 +5851,11 @@ p,
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
   transform: translateY(100%);
   transition: transform var(--transition-base);
+  display: none;
 }
 
 .cookie-banner[aria-hidden="false"] {
-  transform: translateY(0);
+  display: block;
 }
 
 .cookie-banner-content {
@@ -11042,8 +11052,8 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
   content: '';
   position: absolute;
   left: 20px;
-  top: 0;
-  bottom: 0;
+  top: 25px;
+  bottom: 50px;
   width: 3px;
   background: linear-gradient(180deg,
     var(--color-water) 0%,
@@ -11078,7 +11088,7 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
 
 .page-juniors .journey-marker {
   position: absolute;
-  left: 0;
+  left: -40px;
   top: var(--space-md);
   z-index: 1;
 }
@@ -11086,7 +11096,7 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
 @media (min-width: 768px) {
   .page-juniors .journey-marker {
     position: relative;
-    left: auto;
+    left: 25px;
     top: auto;
     margin: 0 auto var(--space-sm);
   }
@@ -11133,8 +11143,8 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
     content: '';
     position: absolute;
     top: 28px;
-    left: calc(50% + 28px);
-    right: calc(-50% + 28px);
+    left: calc(50%);
+    right: calc(-50%);
     height: 3px;
     background: linear-gradient(90deg,
       var(--color-water),
