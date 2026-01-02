@@ -1096,7 +1096,7 @@ p,
    SESSIONS
    ---------------------------------------- */
 .section-sessions {
-  background-color: var(--grey-100);
+  background: var(--color-navy);
 }
 
 .session-cards {
@@ -1212,279 +1212,168 @@ p,
    SCROLLY SECTION (01/02/03)
    ---------------------------------------- */
 .section-scrolly {
-  background-color: var(--color-navy);
-  color: var(--color-white);
-  overflow: hidden;
+  background: linear-gradient(180deg, var(--grey-100) 0%, var(--color-ice) 100%);
 }
 
 .section-scrolly .section-title {
-  color: var(--color-white);
+  color: var(--color-navy);
 }
 
-.scrolly-wrapper {
-  display: grid;
-  gap: var(--space-lg);
+.section-scrolly .section-intro {
+  color: var(--grey-700);
 }
 
-@media (min-width: 768px) {
-  .scrolly-wrapper {
-    grid-template-columns: 100px 1fr;
-    gap: var(--space-xl);
-    align-items: start;
-  }
-}
-
-@media (min-width: 1024px) {
-  .scrolly-wrapper {
-    grid-template-columns: 120px 1fr;
-    gap: var(--space-2xl);
-  }
-}
-
-/* Sticky left rail */
-.scrolly-rail {
-  display: none;
-  position: relative;
+.scrolly-lead {
+  max-width: 700px;
+  margin: 0 auto var(--space-xl);
+  text-align: center;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--grey-700);
 }
 
 @media (min-width: 768px) {
-  .scrolly-rail {
-    display: block;
-    position: sticky;
-    top: calc(50vh - 100px);
-    height: auto;
-    padding-left: var(--space-sm);
+  .scrolly-lead {
+    font-size: 1.0625rem;
+    margin-bottom: var(--space-2xl);
   }
 }
 
-/* Progress track (background line) */
-.scrolly-progress {
-  position: absolute;
-  left: var(--space-sm);
-  top: 0.5rem;
-  bottom: 0.5rem;
-  width: 2px;
-  background-color: rgba(255, 255, 255, 0.15);
-  border-radius: 1px;
-}
-
-/* Progress line (fills as you scroll) */
-.scrolly-progress-line {
-  display: block;
-  width: 100%;
-  height: 0%;
-  background-color: var(--color-water);
-  border-radius: 1px;
-  transition: height var(--transition-base);
-}
-
-/* Disable transition for reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .scrolly-progress-line {
-    transition: none;
-  }
-}
-
-/* Number list */
-.scrolly-numbers {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-lg);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-@media (min-width: 1024px) {
-  .scrolly-numbers {
-    gap: var(--space-xl);
-  }
-}
-
-/* Individual number */
-.scrolly-number {
-  font-family: var(--font-display);
-  font-size: 2rem;
-  color: rgba(255, 255, 255, 0.25);
-  letter-spacing: 0.02em;
-  line-height: 1;
-  padding-left: var(--space-lg);
-  position: relative;
-  transition: color var(--transition-base);
-}
-
-@media (min-width: 1024px) {
-  .scrolly-number {
-    font-size: 2.5rem;
-    padding-left: 0;
-  }
-}
-
-/* Number dot indicator */
-.scrolly-number::before {
-  content: none;
-  position: absolute;
-  left: calc(var(--space-sm) - 4px);
-  top: 50%;
-  transform: translateY(-50%);
-  width: 10px;
-  height: 10px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  transition:
-    background-color var(--transition-base),
-    transform var(--transition-base);
-}
-
-/* Active number state */
-.scrolly-number.is-active {
-  color: var(--color-water);
-}
-
-.scrolly-number.is-active::before {
-  content: none;
-  background-color: var(--color-water);
-  transform: translateY(-50%) scale(1.2);
-}
-
-/* Disable scale transition for reduced motion */
-@media (prefers-reduced-motion: reduce) {
-
-  .scrolly-number,
-  .scrolly-number::before {
-    transition: none;
-  }
-
-  .scrolly-number.is-active::before {
-    transform: translateY(-50%);
-  }
-}
-
-/* Right panel: steps */
 .scrolly-steps {
   display: flex;
   flex-direction: column;
-  gap: var(--space-xl);
+  gap: var(--space-lg);
+  max-width: 700px;
+  margin: 0 auto;
 }
 
 @media (min-width: 768px) {
   .scrolly-steps {
-    gap: var(--space-2xl);
-    padding-top: var(--space-md);
-    padding-bottom: var(--space-md);
+    gap: var(--space-xl);
   }
 }
 
-@media (min-width: 1024px) {
-  .scrolly-steps {
-    gap: var(--space-3xl);
-    max-width: 600px;
-  }
-}
-
-/* Individual step panel */
 .scrolly-step {
-  opacity: 0.4;
-  transform: translateY(0);
-  transition: opacity var(--transition-base);
+  display: flex;
+  gap: var(--space-md);
+  align-items: flex-start;
+  position: relative;
 }
 
-.scrolly-step.is-active {
-  opacity: 1;
+/* Connecting line between steps */
+.scrolly-step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 22px;
+  top: 52px;
+  bottom: calc(-1 * var(--space-lg));
+  width: 2px;
+  background: linear-gradient(to bottom, var(--color-water) 0%, var(--grey-300) 100%);
 }
 
-/* Disable transitions for reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .scrolly-step {
-    transition: none;
-    opacity: 1;
-  }
-}
-
-/* Mobile: show step numbers inline since rail is hidden */
-@media (max-width: 767px) {
-  .scrolly-step {
-    opacity: 1;
-    padding-left: var(--space-lg);
-    position: relative;
-  }
-
-  .scrolly-step::before {
-    content: "0" attr(data-step);
-    position: absolute;
-    left: 0;
-    top: 0;
-    font-family: var(--font-display);
-    font-size: 1.25rem;
-    color: var(--color-water);
-    line-height: 1.2;
-  }
-
-  /* Mobile dot */
-  .scrolly-step::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 1.75rem;
+@media (min-width: 768px) {
+  .scrolly-step:not(:last-child)::after {
+    left: 26px;
+    top: 56px;
     bottom: calc(-1 * var(--space-xl));
-    width: 2px;
-    background: linear-gradient(to bottom,
-        var(--color-water) 0%,
-        rgba(90, 185, 231, 0.2) 100%);
-  }
-
-  .scrolly-step:last-child::after {
-    display: none;
   }
 }
 
-/* Step title */
+/* Icon marker */
+.scrolly-marker {
+  flex-shrink: 0;
+}
+
+@media (max-width: 767px) {
+  .scrolly-marker {
+    margin-left: -38px; /* tweak: -4px to -10px depending on your eye */
+  }
+}
+
+
+.scrolly-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background-color: var(--color-white);
+  border: 2px solid var(--color-water);
+  border-radius: 50%;
+  color: var(--color-navy);
+  transition: background-color var(--transition-base), transform var(--transition-base);
+}
+
+@media (min-width: 768px) {
+  .scrolly-icon {
+    width: 52px;
+    height: 52px;
+  }
+}
+
+.scrolly-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+@media (min-width: 768px) {
+  .scrolly-icon svg {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+.scrolly-step:hover .scrolly-icon {
+  background-color: var(--color-water);
+  color: var(--color-white);
+  transform: scale(1.05);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scrolly-step:hover .scrolly-icon {
+    transform: none;
+  }
+}
+
+/* Step content */
+.scrolly-step-content {
+  flex: 1;
+  padding-top: 2px;
+}
+
 .scrolly-step-title {
-  color: var(--color-water);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  color: var(--color-navy);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   margin-bottom: var(--space-xs);
-  font-size: 1.25rem;
 }
 
 @media (min-width: 768px) {
   .scrolly-step-title {
-    font-size: 1.5rem;
-  }
-}
-
-/* Step main copy */
-.scrolly-step-copy {
-  font-size: 1.0625rem;
-  line-height: 1.65;
-  margin-bottom: var(--space-xs);
-  color: rgba(255, 255, 255, 0.95);
-}
-
-@media (min-width: 768px) {
-  .scrolly-step-copy {
-    font-size: 1.1875rem;
-    line-height: 1.7;
-  }
-}
-
-@media (min-width: 1024px) {
-  .scrolly-step-copy {
     font-size: 1.25rem;
   }
 }
 
-/* Step micro text */
-.scrolly-step-micro {
-  font-size: 0.9375rem;
-  color: rgba(255, 255, 255, 0.6);
-  font-style: italic;
+.scrolly-step-text {
+  font-size: 1rem;
+  line-height: 1.65;
+  color: var(--grey-700);
+  margin-bottom: var(--space-xs);
 }
 
-@media (min-width: 768px) {
-  .scrolly-step-micro {
-    font-size: 1rem;
-  }
+.scrolly-step-micro {
+  font-size: 0.875rem;
+  line-height: 1.5;
+  color: var(--grey-700);
+  opacity: 0.75;
+  font-style: italic;
+  margin-bottom: var(--space-xs);
+}
+
+.scrolly-step-actions {
+  margin-top: var(--space-sm);
 }
 
 /* ----------------------------------------
@@ -2021,30 +1910,6 @@ p,
     gap: var(--space-sm);
   }
 
-}
-
-/* ----------------------------------------
-   COOKIE BUTTONS — Improve Decline contrast
-   ---------------------------------------- */
-.cookie-actions .btn-small {
-  padding: 0.55em 0.9em;
-}
-
-.cookie-actions .btn-secondary {
-  background: rgba(255, 255, 255, 0.10);
-  color: var(--color-navy);
-  border: 1px solid var(--color-navy);
-}
-
-.cookie-actions .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.16);
-  border-color: var(--color-water);
-}
-
-.cookie-actions .btn-secondary:focus-visible,
-.cookie-actions .btn-primary:focus-visible {
-  outline: 2px solid var(--color-water);
-  outline-offset: 2px;
 }
 
 /* ----------------------------------------
@@ -4969,7 +4834,16 @@ p,
    SESSIONS
    ---------------------------------------- */
 .section-sessions {
-  background-color: var(--grey-100);
+  background-color: var(--color-navy);
+}
+
+/* Section header text in sessions */
+.section-sessions .section-title {
+  color: var(--color-white);
+}
+
+.section-sessions .section-intro {
+  color: var(--color-white);
 }
 
 .session-cards {
@@ -5091,7 +4965,7 @@ p,
 }
 
 .section-scrolly .section-title {
-  color: var(--color-white);
+  color: var(--color-navy);
 }
 
 .scrolly-wrapper {
@@ -5259,7 +5133,7 @@ p,
 
 /* Individual step panel */
 .scrolly-step {
-  opacity: 0.4;
+  opacity: 1;
   transform: translateY(0);
   transition: opacity var(--transition-base);
 }
@@ -5282,17 +5156,6 @@ p,
     opacity: 1;
     padding-left: var(--space-lg);
     position: relative;
-  }
-
-  .scrolly-step::before {
-    content: "0" attr(data-step);
-    position: absolute;
-    left: 0;
-    top: 0;
-    font-family: var(--font-display);
-    font-size: 1.25rem;
-    color: var(--color-water);
-    line-height: 1.2;
   }
 
   /* Mobile dot */
@@ -5417,7 +5280,7 @@ p,
 
 /* YouTube Section */
 .section-youtube {
-  background-color: var(--grey-100);
+  background: linear-gradient(180deg, var(--grey-100) 0%, var(--color-ice) 100%);
 }
 
 .youtube-embed-wrapper {
@@ -7415,7 +7278,7 @@ p,
    AWARDS GALLERY SECTION
    ---------------------------------------- */
 .poty-gallery {
-  background-color: var(--color-ice);
+  background: linear-gradient(180deg, var(--grey-100) 0%, var(--color-ice) 100%);
 }
 
 .poty-gallery-wrapper {
@@ -7769,7 +7632,7 @@ p,
 }
 
 .ladies-section--pathway {
-  background-color: var(--color-ice);
+  background: linear-gradient(180deg, var(--grey-100) 0%, var(--color-ice) 100%);
 }
 
 .ladies-section--gallery {
@@ -10794,8 +10657,8 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
    ---------------------------------------- */
 .page-juniors .juniors-hero {
   position: relative;
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 68vh;
+  min-height: 68dvh;
   display: flex;
   align-items: flex-end;
   justify-content: center;
@@ -10813,6 +10676,15 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+@media (max-width: 767px) {
+  .page-juniors .juniors-hero-image {
+    height: calc(100% + 120px);   /* gives us room to shift down */
+    transform: translateY(60px) scale(1.02);
+    transform-origin: center;
+    object-position: center 20%;  /* keeps a nice focal point */
+  }
 }
 
 .page-juniors .juniors-hero-overlay {
@@ -11243,7 +11115,7 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
    COACHES SECTION
    ---------------------------------------- */
 .page-juniors .juniors-coaches {
-  background-color: var(--grey-100);
+  background: linear-gradient(180deg, var(--grey-100) 0%, var(--color-ice) 100%);
 }
 
 .page-juniors .coaches-grid {
