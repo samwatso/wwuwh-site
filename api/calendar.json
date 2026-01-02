@@ -201,15 +201,15 @@
             </div>
         </section>
 
-        <!-- Transition Wave -->
-        <div class="transition-wave transition-wave--navy" aria-hidden="true"></div>
-
         <!-- Footer CTA -->
         <section id="cta" class="section section-cta">
+
+        <!-- Transition Wave -->
+        <div class="transition-wave transition-wave--navy" aria-hidden="true"></div>
             <div class="container">
                 <h2 class="cta-title">Ready to get involved?</h2>
                 <p class="cta-line">Start with a session. We'll help you with the rest.</p>
-                <a href="#" class="btn-primary btn-large">Enrol with Spond</a>
+                <a href="https://spond.com/landing/group/MGXCH" class="btn-primary btn-large">Enrol with Spond</a>
             </div>
         </section>
 

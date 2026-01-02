@@ -947,13 +947,15 @@ p,
   inset: 0;
   background: var(--hero-overlay);
   opacity: 0;
-  visibility: hidden;  /* Added - fully hides the gradient */
+  visibility: hidden;
+  /* Added - fully hides the gradient */
   transition: opacity 0.8s ease-out, visibility 0s linear 0.8s;
 }
 
 .hero-media.is-loaded .hero-overlay {
   opacity: 1;
-  visibility: visible;  /* Shows with video */
+  visibility: visible;
+  /* Shows with video */
   transition: opacity 0.8s ease-out, visibility 0s linear 0s;
 }
 
@@ -1096,7 +1098,7 @@ p,
    SESSIONS
    ---------------------------------------- */
 .section-sessions {
-  background: var(--color-navy);
+  background: linear-gradient(180deg, var(--color-navy) 0%, var(--color-deep-navy) 100%);
 }
 
 .session-cards {
@@ -1265,17 +1267,17 @@ p,
   content: '';
   position: absolute;
   left: 22px;
-  top: 52px;
-  bottom: calc(-1 * var(--space-lg));
+  top: 42px;
+  bottom: calc(-2.5 * var(--space-lg));
   width: 2px;
-  background: linear-gradient(to bottom, var(--color-water) 0%, var(--grey-300) 100%);
+  background: linear-gradient(to bottom, var(--color-water) 10%, var(--color-navy) 100%);
 }
 
 @media (min-width: 768px) {
   .scrolly-step:not(:last-child)::after {
     left: 26px;
-    top: 56px;
-    bottom: calc(-1 * var(--space-xl));
+    top: 50px;
+    bottom: calc(-2.3 * var(--space-xl));
   }
 }
 
@@ -1286,7 +1288,8 @@ p,
 
 @media (max-width: 767px) {
   .scrolly-marker {
-    margin-left: -38px; /* tweak: -4px to -10px depending on your eye */
+    margin-left: -38px;
+    /* tweak: -4px to -10px depending on your eye */
   }
 }
 
@@ -1366,7 +1369,7 @@ p,
 .scrolly-step-micro {
   font-size: 0.875rem;
   line-height: 1.5;
-  color: var(--grey-700);
+  color: var(--color-navy);
   opacity: 0.75;
   font-style: italic;
   margin-bottom: var(--space-xs);
@@ -1638,6 +1641,8 @@ p,
   text-align: center;
   padding-top: var(--space-2xl);
   padding-bottom: var(--space-2xl);
+  position: relative;
+  z-index: 2;
 }
 
 @media (min-width: 768px) {
@@ -2174,6 +2179,8 @@ p,
 .section-info {
   background-color: var(--color-navy);
   color: var(--color-white);
+  position: relative;
+  z-index: 0;
 }
 
 .section-info .section-title {
@@ -2263,6 +2270,8 @@ p,
       var(--color-navy) 0%,
       var(--color-deep-navy) 100%);
   color: var(--color-white);
+  position: relative;
+  z-index: 2;
 }
 
 .section-register .section-title {
@@ -2598,11 +2607,13 @@ p,
 
 /* Resources Section (Shops & Websites) */
 .kit-resources {
-   background: linear-gradient(180deg,
+  background: linear-gradient(180deg,
       var(--color-navy) 0%,
       var(--color-deep-navy) 100%);
   color: var(--color-white);
   padding: var(--space-xl) 0;
+  position: relative;
+  z-index: 2;
 }
 
 @media (min-width: 768px) {
@@ -2766,6 +2777,8 @@ p,
   background-color: var(--color-navy);
   color: var(--color-white);
   padding-bottom: var(--space-xl);
+  position: relative;
+  z-index: 0;
 }
 
 .story-section--timeline .section-title {
@@ -2777,12 +2790,14 @@ p,
 }
 
 .story-section--branding {
-  background-color: var(--color-ice);
+  background: linear-gradient(180deg, var(--grey-100) 0%, var(--color-ice) 100%);
 }
 
 .story-section--achievements {
   background-color: var(--color-navy);
   color: var(--color-white);
+  position: relative;
+  z-index: 0;
 }
 
 .story-section--achievements .section-title {
@@ -2798,7 +2813,7 @@ p,
 }
 
 .story-section--growth-sport {
-  background-color: var(--color-ice);
+  background: linear-gradient(180deg, var(--grey-100) 0%, var(--color-ice) 100%);
 }
 
 /* ----------------------------------------
@@ -3337,8 +3352,10 @@ p,
    CURRENT WINNER SECTION
    ---------------------------------------- */
 .poty-current {
-  background-color: var(--color-navy);
+  background: linear-gradient(180deg, var(--color-navy) 0%, var(--color-deep-navy) 100%);
   color: var(--color-white);
+  position: relative;
+  z-index: 0;
 }
 
 .poty-current .section-title {
@@ -4834,7 +4851,7 @@ p,
    SESSIONS
    ---------------------------------------- */
 .section-sessions {
-  background-color: var(--color-navy);
+  background: linear-gradient(180deg, var(--color-navy) 0%, var(--color-deep-navy) 100%);
 }
 
 /* Section header text in sessions */
@@ -5213,7 +5230,7 @@ p,
 /* Step micro text */
 .scrolly-step-micro {
   font-size: 0.9375rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-navy);
   font-style: italic;
 }
 
@@ -6018,7 +6035,7 @@ p,
    ADDITIONAL INFO NOTES
    ---------------------------------------- */
 .section-info {
-  background-color: var(--color-navy);
+  background: linear-gradient(180deg, var(--color-navy) 0%, var(--color-deep-navy) 100%);
   color: var(--color-white);
 }
 
@@ -6105,7 +6122,7 @@ p,
    BOA REGISTRATION SECTION
    ---------------------------------------- */
 .section-register {
-  background-color: var(--color-navy);
+  background: linear-gradient(180deg, var(--color-navy) 0%, var(--color-deep-navy) 100%);
   color: var(--color-white);
 }
 
@@ -6597,7 +6614,7 @@ p,
 }
 
 .story-section--timeline {
-  background-color: var(--color-navy);
+  background: linear-gradient(180deg, var(--color-navy) 0%, var(--color-deep-navy) 100%);
   color: var(--color-white);
   padding-bottom: var(--space-xl);
 }
@@ -6615,7 +6632,7 @@ p,
 }
 
 .story-section--achievements {
-  background-color: var(--color-navy);
+  background: linear-gradient(180deg, var(--color-navy) 0%, var(--color-deep-navy) 100%);
   color: var(--color-white);
 }
 
@@ -7167,7 +7184,7 @@ p,
    CURRENT WINNER SECTION
    ---------------------------------------- */
 .poty-current {
-  background-color: var(--color-navy);
+ background: linear-gradient(180deg, var(--color-navy) 0%, var(--color-deep-navy) 100%);
   color: var(--color-white);
 }
 
@@ -7623,8 +7640,12 @@ p,
 }
 
 .ladies-section--swickham {
-  background-color: var(--color-navy);
+  background: linear-gradient(180deg,
+      var(--color-navy) 0%,
+      var(--color-deep-navy) 100%);
   color: var(--color-white);
+  position: relative;
+  z-index: 0;
 }
 
 .ladies-section--training {
@@ -7638,6 +7659,8 @@ p,
 .ladies-section--gallery {
   background-color: var(--color-navy);
   color: var(--color-white);
+  position: relative;
+  z-index: 2;
 }
 
 .ladies-section--cta {
@@ -8086,7 +8109,7 @@ p,
    COUNTRY CARDS GRID
    ---------------------------------------- */
 .page-tournaments .section-circuit {
-  background-color: var(--color-white);
+  background: linear-gradient(180deg, var(--grey-100) 0%, var(--color-ice) 100%);
 }
 
 .page-tournaments .country-grid {
@@ -8154,8 +8177,20 @@ p,
 /* ----------------------------------------
 MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-silhouette.svg ---------------------------------------- */
 .page-tournaments .section-map {
-  background-color: var(--grey-100);
+background: linear-gradient(180deg, var(--color-navy) 0%, var(--color-deep-navy) 100%);
+  position: relative;
+  z-index: 0;
 }
+
+.page-tournaments .section-map .section-title {
+  color: var(--color-white);
+}
+
+.page-tournaments .section-map .section-intro {
+  color: var(--grey-100);
+}
+
+
 
 .page-tournaments .map-panel {
   position: relative;
@@ -8207,7 +8242,6 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
   flex-direction: column;
   align-items: center;
   gap: 4px;
-
   background: none;
   border: none;
   padding: 10px;
@@ -8453,7 +8487,7 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
    EVENTS WORLDWIDE SECTION
    ---------------------------------------- */
 .page-tournaments .section-events-worldwide {
-  background-color: var(--color-white);
+  background: linear-gradient(145deg, var(--color-white) 0%, var(--color-ice) 100%);
 }
 
 .page-tournaments .events-links-wrapper {
@@ -8852,7 +8886,7 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
    KEY STATS SECTION
    ---------------------------------------- */
 .fundraising-section--stats {
-  background: linear-gradient(180deg, var(--grey-100) 0%, var(--color-ice) 100%);
+  background: var(--grey-100);
   padding-top: var(--space-xl);
   padding-bottom: var(--space-xl);
 }
@@ -8933,7 +8967,16 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
    CONTENT SECTIONS
    ---------------------------------------- */
 .fundraising-section--challenge {
-  background-color: var(--grey-100);
+  background: linear-gradient(180deg, var(--grey-100) 0%, var(--color-ice) 100%);
+}
+
+.transition-wave--navy {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  transform: translateY(-100%);
+  background: var(--color-deep-navy);
 }
 
 .fundraising-section--why {
@@ -8946,7 +8989,7 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
 }
 
 .fundraising-section--gallery {
-  background-color: var(--color-navy);
+  background: linear-gradient(180deg, var(--color-navy) 0%, var(--color-deep-navy) 100%);
   color: var(--color-white);
 }
 
@@ -9633,108 +9676,109 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
   color: var(--color-white);
 }
 
-  /* Link Text */
-  .page-connect .connect-link-text {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-  }
+/* Link Text */
+.page-connect .connect-link-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
 
+.page-connect .connect-link-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-navy);
+}
+
+@media (min-width: 768px) {
   .page-connect .connect-link-name {
-    font-family: var(--font-display);
-    font-size: 1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--color-navy);
-  }
-
-  @media (min-width: 768px) {
-    .page-connect .connect-link-name {
-      font-size: 1.0625rem;
-    }
-  }
-
-  .page-connect .connect-link-desc {
-    font-family: var(--font-body);
-    font-size: 0.875rem;
-    color: var(--grey-700);
-    opacity: 0.75;
-  }
-
-  /* Link Arrow */
-  .page-connect .connect-link-arrow {
-    flex-shrink: 0;
-    position: relative;
-    width: 20px;
-    height: 20px;
-    opacity: 0.4;
-    transition:
-      transform var(--transition-fast),
-      opacity var(--transition-fast);
-  }
-
-  .page-connect .connect-link:hover .connect-link-arrow {
-    transform: translateX(4px);
-    opacity: 0.7;
-  }
-
-  .page-connect .connect-link-arrow::before,
-  .page-connect .connect-link-arrow::after {
-    content: "";
-    position: absolute;
-  }
-
-  .page-connect .connect-link-arrow::before {
-    width: 100%;
-    height: 2px;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: var(--color-water);
-  }
-
-  .page-connect .connect-link-arrow::after {
-    width: 10px;
-    height: 10px;
-    right: 0;
-    top: 50%;
-    transform: translateY(-50%) rotate(45deg);
-    background: transparent;
-    border-right: 2px solid var(--color-water);
-    border-top: 2px solid var(--color-water);
-  }
-
-  /* Divider */
-  .page-connect .connect-divider {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    padding: var(--space-sm) 0;
-  }
-
-  .page-connect .connect-divider::before,
-  .page-connect .connect-divider::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: var(--grey-300);
-  }
-
-  .page-connect .connect-divider-text {
-    font-family: var(--font-display);
-    font-size: 0.6875rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: var(--grey-700);
-    opacity: 0.6;
+    font-size: 1.0625rem;
   }
 }
+
+.page-connect .connect-link-desc {
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  color: var(--grey-700);
+  opacity: 0.75;
+}
+
+/* Link Arrow */
+.page-connect .connect-link-arrow {
+  flex-shrink: 0;
+  position: relative;
+  width: 20px;
+  height: 20px;
+  opacity: 0.4;
+  transition:
+    transform var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.page-connect .connect-link:hover .connect-link-arrow {
+  transform: translateX(4px);
+  opacity: 0.7;
+}
+
+.page-connect .connect-link-arrow::before,
+.page-connect .connect-link-arrow::after {
+  content: "";
+  position: absolute;
+}
+
+.page-connect .connect-link-arrow::before {
+  width: 100%;
+  height: 2px;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: var(--color-water);
+}
+
+.page-connect .connect-link-arrow::after {
+  width: 10px;
+  height: 10px;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  background: transparent;
+  border-right: 2px solid var(--color-water);
+  border-top: 2px solid var(--color-water);
+}
+
+/* Divider */
+.page-connect .connect-divider {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) 0;
+}
+
+.page-connect .connect-divider::before,
+.page-connect .connect-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--grey-300);
+}
+
+.page-connect .connect-divider-text {
+  font-family: var(--font-display);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--grey-700);
+  opacity: 0.6;
+}
+}
+
 /* ----------------------------------------
    END OF CONNECT PAGE
-   ---------------------------------------- */  
+   ---------------------------------------- */
 
-  /* ============================================
+/* ============================================
    EVENTS PAGE STYLES
    Append to css/styles.css
    ============================================ */
@@ -10193,7 +10237,8 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
 .page-events .calendar-loading {
   position: absolute;
   inset: 0;
-  top: 70px; /* Below toolbar */
+  top: 70px;
+  /* Below toolbar */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -10426,6 +10471,7 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -10569,6 +10615,7 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
     width: 48px;
     height: 48px;
   }
+
   .event-modal-btn-icon {
     width: 22px;
     height: 22px;
@@ -10625,6 +10672,7 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
   opacity: 0.7;
   margin-top: var(--space-sm);
 }
+
 /* Centre the subscribe block text */
 .event-modal-actions--subscribe {
   text-align: center;
@@ -10680,10 +10728,12 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
 
 @media (max-width: 767px) {
   .page-juniors .juniors-hero-image {
-    height: calc(100% + 120px);   /* gives us room to shift down */
+    height: calc(100% + 120px);
+    /* gives us room to shift down */
     transform: translateY(60px) scale(1.02);
     transform-origin: center;
-    object-position: center 20%;  /* keeps a nice focal point */
+    object-position: center 20%;
+    /* keeps a nice focal point */
   }
 }
 
@@ -10691,9 +10741,9 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
   position: absolute;
   inset: 0;
   background: linear-gradient(180deg,
-    rgba(15, 23, 51, 0.7) 0%,
-    rgba(15, 23, 51, 0.4) 40%,
-    rgba(15, 23, 51, 0.7) 100%);
+      rgba(15, 23, 51, 0.7) 0%,
+      rgba(15, 23, 51, 0.4) 40%,
+      rgba(15, 23, 51, 0.7) 100%);
 }
 
 .page-juniors .juniors-hero-content {
@@ -10752,17 +10802,20 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
 
 /* Desktop: 2-column grid */
 @media (min-width: 768px) {
-  .safeguarding-list{
+  .safeguarding-list {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--space-md);
   }
 
   /* Centre the final "odd" item */
-  .safeguarding-list > .safeguarding-item:last-child{
-    grid-column: 1 / -1;           /* span both columns */
-    justify-self: center;           /* centre the card */
-    width: min(520px, 100%);        /* prevent it becoming too wide */
+  .safeguarding-list>.safeguarding-item:last-child {
+    grid-column: 1 / -1;
+    /* span both columns */
+    justify-self: center;
+    /* centre the card */
+    width: min(520px, 100%);
+    /* prevent it becoming too wide */
   }
 }
 
@@ -10839,6 +10892,8 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
    ---------------------------------------- */
 .page-juniors .juniors-kit {
   background-color: var(--color-navy);
+  position: relative;
+  z-index: 2;
 }
 
 .page-juniors .juniors-kit .section-title {
@@ -10910,6 +10965,8 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
    ---------------------------------------- */
 .page-juniors .juniors-journey {
   background-color: var(--grey-100);
+  position: relative;
+  z-index: 2;
 }
 
 .page-juniors .journey-timeline {
@@ -10928,8 +10985,8 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
   bottom: 50px;
   width: 3px;
   background: linear-gradient(180deg,
-    var(--color-water) 0%,
-    var(--color-navy) 100%);
+      var(--color-water) 0%,
+      var(--color-navy) 100%);
   border-radius: 2px;
 }
 
@@ -11019,8 +11076,8 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
     right: calc(-50%);
     height: 3px;
     background: linear-gradient(90deg,
-      var(--color-water),
-      var(--color-navy));
+        var(--color-water),
+        var(--color-navy));
     border-radius: 2px;
   }
 }
@@ -11071,6 +11128,8 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
    ---------------------------------------- */
 .page-juniors .juniors-medals {
   background-color: var(--color-navy);
+  position: relative;
+  z-index: 2;
 }
 
 .page-juniors .juniors-medals .section-title {
@@ -11116,6 +11175,8 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
    ---------------------------------------- */
 .page-juniors .juniors-coaches {
   background: linear-gradient(180deg, var(--grey-100) 0%, var(--color-ice) 100%);
+  position: relative;
+  z-index: 2;
 }
 
 .page-juniors .coaches-grid {
@@ -11192,6 +11253,7 @@ MAP PANEL (Desktop) — SVG image+overlay pins Uses: /assets/touraments/europe-s
    REDUCED MOTION
    ---------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
+
   .page-juniors .journey-step:hover .journey-icon,
   .page-juniors .coach-card:hover,
   .page-juniors .coach-card:hover .coach-image img {
