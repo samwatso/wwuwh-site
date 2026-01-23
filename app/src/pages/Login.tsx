@@ -168,7 +168,7 @@ export function Login() {
 
         <div className="auth-footer">
           Don't have an account?{' '}
-          <Link to="/app/signup">Create one</Link>
+          <a href="/connect/">Contact us</a>
         </div>
       </div>
     </div>
