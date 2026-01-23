@@ -1,0 +1,8 @@
+{
+  "name": "wwuwh-site",
+  "private": true,
+  "scripts": {
+    "build:app": "cd app && npm install && npm run build",
+    "build": "npm run build:app && rm -rf _site && mkdir -p _site/app && cp -r index.html about connect css events kit membership privacy assets _redirects _site/ && cp -r app/dist/* _site/app/ && cp -r functions _site/"
+  }
+}

@@ -3,6 +3,7 @@ node_modules/
 
 # Build output
 app/dist/
+_site/
 
 # Environment files (contain secrets)
 .dev.vars

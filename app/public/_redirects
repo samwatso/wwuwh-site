@@ -1,0 +1,2 @@
+# SPA fallback - serve index.html for all app routes
+/app/*  /app/index.html  200
