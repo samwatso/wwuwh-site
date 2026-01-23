@@ -1,0 +1,17 @@
+/* AuthGuard Loading State */
+
+.loading {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  background: var(--grey-100);
+}
+
+.loadingText {
+  font-size: var(--text-sm);
+  color: var(--grey-500);
+}

@@ -1,0 +1,68 @@
+/* Avatar Component Styles */
+
+.avatar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid var(--color-white);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--color-white);
+  font-weight: 600;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+/* Sizes */
+.sizeXs {
+  width: 24px;
+  height: 24px;
+}
+
+.sizeXs .initials {
+  font-size: 10px;
+}
+
+.sizeSm {
+  width: 32px;
+  height: 32px;
+}
+
+.sizeSm .initials {
+  font-size: 12px;
+}
+
+.sizeMd {
+  width: 40px;
+  height: 40px;
+}
+
+.sizeMd .initials {
+  font-size: 14px;
+}
+
+.sizeLg {
+  width: 56px;
+  height: 56px;
+}
+
+.sizeLg .initials {
+  font-size: 18px;
+}

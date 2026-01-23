@@ -1,0 +1,38 @@
+# Cloudflare Pages configuration for WWUWH
+# https://developers.cloudflare.com/pages/functions/wrangler-configuration/
+
+name = "wwuwh-site"
+compatibility_date = "2024-01-01"
+pages_build_output_dir = "."
+
+# ============================================
+# D1 Database Binding
+# ============================================
+# Replace DATABASE_ID with your actual D1 database ID
+# Find it with: wrangler d1 list
+#
+# For local development, the database will be created automatically
+# in .wrangler/state/v3/d1/
+
+[[d1_databases]]
+binding = "WWUWH_DB"
+database_name = "wwuwh-prod"
+database_id = "609b6dee-1eb8-4bfb-ba0d-8928d3a8b747"
+
+# ============================================
+# Environment Variables
+# ============================================
+# These should be set in the Cloudflare Pages dashboard
+# or via wrangler secret put SUPABASE_URL
+#
+# [vars]
+# SUPABASE_URL = "https://xxx.supabase.co"
+# SUPABASE_ANON_KEY = "eyJ..."
+
+# ============================================
+# Local Development
+# ============================================
+# Run with: npx wrangler pages dev --d1 WWUWH_DB=wwuwh-prod -- npm run dev --prefix app
+#
+# To apply migrations locally:
+# npx wrangler d1 execute wwuwh-prod --local --file=db/schema.sql

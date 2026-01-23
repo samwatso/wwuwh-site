@@ -1,0 +1,51 @@
+/* Spinner Component Styles */
+
+.spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-water);
+}
+
+.spinner svg {
+  animation: spin 1s linear infinite;
+}
+
+.track {
+  opacity: 0.25;
+}
+
+.indicator {
+  stroke-linecap: round;
+}
+
+/* Sizes */
+.sm svg {
+  width: 16px;
+  height: 16px;
+}
+
+.md svg {
+  width: 24px;
+  height: 24px;
+}
+
+.lg svg {
+  width: 32px;
+  height: 32px;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner svg {
+    animation: none;
+  }
+}

@@ -1,0 +1,163 @@
+/**
+ * Admin Members Endpoint
+ * GET /api/admin/members - Get all members with subscription and attendance stats
+ */
+
+import { Env, jsonResponse, errorResponse } from '../../types'
+import { withAuth } from '../../middleware/auth'
+import { isAdmin } from '../../middleware/admin'
+
+interface MemberWithStats {
+  id: string
+  person_id: string
+  name: string
+  email: string
+  member_type: 'member' | 'guest'
+  status: string
+  joined_at: string | null
+  subscription_status: string | null
+  subscription_plan: string | null
+  sessions_attended: number
+  sessions_total: number
+  last_attended: string | null
+}
+
+/**
+ * GET /api/admin/members
+ * Returns all members for a club with subscription and attendance stats
+ *
+ * Query params:
+ * - club_id (required)
+ * - search (optional) - filter by name/email
+ * - status (optional) - filter by membership status
+ */
+export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) => {
+  const db = context.env.WWUWH_DB
+  const url = new URL(context.request.url)
+  const clubId = url.searchParams.get('club_id')
+  const search = url.searchParams.get('search')
+  const statusFilter = url.searchParams.get('status')
+
+  if (!clubId) {
+    return errorResponse('club_id is required', 400)
+  }
+
+  try {
+    // Get person record for admin check
+    const person = await db
+      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
+      .bind(user.id)
+      .first<{ id: string }>()
+
+    if (!person) {
+      return errorResponse('Profile not found', 404)
+    }
+
+    // Check admin role
+    const adminCheck = await isAdmin(db, person.id, clubId)
+    if (!adminCheck) {
+      return errorResponse('Admin access required', 403)
+    }
+
+    // Calculate date 12 weeks ago for attendance stats
+    const twelveWeeksAgo = new Date()
+    twelveWeeksAgo.setDate(twelveWeeksAgo.getDate() - 84)
+    const twelveWeeksAgoStr = twelveWeeksAgo.toISOString()
+
+    // Build the query
+    let query = `
+      SELECT
+        cm.id,
+        cm.person_id,
+        p.name,
+        p.email,
+        cm.member_type,
+        cm.status,
+        cm.joined_at,
+        ms.status as subscription_status,
+        bp.name as subscription_plan,
+        COALESCE(attendance.sessions_attended, 0) as sessions_attended,
+        COALESCE(attendance.last_attended, NULL) as last_attended
+      FROM club_memberships cm
+      JOIN people p ON p.id = cm.person_id
+      LEFT JOIN member_subscriptions ms ON ms.person_id = cm.person_id
+        AND ms.club_id = cm.club_id
+        AND ms.status = 'active'
+      LEFT JOIN billing_plans bp ON bp.id = ms.plan_id
+      LEFT JOIN (
+        SELECT
+          er.person_id,
+          COUNT(CASE WHEN er.response = 'yes' THEN 1 END) as sessions_attended,
+          MAX(CASE WHEN er.response = 'yes' THEN e.starts_at_utc END) as last_attended
+        FROM event_rsvps er
+        JOIN events e ON e.id = er.event_id
+        WHERE e.club_id = ?1
+          AND e.starts_at_utc >= ?2
+          AND e.starts_at_utc <= datetime('now')
+          AND e.status = 'completed'
+        GROUP BY er.person_id
+      ) attendance ON attendance.person_id = cm.person_id
+      WHERE cm.club_id = ?1
+    `
+
+    const params: (string | number)[] = [clubId, twelveWeeksAgoStr]
+
+    // Add status filter
+    if (statusFilter) {
+      query += ` AND cm.status = ?${params.length + 1}`
+      params.push(statusFilter)
+    }
+
+    // Add search filter
+    if (search) {
+      query += ` AND (p.name LIKE ?${params.length + 1} OR p.email LIKE ?${params.length + 1})`
+      params.push(`%${search}%`)
+    }
+
+    query += ` ORDER BY p.name ASC`
+
+    // Execute query
+    const stmt = db.prepare(query)
+    const result = await stmt.bind(...params).all<MemberWithStats>()
+
+    // Get total sessions in the period for context
+    const sessionsResult = await db
+      .prepare(`
+        SELECT COUNT(*) as total
+        FROM events
+        WHERE club_id = ?
+          AND starts_at_utc >= ?
+          AND starts_at_utc <= datetime('now')
+          AND status = 'completed'
+      `)
+      .bind(clubId, twelveWeeksAgoStr)
+      .first<{ total: number }>()
+
+    const totalSessions = sessionsResult?.total || 0
+
+    // Add total sessions to each member
+    const members = result.results.map(m => ({
+      ...m,
+      sessions_total: totalSessions,
+    }))
+
+    // Get summary stats
+    const activeMembers = members.filter(m => m.status === 'active').length
+    const activeSubscriptions = members.filter(m => m.subscription_status === 'active').length
+    const guests = members.filter(m => m.member_type === 'guest').length
+
+    return jsonResponse({
+      members,
+      stats: {
+        total_members: members.length,
+        active_members: activeMembers,
+        active_subscriptions: activeSubscriptions,
+        guests,
+        period_sessions: totalSessions,
+      },
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Database error'
+    return errorResponse(message, 500)
+  }
+})

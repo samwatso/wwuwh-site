@@ -1,0 +1,686 @@
+/**
+ * EventTeams Page
+ *
+ * View and manage team assignments for an event.
+ * - View mode: Shows teams as cards with players grouped by position
+ * - Admin mode: Allows team/position/activity assignment via UI controls
+ */
+
+import { useState, useMemo, useRef, useCallback } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { toPng } from 'html-to-image'
+import { useProfile } from '@/hooks/useProfile'
+import { useAdmin } from '@/hooks/useAdmin'
+import { useEventTeams } from '@/hooks/useEventTeams'
+import { Spinner, TeamSheet, Avatar } from '@/components'
+import type { TeamAssignment, AssignmentUpdate, AvailablePlayer } from '@/lib/api'
+import styles from './EventTeams.module.css'
+
+// Position display names and order
+const POSITIONS = [
+  { code: 'F', name: 'Forward' },
+  { code: 'W', name: 'Wing' },
+  { code: 'C', name: 'Centre' },
+  { code: 'B', name: 'Back' },
+] as const
+
+const ACTIVITIES = [
+  { value: 'play', label: 'Playing' },
+  { value: 'swim_sets', label: 'Swim Sets' },
+  { value: 'not_playing', label: 'Not Playing' },
+  { value: 'other', label: 'Other' },
+] as const
+
+// Helper to format date
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  })
+}
+
+// Group assignments by position
+function groupByPosition(assignments: TeamAssignment[]): Map<string, TeamAssignment[]> {
+  const groups = new Map<string, TeamAssignment[]>()
+
+  // Initialize with position order
+  POSITIONS.forEach((pos) => groups.set(pos.code, []))
+  groups.set('none', []) // For players without position
+
+  assignments.forEach((a) => {
+    const key = a.position_code || 'none'
+    const group = groups.get(key) || []
+    group.push(a)
+    groups.set(key, group)
+  })
+
+  return groups
+}
+
+interface PlayerCardProps {
+  assignment: TeamAssignment
+  isAdmin: boolean
+  onEdit: (assignment: TeamAssignment) => void
+}
+
+function PlayerCard({ assignment, isAdmin, onEdit }: PlayerCardProps) {
+  const position = POSITIONS.find((p) => p.code === assignment.position_code)
+
+  return (
+    <div
+      className={`${styles.playerCard} ${isAdmin ? styles.playerCardEditable : ''}`}
+      onClick={isAdmin ? () => onEdit(assignment) : undefined}
+    >
+      <Avatar
+        src={assignment.person_photo_url}
+        name={assignment.person_name}
+        size="sm"
+        className={styles.playerAvatar}
+      />
+      <div className={styles.playerInfo}>
+        <div className={styles.playerName}>{assignment.person_name}</div>
+        {position && <div className={styles.playerPosition}>{position.name}</div>}
+        {assignment.notes && <div className={styles.playerNotes}>{assignment.notes}</div>}
+      </div>
+    </div>
+  )
+}
+
+interface TeamCardProps {
+  name: string
+  assignments: TeamAssignment[]
+  color?: string
+  isAdmin: boolean
+  onEditPlayer: (assignment: TeamAssignment) => void
+}
+
+function TeamCard({ name, assignments, color, isAdmin, onEditPlayer }: TeamCardProps) {
+  const grouped = useMemo(() => groupByPosition(assignments), [assignments])
+  const playingCount = assignments.filter((a) => a.activity === 'play').length
+
+  return (
+    <div className={styles.teamCard} style={{ '--team-color': color } as React.CSSProperties}>
+      <div className={styles.teamHeader}>
+        <h3 className={styles.teamName}>{name}</h3>
+        <span className={styles.teamCount}>{playingCount} players</span>
+      </div>
+      <div className={styles.teamPlayers}>
+        {POSITIONS.map((pos) => {
+          const posPlayers = grouped.get(pos.code) || []
+          if (posPlayers.length === 0) return null
+          return (
+            <div key={pos.code} className={styles.positionGroup}>
+              <div className={styles.positionLabel}>{pos.name}</div>
+              <div className={styles.positionPlayers}>
+                {posPlayers.map((a) => (
+                  <PlayerCard
+                    key={a.person_id}
+                    assignment={a}
+                    isAdmin={isAdmin}
+                    onEdit={onEditPlayer}
+                  />
+                ))}
+              </div>
+            </div>
+          )
+        })}
+        {/* Players without position */}
+        {(() => {
+          const noPos = grouped.get('none') || []
+          if (noPos.length === 0) return null
+          return (
+            <div className={styles.positionGroup}>
+              <div className={styles.positionLabel}>Unassigned Position</div>
+              <div className={styles.positionPlayers}>
+                {noPos.map((a) => (
+                  <PlayerCard
+                    key={a.person_id}
+                    assignment={a}
+                    isAdmin={isAdmin}
+                    onEdit={onEditPlayer}
+                  />
+                ))}
+              </div>
+            </div>
+          )
+        })()}
+      </div>
+    </div>
+  )
+}
+
+interface EditPlayerModalProps {
+  assignment: TeamAssignment | null
+  teams: Array<{ id: string; name: string }>
+  onSave: (update: AssignmentUpdate) => void
+  onClose: () => void
+  saving: boolean
+}
+
+function EditPlayerModal({ assignment, teams, onSave, onClose, saving }: EditPlayerModalProps) {
+  const [teamId, setTeamId] = useState<string | null>(assignment?.team_id || null)
+  const [activity, setActivity] = useState<AssignmentUpdate['activity']>(
+    assignment?.activity || 'play'
+  )
+  const [position, setPosition] = useState<AssignmentUpdate['position_code']>(
+    assignment?.position_code || null
+  )
+  const [notes, setNotes] = useState(assignment?.notes || '')
+
+  if (!assignment) return null
+
+  const handleSave = () => {
+    onSave({
+      person_id: assignment.person_id,
+      team_id: teamId,
+      activity,
+      position_code: position,
+      notes: notes || null,
+    })
+  }
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h3>{assignment.person_name}</h3>
+          <button className={styles.modalClose} onClick={onClose}>
+            &times;
+          </button>
+        </div>
+
+        <div className={styles.modalBody}>
+          {/* Team Selector */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Team</label>
+            <div className={styles.segmentedControl}>
+              <button
+                className={`${styles.segmentBtn} ${teamId === null ? styles.segmentBtnActive : ''}`}
+                onClick={() => setTeamId(null)}
+              >
+                None
+              </button>
+              {teams.map((team) => (
+                <button
+                  key={team.id}
+                  className={`${styles.segmentBtn} ${teamId === team.id ? styles.segmentBtnActive : ''}`}
+                  onClick={() => setTeamId(team.id)}
+                >
+                  {team.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Activity Selector */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Activity</label>
+            <div className={styles.segmentedControl}>
+              {ACTIVITIES.map((act) => (
+                <button
+                  key={act.value}
+                  className={`${styles.segmentBtn} ${activity === act.value ? styles.segmentBtnActive : ''}`}
+                  onClick={() => setActivity(act.value as AssignmentUpdate['activity'])}
+                >
+                  {act.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Position Selector (only if playing) */}
+          {activity === 'play' && (
+            <div className={styles.formGroup}>
+              <label className={styles.formLabel}>Position</label>
+              <div className={styles.segmentedControl}>
+                <button
+                  className={`${styles.segmentBtn} ${position === null ? styles.segmentBtnActive : ''}`}
+                  onClick={() => setPosition(null)}
+                >
+                  None
+                </button>
+                {POSITIONS.map((pos) => (
+                  <button
+                    key={pos.code}
+                    className={`${styles.segmentBtn} ${position === pos.code ? styles.segmentBtnActive : ''}`}
+                    onClick={() => setPosition(pos.code as AssignmentUpdate['position_code'])}
+                  >
+                    {pos.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Notes */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Notes</label>
+            <input
+              type="text"
+              className={styles.formInput}
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Optional notes..."
+            />
+          </div>
+        </div>
+
+        <div className={styles.modalFooter}>
+          <button className={styles.btnSecondary} onClick={onClose} disabled={saving}>
+            Cancel
+          </button>
+          <button className={styles.btnPrimary} onClick={handleSave} disabled={saving}>
+            {saving ? <Spinner size="sm" /> : 'Save'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface AvailablePlayersProps {
+  players: AvailablePlayer[]
+  isAdmin: boolean
+  onAssign: (player: AvailablePlayer) => void
+}
+
+function AvailablePlayers({ players, isAdmin, onAssign }: AvailablePlayersProps) {
+  if (players.length === 0) return null
+
+  return (
+    <div className={styles.availableSection}>
+      <h3 className={styles.sectionTitle}>Available Players ({players.length})</h3>
+      <p className={styles.sectionSubtitle}>RSVP'd yes but not yet assigned</p>
+      <div className={styles.availableList}>
+        {players.map((p) => (
+          <div
+            key={p.person_id}
+            className={`${styles.availablePlayer} ${isAdmin ? styles.availablePlayerClickable : ''}`}
+            onClick={isAdmin ? () => onAssign(p) : undefined}
+          >
+            <Avatar
+              src={p.person_photo_url}
+              name={p.person_name}
+              size="xs"
+              className={styles.availableAvatar}
+            />
+            <span>{p.person_name}</span>
+            {isAdmin && <span className={styles.assignIcon}>+</span>}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export function EventTeams() {
+  const { eventId } = useParams<{ eventId: string }>()
+  const { memberships, loading: profileLoading } = useProfile()
+  const { isAdmin } = useAdmin()
+
+  const clubId = memberships.length > 0 ? memberships[0].club_id : ''
+
+  const {
+    event,
+    teams,
+    unassigned,
+    availablePlayers,
+    totalAssigned,
+    totalRsvpYes,
+    loading,
+    error,
+    saving,
+    createTeams,
+    updateAssignments,
+  } = useEventTeams({ eventId: eventId || '', clubId })
+
+  const [editingPlayer, setEditingPlayer] = useState<TeamAssignment | null>(null)
+  const [showCreateTeams, setShowCreateTeams] = useState(false)
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [sharing, setSharing] = useState(false)
+  const teamSheetRef = useRef<HTMLDivElement>(null)
+
+  // Handle saving player assignment
+  const handleSaveAssignment = async (update: AssignmentUpdate) => {
+    try {
+      await updateAssignments([update])
+      setEditingPlayer(null)
+    } catch (err) {
+      console.error('Failed to save assignment:', err)
+    }
+  }
+
+  // Handle assigning available player
+  const handleAssignAvailable = (player: AvailablePlayer) => {
+    // Create a temporary assignment object to edit
+    setEditingPlayer({
+      event_id: eventId || '',
+      person_id: player.person_id,
+      team_id: null,
+      activity: 'play',
+      position_code: null,
+      notes: null,
+      assigned_at: new Date().toISOString(),
+      person_name: player.person_name,
+      person_email: player.person_email,
+      person_photo_url: player.person_photo_url,
+    })
+  }
+
+  // Handle creating default teams
+  const handleCreateDefaultTeams = async () => {
+    try {
+      await createTeams([
+        { name: 'White', sort_order: 0 },
+        { name: 'Black', sort_order: 1 },
+      ])
+      setShowCreateTeams(false)
+    } catch (err) {
+      console.error('Failed to create teams:', err)
+    }
+  }
+
+  // Format date for TeamSheet
+  const formattedDate = event
+    ? formatDate(event.starts_at_utc)
+    : ''
+
+  // Handle share as image
+  const handleShareImage = useCallback(async () => {
+    if (!teamSheetRef.current) return
+
+    setSharing(true)
+    try {
+      const dataUrl = await toPng(teamSheetRef.current, {
+        quality: 1,
+        pixelRatio: 2,
+        backgroundColor: '#0a1929',
+      })
+
+      // Check if Web Share API is available and supports files
+      if (navigator.share && navigator.canShare) {
+        const blob = await (await fetch(dataUrl)).blob()
+        const file = new File([blob], `teams-${eventId}.png`, { type: 'image/png' })
+
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: event?.title || 'Team Sheet',
+            files: [file],
+          })
+        } else {
+          // Fall back to download
+          downloadImage(dataUrl)
+        }
+      } else {
+        // Fall back to download
+        downloadImage(dataUrl)
+      }
+    } catch (err) {
+      console.error('Failed to share:', err)
+      // User cancelled share or error occurred
+    } finally {
+      setSharing(false)
+      setShowShareModal(false)
+    }
+  }, [event?.title, eventId])
+
+  // Download image fallback
+  const downloadImage = (dataUrl: string) => {
+    const link = document.createElement('a')
+    link.download = `teams-${eventId}.png`
+    link.href = dataUrl
+    link.click()
+  }
+
+  // Loading state
+  if (profileLoading || loading) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.loading}>
+          <Spinner size="lg" />
+          <p>Loading teams...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.error}>
+          <div className={styles.errorIcon}>!</div>
+          <h2>Unable to load teams</h2>
+          <p>{error}</p>
+          <Link to="/app/events" className={styles.backLink}>
+            Back to Events
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // No event data
+  if (!event) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.error}>
+          <h2>Event not found</h2>
+          <Link to="/app/events" className={styles.backLink}>
+            Back to Events
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // No teams yet (admin can create)
+  if (teams.length === 0 && isAdmin) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <Link to="/app/events" className={styles.backLink}>
+            &larr; Back to Events
+          </Link>
+          <h1 className={styles.title}>{event.title}</h1>
+          <p className={styles.subtitle}>{formatDate(event.starts_at_utc)}</p>
+        </div>
+
+        <div className={styles.empty}>
+          <h2>No teams created yet</h2>
+          <p>Create teams to start assigning players.</p>
+          {!showCreateTeams ? (
+            <button className={styles.btnPrimary} onClick={() => setShowCreateTeams(true)}>
+              Create Teams
+            </button>
+          ) : (
+            <div className={styles.createTeamsBox}>
+              <p>Create default White/Black teams?</p>
+              <div className={styles.createTeamsBtns}>
+                <button
+                  className={styles.btnSecondary}
+                  onClick={() => setShowCreateTeams(false)}
+                  disabled={saving}
+                >
+                  Cancel
+                </button>
+                <button
+                  className={styles.btnPrimary}
+                  onClick={handleCreateDefaultTeams}
+                  disabled={saving}
+                >
+                  {saving ? <Spinner size="sm" /> : 'Create'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Available players even before teams created */}
+        <AvailablePlayers
+          players={availablePlayers}
+          isAdmin={false}
+          onAssign={() => { /* no-op when not admin */ }}
+        />
+      </div>
+    )
+  }
+
+  // No teams (non-admin view)
+  if (teams.length === 0) {
+    return (
+      <div className={styles.container}>
+        <div className={styles.header}>
+          <Link to="/app/events" className={styles.backLink}>
+            &larr; Back to Events
+          </Link>
+          <h1 className={styles.title}>{event.title}</h1>
+          <p className={styles.subtitle}>{formatDate(event.starts_at_utc)}</p>
+        </div>
+
+        <div className={styles.empty}>
+          <h2>Teams not yet assigned</h2>
+          <p>Check back later for team assignments.</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Main view with teams
+  return (
+    <div className={styles.container}>
+      <div className={styles.header}>
+        <Link to="/app/events" className={styles.backLink}>
+          &larr; Back to Events
+        </Link>
+        <h1 className={styles.title}>{event.title}</h1>
+        <p className={styles.subtitle}>{formatDate(event.starts_at_utc)}</p>
+        <div className={styles.stats}>
+          <span>{totalAssigned} assigned</span>
+          <span className={styles.statDivider}>|</span>
+          <span>{totalRsvpYes} RSVP'd yes</span>
+        </div>
+        {teams.length > 0 && (
+          <button
+            className={styles.shareBtn}
+            onClick={() => setShowShareModal(true)}
+            title="Share Teams"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+              <polyline points="16 6 12 2 8 6" />
+              <line x1="12" y1="2" x2="12" y2="15" />
+            </svg>
+            Share
+          </button>
+        )}
+      </div>
+
+      {isAdmin && (
+        <div className={styles.adminBar}>
+          <span className={styles.adminLabel}>Admin Mode</span>
+          <span className={styles.adminHint}>Tap a player to edit</span>
+        </div>
+      )}
+
+      {/* Teams Grid */}
+      <div className={styles.teamsGrid}>
+        {teams.map((team, index) => (
+          <TeamCard
+            key={team.id}
+            name={team.name}
+            assignments={team.assignments}
+            color={index === 0 ? '#f8f8f8' : '#1a1a2e'}
+            isAdmin={isAdmin}
+            onEditPlayer={setEditingPlayer}
+          />
+        ))}
+      </div>
+
+      {/* Unassigned (have assignment but no team) */}
+      {unassigned.length > 0 && (
+        <div className={styles.unassignedSection}>
+          <h3 className={styles.sectionTitle}>Unassigned to Team ({unassigned.length})</h3>
+          <div className={styles.unassignedList}>
+            {unassigned.map((a) => (
+              <PlayerCard
+                key={a.person_id}
+                assignment={a}
+                isAdmin={isAdmin}
+                onEdit={setEditingPlayer}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Available players (RSVP'd yes, no assignment) */}
+      <AvailablePlayers
+        players={availablePlayers}
+        isAdmin={isAdmin}
+        onAssign={handleAssignAvailable}
+      />
+
+      {/* Edit Player Modal */}
+      {editingPlayer && (
+        <EditPlayerModal
+          assignment={editingPlayer}
+          teams={teams.map((t) => ({ id: t.id, name: t.name }))}
+          onSave={handleSaveAssignment}
+          onClose={() => setEditingPlayer(null)}
+          saving={saving}
+        />
+      )}
+
+      {/* Share Modal */}
+      {showShareModal && (
+        <div className={styles.modalOverlay} onClick={() => setShowShareModal(false)}>
+          <div className={styles.shareModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <h3>Share Teams</h3>
+              <button className={styles.modalClose} onClick={() => setShowShareModal(false)}>
+                &times;
+              </button>
+            </div>
+
+            <div className={styles.sharePreview}>
+              <TeamSheet
+                ref={teamSheetRef}
+                eventTitle={event.title}
+                eventDate={formattedDate}
+                teams={teams}
+              />
+            </div>
+
+            <div className={styles.shareActions}>
+              <button
+                className={styles.btnPrimary}
+                onClick={handleShareImage}
+                disabled={sharing}
+              >
+                {sharing ? (
+                  <>
+                    <Spinner size="sm" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+                      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8" />
+                      <polyline points="16 6 12 2 8 6" />
+                      <line x1="12" y1="2" x2="12" y2="15" />
+                    </svg>
+                    Share / Download
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
