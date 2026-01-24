@@ -4,7 +4,7 @@
  * Manage events and recurring series.
  */
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useProfile } from '@/hooks/useProfile'
 import { useAdminEvents } from '@/hooks/useAdminEvents'
@@ -305,10 +305,23 @@ function EventModal({
   const [feeCents, setFeeCents] = useState(sourceEvent?.fee_cents || savedDraft?.feeCents || 0)
   const [visibilityDays, setVisibilityDays] = useState(savedDraft?.visibilityDays || 5)
 
-  // Save draft to localStorage when values change (only for new events)
+  // Keep a ref to current values for saving on unmount
+  const draftRef = useRef<EventDraft>({
+    title,
+    description,
+    location,
+    kind,
+    startDate,
+    startTime,
+    duration,
+    paymentMode,
+    feeCents,
+    visibilityDays,
+  })
+
+  // Update ref whenever values change
   useEffect(() => {
-    if (isEdit || isCopy) return
-    const draft: EventDraft = {
+    draftRef.current = {
       title,
       description,
       location,
@@ -320,8 +333,22 @@ function EventModal({
       feeCents,
       visibilityDays,
     }
-    localStorage.setItem(EVENT_DRAFT_KEY, JSON.stringify(draft))
+  }, [title, description, location, kind, startDate, startTime, duration, paymentMode, feeCents, visibilityDays])
+
+  // Save draft to localStorage when values change (only for new events)
+  useEffect(() => {
+    if (isEdit || isCopy) return
+    localStorage.setItem(EVENT_DRAFT_KEY, JSON.stringify(draftRef.current))
   }, [isEdit, isCopy, title, description, location, kind, startDate, startTime, duration, paymentMode, feeCents, visibilityDays])
+
+  // Save draft on unmount (catches navigation away)
+  useEffect(() => {
+    return () => {
+      if (!isEdit && !isCopy) {
+        localStorage.setItem(EVENT_DRAFT_KEY, JSON.stringify(draftRef.current))
+      }
+    }
+  }, [isEdit, isCopy])
 
   // Clear draft helper
   const clearDraft = () => {
@@ -585,10 +612,24 @@ function SeriesModal({
   const [generateWeeks, setGenerateWeeks] = useState(savedDraft?.generateWeeks || 8)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
-  // Save draft to localStorage when values change (only for new series)
+  // Keep a ref to current values for saving on unmount
+  const draftRef = useRef<SeriesDraft>({
+    title,
+    description,
+    location,
+    weekdays,
+    startTime,
+    duration,
+    startDate,
+    hasEndDate,
+    endDate,
+    visibilityDays,
+    generateWeeks,
+  })
+
+  // Update ref whenever values change
   useEffect(() => {
-    if (isEdit) return
-    const draft: SeriesDraft = {
+    draftRef.current = {
       title,
       description,
       location,
@@ -601,8 +642,22 @@ function SeriesModal({
       visibilityDays,
       generateWeeks,
     }
-    localStorage.setItem(SERIES_DRAFT_KEY, JSON.stringify(draft))
+  }, [title, description, location, weekdays, startTime, duration, startDate, hasEndDate, endDate, visibilityDays, generateWeeks])
+
+  // Save draft to localStorage when values change (only for new series)
+  useEffect(() => {
+    if (isEdit) return
+    localStorage.setItem(SERIES_DRAFT_KEY, JSON.stringify(draftRef.current))
   }, [isEdit, title, description, location, weekdays, startTime, duration, startDate, hasEndDate, endDate, visibilityDays, generateWeeks])
+
+  // Save draft on unmount (catches navigation away)
+  useEffect(() => {
+    return () => {
+      if (!isEdit) {
+        localStorage.setItem(SERIES_DRAFT_KEY, JSON.stringify(draftRef.current))
+      }
+    }
+  }, [isEdit])
 
   // Clear draft helper
   const clearDraft = () => {
