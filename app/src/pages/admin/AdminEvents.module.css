@@ -665,6 +665,14 @@
   animation: fadeIn 0.2s ease;
 }
 
+.modal form {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -807,20 +815,21 @@
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  padding: var(--space-xs) 0;
-  background: transparent;
-  border: none;
+  padding: var(--space-sm);
+  background: var(--grey-50);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--grey-500);
-  transition: color var(--transition-fast);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--grey-600);
+  transition: all var(--transition-fast);
 }
 
 .formSectionToggle:hover {
+  background: var(--grey-100);
   color: var(--color-navy);
+  border-color: var(--grey-300);
 }
 
 .chevronIcon {
