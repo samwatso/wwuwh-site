@@ -28,6 +28,7 @@ interface TeamAssignment {
   person_email: string
   person_photo_url: string | null
   attendance_status: 'present' | 'absent' | 'late' | 'excused' | null
+  cancelled_late: boolean
 }
 
 interface TeamWithAssignments extends EventTeam {
@@ -70,7 +71,7 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
       .bind(eventId)
       .all<EventTeam>()
 
-    // Get all assignments with person details and attendance status
+    // Get all assignments with person details, attendance status, and late cancellation flag
     const assignments = await db
       .prepare(`
         SELECT
@@ -84,10 +85,12 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
           p.name as person_name,
           p.email as person_email,
           p.photo_url as person_photo_url,
-          ea.status as attendance_status
+          ea.status as attendance_status,
+          COALESCE(er.cancelled_late, 0) as cancelled_late
         FROM event_team_assignments eta
         JOIN people p ON p.id = eta.person_id
         LEFT JOIN event_attendance ea ON ea.event_id = eta.event_id AND ea.person_id = eta.person_id
+        LEFT JOIN event_rsvps er ON er.event_id = eta.event_id AND er.person_id = eta.person_id
         WHERE eta.event_id = ?
         ORDER BY eta.position_code, p.name
       `)

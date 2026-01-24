@@ -79,12 +79,13 @@ interface PlayerCardProps {
 
 function PlayerCard({ assignment, isAdmin, onEdit }: PlayerCardProps) {
   const position = POSITIONS.find((p) => p.code === assignment.position_code)
-  const isNoShow = assignment.attendance_status === 'absent'
+  const isDropout = assignment.cancelled_late
+  const isNoShow = assignment.attendance_status === 'absent' && !isDropout
   const isLate = assignment.attendance_status === 'late'
 
   return (
     <div
-      className={`${styles.playerCard} ${isAdmin ? styles.playerCardEditable : ''} ${isNoShow ? styles.playerCardNoShow : ''} ${isLate ? styles.playerCardLate : ''}`}
+      className={`${styles.playerCard} ${isAdmin ? styles.playerCardEditable : ''} ${isDropout ? styles.playerCardDropout : ''} ${isNoShow ? styles.playerCardNoShow : ''} ${isLate ? styles.playerCardLate : ''}`}
       onClick={isAdmin ? () => onEdit(assignment) : undefined}
     >
       <Avatar
@@ -96,6 +97,7 @@ function PlayerCard({ assignment, isAdmin, onEdit }: PlayerCardProps) {
       <div className={styles.playerInfo}>
         <div className={styles.playerName}>
           {assignment.person_name}
+          {isDropout && <span className={styles.dropoutBadge}>Dropped Out</span>}
           {isNoShow && <span className={styles.noShowBadge}>No Show</span>}
           {isLate && <span className={styles.lateBadge}>Late</span>}
         </div>
@@ -497,6 +499,7 @@ export function EventTeams() {
       person_email: player.person_email,
       person_photo_url: player.person_photo_url,
       attendance_status: null,
+      cancelled_late: false,
     })
   }
 

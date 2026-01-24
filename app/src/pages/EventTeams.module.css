@@ -272,7 +272,17 @@
   font-style: italic;
 }
 
-/* No-show and Late player cards */
+/* Dropout, No-show and Late player cards */
+.playerCardDropout {
+  background: var(--grey-100);
+  opacity: 0.7;
+}
+
+.playerCardDropout .playerName {
+  text-decoration: line-through;
+  color: var(--grey-500);
+}
+
 .playerCardNoShow {
   background: var(--color-error-light);
   opacity: 0.8;
@@ -287,6 +297,7 @@
   background: var(--color-warning-light);
 }
 
+.dropoutBadge,
 .noShowBadge,
 .lateBadge {
   display: inline-block;
@@ -298,6 +309,11 @@
   letter-spacing: 0.02em;
   border-radius: var(--radius-sm);
   text-decoration: none;
+}
+
+.dropoutBadge {
+  background: var(--grey-500);
+  color: var(--color-white);
 }
 
 .noShowBadge {

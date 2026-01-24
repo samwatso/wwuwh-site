@@ -235,15 +235,16 @@ export async function setEventRsvp(
   const json = await res.json()
 
   // 409 means confirmation required (user is on a team)
-  if (res.status === 409 && json.requires_confirmation) {
-    return json as SetEventRsvpResult
+  // Response is wrapped in { ok, data, timestamp } format
+  if (res.status === 409 && json.data?.requires_confirmation) {
+    return json.data as SetEventRsvpResult
   }
 
   if (!res.ok) {
-    throw new Error(json.error || 'Failed to update RSVP')
+    throw new Error(json.error || json.data?.error || 'Failed to update RSVP')
   }
 
-  return json as SetEventRsvpResult
+  return json.data as SetEventRsvpResult
 }
 
 export interface Attendee {
@@ -371,6 +372,7 @@ export interface TeamAssignment {
   person_email: string
   person_photo_url: string | null
   attendance_status: 'present' | 'absent' | 'late' | 'excused' | null
+  cancelled_late: boolean
 }
 
 export interface TeamWithAssignments extends EventTeam {

@@ -156,13 +156,9 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       .bind(eventId, person.id, body.response, body.note || null, isLateCancellation ? 1 : 0, isLateCancellation ? 1 : 0)
       .run()
 
-    // If late cancellation confirmed, remove team assignment
-    if (isLateCancellation) {
-      await db
-        .prepare('DELETE FROM event_team_assignments WHERE event_id = ? AND person_id = ?')
-        .bind(eventId, person.id)
-        .run()
-    }
+    // If late cancellation confirmed, keep the team assignment but the cancelled_late
+    // flag in event_rsvps will mark them as a dropout in the team view
+    // (Team assignment is preserved so they remain visible as "Dropped Out")
 
     // Handle subscription usage - only for sessions with payment_mode = 'included'
     const isSubscriptionEligible = event.kind === 'session' && event.payment_mode === 'included'
