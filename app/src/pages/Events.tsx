@@ -239,6 +239,7 @@ function EventCard({ event, onRsvp, rsvpLoading, onPay, payLoading, isPast }: Ev
   const [attendees, setAttendees] = useState<{ yes: Attendee[]; maybe: Attendee[]; no: Attendee[] } | null>(null)
   const [attendeesLoading, setAttendeesLoading] = useState(false)
   const [showCalendarPopup, setShowCalendarPopup] = useState(false)
+  const [showDescriptionPopup, setShowDescriptionPopup] = useState(false)
 
   const handleRsvp = (response: RsvpResponse) => {
     if (!rsvpLoading) {
@@ -424,6 +425,22 @@ function EventCard({ event, onRsvp, rsvpLoading, onPay, payLoading, isPast }: Ev
       {/* Expanded Details */}
       {expanded && (
         <div className={styles.expandedDetails}>
+          {/* Description */}
+          {event.description && (
+            <div className={styles.descriptionSection}>
+              <p className={styles.descriptionText}>{event.description}</p>
+              {event.description.length > 100 && (
+                <button
+                  type="button"
+                  className={styles.readMoreBtn}
+                  onClick={(e) => { e.stopPropagation(); setShowDescriptionPopup(true); }}
+                >
+                  Read more
+                </button>
+              )}
+            </div>
+          )}
+
           {/* Attendee list */}
           <div className={styles.attendeesSection}>
             {attendees ? (
@@ -445,6 +462,26 @@ function EventCard({ event, onRsvp, rsvpLoading, onPay, payLoading, isPast }: Ev
             >
               View Teams
             </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Description Popup */}
+      {showDescriptionPopup && event.description && (
+        <div className={styles.descriptionOverlay} onClick={() => setShowDescriptionPopup(false)}>
+          <div className={styles.descriptionPopup} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.descriptionPopupHeader}>
+              <h4 className={styles.descriptionPopupTitle}>{event.title}</h4>
+              <button
+                type="button"
+                className={styles.descriptionPopupClose}
+                onClick={() => setShowDescriptionPopup(false)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <p className={styles.descriptionPopupText}>{event.description}</p>
           </div>
         </div>
       )}
