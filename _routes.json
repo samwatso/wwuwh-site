@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "include": ["/api/*", "/app/*"],
+  "exclude": ["/app/assets/*", "/app/index.html"]
+}
