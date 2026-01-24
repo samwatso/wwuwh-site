@@ -36,6 +36,7 @@ export function Profile() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
+  const [signingOut, setSigningOut] = useState(false)
 
   const handleEditStart = () => {
     setEditName(person?.name || '')
@@ -155,6 +156,18 @@ export function Profile() {
 
   const handleCropCancel = () => {
     setCropperImage(null)
+  }
+
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    try {
+      await signOut()
+      navigate('/app/login', { replace: true })
+    } catch (err) {
+      console.error('Sign out failed:', err)
+      // Still try to navigate to login
+      navigate('/app/login', { replace: true })
+    }
   }
 
   const handleDeleteAccount = async () => {
@@ -463,6 +476,15 @@ export function Profile() {
             <span className={styles.label}>Auth ID</span>
             <span className={styles.valueMono}>{user?.id?.slice(0, 8)}...</span>
           </div>
+        </div>
+        <div className={styles.signOutSection}>
+          <Button
+            variant="secondary"
+            onClick={handleSignOut}
+            loading={signingOut}
+          >
+            Sign Out
+          </Button>
         </div>
       </div>
 
