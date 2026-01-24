@@ -18,6 +18,15 @@ const POSITIONS = [
   { code: 'B', name: 'Back' },
 ] as const
 
+// Format name as "First L" (first name + first initial of surname)
+function formatShortName(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0]
+  const firstName = parts[0]
+  const lastInitial = parts[parts.length - 1][0]?.toUpperCase() || ''
+  return `${firstName} ${lastInitial}`
+}
+
 interface TeamSheetProps {
   eventTitle: string
   eventDate: string
@@ -87,7 +96,7 @@ export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
                                 size="xs"
                                 className={styles.playerAvatar}
                               />
-                              <span className={styles.playerName}>{p.person_name}</span>
+                              <span className={styles.playerName}>{formatShortName(p.person_name)}</span>
                             </div>
                           ))}
                         </div>
@@ -111,7 +120,7 @@ export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
                                 size="xs"
                                 className={styles.playerAvatar}
                               />
-                              <span className={styles.playerName}>{p.person_name}</span>
+                              <span className={styles.playerName}>{formatShortName(p.person_name)}</span>
                             </div>
                           ))}
                         </div>
