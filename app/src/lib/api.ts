@@ -139,6 +139,13 @@ export async function updateProfile(data: UpdateProfileRequest): Promise<Profile
   })
 }
 
+export async function deleteAccount(): Promise<{ success: boolean; message: string }> {
+  return api<{ success: boolean; message: string }>('/me', {
+    method: 'DELETE',
+    body: { confirm: true },
+  })
+}
+
 // ============================================
 // Clubs (STAGE 5+)
 // ============================================

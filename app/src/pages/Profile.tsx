@@ -1,10 +1,11 @@
 import { useState, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import { useSubscribe } from '@/hooks/useSubscribe'
 import { Button, Input, FormField, Spinner, Avatar, ImageCropper } from '@/components'
 import { supabase } from '@/lib/supabase'
+import { deleteAccount } from '@/lib/api'
 import styles from './Profile.module.css'
 
 // Helper to format price
@@ -15,9 +16,10 @@ function formatPrice(cents: number, currency: string, cadence: string): string {
 }
 
 export function Profile() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
   const { person, memberships, subscriptions, loading, error, synced, updateName, updatePhoto, updateEmail } = useProfile()
   const { openBillingPortal, openingPortal } = useSubscribe()
+  const navigate = useNavigate()
 
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState('')
@@ -28,6 +30,12 @@ export function Profile() {
   const [photoError, setPhotoError] = useState<string | null>(null)
   const [cropperImage, setCropperImage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Delete account state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteConfirmText, setDeleteConfirmText] = useState('')
+  const [deleting, setDeleting] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const handleEditStart = () => {
     setEditName(person?.name || '')
@@ -147,6 +155,24 @@ export function Profile() {
 
   const handleCropCancel = () => {
     setCropperImage(null)
+  }
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'DELETE') return
+
+    setDeleting(true)
+    setDeleteError(null)
+
+    try {
+      await deleteAccount()
+      // Sign out and redirect to login
+      await signOut()
+      navigate('/app/login', { replace: true })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to delete account'
+      setDeleteError(message)
+      setDeleting(false)
+    }
   }
 
   if (loading) {
@@ -439,6 +465,82 @@ export function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Danger Zone */}
+      <div className={`${styles.card} ${styles.dangerCard}`}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Danger Zone</h2>
+        </div>
+        <div className={styles.dangerContent}>
+          <p className={styles.dangerText}>
+            Permanently delete your account and all associated data. This action cannot be undone.
+          </p>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            Delete Account
+          </Button>
+        </div>
+      </div>
+
+      {/* Delete Account Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className={styles.modalOverlay} onClick={() => !deleting && setShowDeleteConfirm(false)}>
+          <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.confirmTitle}>Delete Account?</h3>
+            <p className={styles.confirmMessage}>
+              This will permanently delete your account. You will lose access to:
+            </p>
+            <ul className={styles.confirmList}>
+              <li>Your profile and membership</li>
+              <li>Event history and RSVPs</li>
+              <li>Any active subscriptions</li>
+            </ul>
+            <p className={styles.confirmMessage}>
+              <strong>This action cannot be undone.</strong>
+            </p>
+            <div className={styles.confirmInput}>
+              <label htmlFor="delete-confirm">Type DELETE to confirm:</label>
+              <Input
+                id="delete-confirm"
+                type="text"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value.toUpperCase())}
+                placeholder="DELETE"
+                disabled={deleting}
+              />
+            </div>
+            {deleteError && (
+              <p className={styles.confirmError}>{deleteError}</p>
+            )}
+            <div className={styles.confirmActions}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  setShowDeleteConfirm(false)
+                  setDeleteConfirmText('')
+                  setDeleteError(null)
+                }}
+                disabled={deleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={handleDeleteAccount}
+                loading={deleting}
+                disabled={deleteConfirmText !== 'DELETE'}
+              >
+                Delete My Account
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Image Cropper Modal */}
       {cropperImage && (

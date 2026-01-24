@@ -1,7 +1,8 @@
 /**
  * User Profile Endpoint
- * GET  /api/me - Get current user's profile
- * POST /api/me - Create/update profile (upsert on first login)
+ * GET    /api/me - Get current user's profile
+ * POST   /api/me - Create/update profile (upsert on first login)
+ * DELETE /api/me - Delete account (deactivates Supabase user)
  *
  * This endpoint links Supabase auth.users to the D1 people table
  * via the auth_user_id column.
@@ -9,6 +10,7 @@
 
 import { Env, jsonResponse, errorResponse } from '../types'
 import { withAuth, AuthUser } from '../middleware/auth'
+import { createClient } from '@supabase/supabase-js'
 
 // TODO: STAGE 4 - Implement these handlers
 
@@ -215,6 +217,107 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     }
 
     return jsonResponse({ person, created: true }, 201)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Database error'
+    return errorResponse(message, 500)
+  }
+})
+
+/**
+ * DELETE /api/me
+ * Delete the user's account
+ *
+ * This will:
+ * 1. Deactivate club memberships
+ * 2. Delete the Supabase auth user (they won't be able to log in)
+ *
+ * Request body:
+ * - confirm: boolean (must be true to proceed)
+ *
+ * Response:
+ * - 200: { success: true, message: 'Account deleted' }
+ * - 400: Confirmation required
+ * - 401: Not authenticated
+ */
+export const onRequestDelete: PagesFunction<Env> = withAuth(async (context, user) => {
+  const db = context.env.WWUWH_DB
+
+  try {
+    // Parse request body
+    let body: { confirm?: boolean } = {}
+    try {
+      body = await context.request.json()
+    } catch {
+      // Empty body
+    }
+
+    // Require explicit confirmation
+    if (!body.confirm) {
+      return errorResponse('Please confirm account deletion', 400)
+    }
+
+    // Find person by auth_user_id
+    const person = await db
+      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
+      .bind(user.id)
+      .first<{ id: string }>()
+
+    if (person) {
+      // Deactivate all club memberships
+      await db
+        .prepare(`
+          UPDATE club_memberships
+          SET status = 'inactive', updated_at = datetime('now')
+          WHERE person_id = ?
+        `)
+        .bind(person.id)
+        .run()
+
+      // Cancel any active subscriptions
+      await db
+        .prepare(`
+          UPDATE member_subscriptions
+          SET status = 'cancelled', end_at = datetime('now'), updated_at = datetime('now')
+          WHERE person_id = ? AND status = 'active'
+        `)
+        .bind(person.id)
+        .run()
+
+      // Clear auth_user_id from person record (keeps history but unlinks from auth)
+      await db
+        .prepare(`
+          UPDATE people
+          SET auth_user_id = NULL, updated_at = datetime('now')
+          WHERE id = ?
+        `)
+        .bind(person.id)
+        .run()
+    }
+
+    // Delete the Supabase auth user
+    const supabaseUrl = context.env.SUPABASE_URL
+    const supabaseServiceKey = context.env.SUPABASE_SERVICE_ROLE_KEY
+
+    if (supabaseUrl && supabaseServiceKey) {
+      const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      })
+
+      const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id)
+
+      if (deleteError) {
+        console.error('Failed to delete Supabase user:', deleteError)
+        // Continue anyway - the membership is already deactivated
+      }
+    }
+
+    return jsonResponse({
+      success: true,
+      message: 'Your account has been deleted.',
+    })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Database error'
     return errorResponse(message, 500)
