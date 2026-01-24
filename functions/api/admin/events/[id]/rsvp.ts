@@ -51,7 +51,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     // Get event details
     const event = await db
       .prepare(`
-        SELECT id, club_id, starts_at_utc, payment_mode, fee_cents
+        SELECT id, club_id, kind, starts_at_utc, payment_mode, fee_cents
         FROM events
         WHERE id = ?
       `)
@@ -59,6 +59,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       .first<{
         id: string
         club_id: string
+        kind: string
         starts_at_utc: string
         payment_mode: string
         fee_cents: number | null
@@ -117,8 +118,10 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       .run()
 
     // Handle subscription usage (skip if free_session is true)
+    // Subscription only applies to sessions with payment_mode = 'included'
+    const isSubscriptionEligible = event.kind === 'session' && event.payment_mode === 'included'
     let subscriptionUsed = false
-    if (!body.free_session && subscription && event.payment_mode !== 'free') {
+    if (!body.free_session && subscription && isSubscriptionEligible) {
       if (body.response === 'yes' && currentRsvp?.response !== 'yes') {
         // RSVPing yes - try to use a subscription slot if available
         const eventDate = new Date(event.starts_at_utc)
@@ -161,7 +164,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     }
 
     // If changing from yes and had a subscription slot, release it
-    if (subscription && body.response !== 'yes' && currentRsvp?.response === 'yes') {
+    if (subscription && isSubscriptionEligible && body.response !== 'yes' && currentRsvp?.response === 'yes') {
       await db
         .prepare('DELETE FROM subscription_usages WHERE subscription_id = ? AND event_id = ?')
         .bind(subscription.id, eventId)

@@ -71,9 +71,9 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
 
     // Verify event exists and get details
     const event = await db
-      .prepare('SELECT id, club_id, starts_at_utc, payment_mode, fee_cents FROM events WHERE id = ?')
+      .prepare('SELECT id, club_id, kind, starts_at_utc, payment_mode, fee_cents FROM events WHERE id = ?')
       .bind(eventId)
-      .first<{ id: string; club_id: string; starts_at_utc: string; payment_mode: string; fee_cents: number | null }>()
+      .first<{ id: string; club_id: string; kind: string; starts_at_utc: string; payment_mode: string; fee_cents: number | null }>()
 
     if (!event) {
       return errorResponse('Event not found', 404)
@@ -121,8 +121,9 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       .bind(eventId, person.id, body.response, body.note || null)
       .run()
 
-    // Handle subscription usage
-    if (subscription && event.payment_mode !== 'free') {
+    // Handle subscription usage - only for sessions with payment_mode = 'included'
+    const isSubscriptionEligible = event.kind === 'session' && event.payment_mode === 'included'
+    if (subscription && isSubscriptionEligible) {
       if (body.response === 'yes' && currentRsvp?.response !== 'yes') {
         // RSVPing yes - try to use a subscription slot if available
         const eventDate = new Date(event.starts_at_utc)

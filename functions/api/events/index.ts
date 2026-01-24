@@ -15,7 +15,6 @@
 
 import { Env, jsonResponse, errorResponse } from '../../types'
 import { withAuth } from '../../middleware/auth'
-import { isAdmin } from '../../middleware/admin'
 
 export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) => {
   const db = context.env.WWUWH_DB
@@ -50,9 +49,6 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
       return errorResponse('Not a member of this club', 403)
     }
 
-    // Check if user is admin (admins can see all events including hidden ones)
-    const userIsAdmin = await isAdmin(db, person.id, clubId)
-
     // Check for active subscription
     const subscription = await db
       .prepare(`
@@ -72,29 +68,26 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '50'), 100)
 
     // Build visibility and invitation filter
-    // This is the member-facing endpoint - always filter by visibility
+    // This is the member-facing endpoint - always filter by visibility AND invitation
     // Admins can use /api/admin/events to see all events including hidden ones
     const now = new Date().toISOString()
 
-    // All users on member-facing view: event must be visible (visible_from has passed or is null)
-    // Admins bypass the invitation check but still respect visibility
-    const visibilityFilter = `AND (e.visible_from IS NULL OR e.visible_from <= '${now}')`
-
-    // Non-admins: must also be invited (directly or via group)
-    const invitationFilter = userIsAdmin
-      ? visibilityFilter
-      : `${visibilityFilter}
-         AND EXISTS (
-           SELECT 1 FROM event_invitations ei
-           WHERE ei.event_id = e.id
-           AND (
-             ei.person_id = '${person.id}'
-             OR (ei.group_id IS NOT NULL AND EXISTS (
-               SELECT 1 FROM group_members gm
-               WHERE gm.group_id = ei.group_id AND gm.person_id = '${person.id}'
-             ))
-           )
-         )`
+    // All users on member-facing view:
+    // 1. Event must be visible (visible_from has passed or is null)
+    // 2. User must be invited (directly or via group membership)
+    const invitationFilter = `
+      AND (e.visible_from IS NULL OR e.visible_from <= '${now}')
+      AND EXISTS (
+        SELECT 1 FROM event_invitations ei
+        WHERE ei.event_id = e.id
+        AND (
+          ei.person_id = '${person.id}'
+          OR (ei.group_id IS NOT NULL AND EXISTS (
+            SELECT 1 FROM group_members gm
+            WHERE gm.group_id = ei.group_id AND gm.person_id = '${person.id}'
+          ))
+        )
+      )`
 
     // Fetch events with RSVP counts and payment status
     const events = await db
@@ -129,7 +122,10 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
         let sessionsUsedThisWeek = 0
         let paymentRequired = true
 
-        if (subscription) {
+        // Subscription only applies to sessions with payment_mode = 'included'
+        const isSubscriptionEligible = event.kind === 'session' && event.payment_mode === 'included'
+
+        if (subscription && isSubscriptionEligible) {
           // Count sessions used this week via subscription
           const usageCount = await db
             .prepare(`
