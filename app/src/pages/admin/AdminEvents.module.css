@@ -718,7 +718,10 @@
 .modalBody {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: var(--space-md);
+  /* Ensure scrollable area doesn't get cut off */
+  min-height: 0;
 }
 
 .modalFooter {
@@ -775,11 +778,113 @@
 }
 
 /* ============================================================================
+   FORM SECTIONS
+   ============================================================================ */
+
+.formSection {
+  margin-bottom: var(--space-md);
+  padding-bottom: var(--space-sm);
+}
+
+.formSection:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.formSectionHeader {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--grey-500);
+  margin-bottom: var(--space-sm);
+  padding-bottom: var(--space-xs);
+  border-bottom: 1px solid var(--grey-100);
+}
+
+.formSectionToggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: var(--space-xs) 0;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--grey-500);
+  transition: color var(--transition-fast);
+}
+
+.formSectionToggle:hover {
+  color: var(--color-navy);
+}
+
+.chevronIcon {
+  transition: transform var(--transition-fast);
+}
+
+.chevronExpanded {
+  transform: rotate(180deg);
+}
+
+.formSectionContent {
+  padding-top: var(--space-sm);
+}
+
+/* ============================================================================
+   VENUE AUTOCOMPLETE
+   ============================================================================ */
+
+.venueAutocomplete {
+  position: relative;
+}
+
+.venueSuggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--color-white);
+  border: 1px solid var(--grey-200);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  box-shadow: var(--shadow-md);
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.venueSuggestionItem {
+  display: block;
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-size: var(--text-sm);
+  color: var(--color-navy);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.venueSuggestionItem:hover {
+  background: var(--color-ice);
+}
+
+.venueSuggestionItem:not(:last-child) {
+  border-bottom: 1px solid var(--grey-100);
+}
+
+/* ============================================================================
    FORM ELEMENTS
    ============================================================================ */
 
 .formGroup {
-  margin-bottom: var(--space-md);
+  margin-bottom: var(--space-sm);
 }
 
 .formGroup:last-child {
@@ -789,8 +894,8 @@
 .formRow {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: var(--space-md);
-  margin-bottom: var(--space-md);
+  gap: var(--space-sm);
+  margin-bottom: var(--space-sm);
 }
 
 .formLabel {

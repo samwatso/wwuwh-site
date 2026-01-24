@@ -452,6 +452,134 @@ function EventRow({
 }
 
 // ============================================================================
+// SAVED VENUES LIST
+// ============================================================================
+
+const SAVED_VENUES = [
+  'Downham Health & Leisure Centre, Moorside Rd, Bromley BR1 5EW',
+  'South Norwood Leisure Centre, Portland Rd, London SE25 4PT',
+  'K2 Crawley, Pease Pottage Hill, Crawley RH11 9BQ',
+  'John Charles Centre for Sport, Leeds LS11 5DJ',
+  'Ponds Forge International Sports Centre, Sheffield S1 2BP',
+]
+
+// Type-based defaults for CREATE mode
+const TYPE_DEFAULTS: Record<EventKind, {
+  durationMin: number
+  paymentMode: 'included' | 'one_off' | 'free'
+  visibilityDays: number
+  isAllDay: boolean
+}> = {
+  session: { durationMin: 60, paymentMode: 'included', visibilityDays: 5, isAllDay: false },
+  ladies: { durationMin: 120, paymentMode: 'one_off', visibilityDays: 60, isAllDay: false },
+  training: { durationMin: 120, paymentMode: 'one_off', visibilityDays: 60, isAllDay: false },
+  tournament: { durationMin: 0, paymentMode: 'one_off', visibilityDays: 90, isAllDay: true },
+  social: { durationMin: 60, paymentMode: 'free', visibilityDays: 90, isAllDay: false },
+  other: { durationMin: 60, paymentMode: 'free', visibilityDays: 90, isAllDay: false },
+  match: { durationMin: 60, paymentMode: 'free', visibilityDays: 90, isAllDay: false }, // legacy
+}
+
+// Calculate end time from start time and duration
+function addMinutesToTime(time: string, minutes: number): string {
+  const [h, m] = time.split(':').map(Number)
+  const totalMin = h * 60 + m + minutes
+  const newH = Math.floor(totalMin / 60) % 24
+  const newM = totalMin % 60
+  return `${String(newH).padStart(2, '0')}:${String(newM).padStart(2, '0')}`
+}
+
+// ============================================================================
+// VENUE AUTOCOMPLETE COMPONENT
+// ============================================================================
+
+interface VenueAutocompleteProps {
+  value: string
+  onChange: (value: string) => void
+  onTouched?: () => void
+  className?: string
+}
+
+function VenueAutocomplete({ value, onChange, onTouched, className }: VenueAutocompleteProps) {
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [filteredVenues, setFilteredVenues] = useState<string[]>([])
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+
+  // Filter venues based on input
+  useEffect(() => {
+    if (value.length > 0) {
+      const filtered = SAVED_VENUES.filter(v =>
+        v.toLowerCase().includes(value.toLowerCase())
+      )
+      setFilteredVenues(filtered)
+    } else {
+      setFilteredVenues(SAVED_VENUES)
+    }
+  }, [value])
+
+  // Close on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+    if (showSuggestions) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showSuggestions])
+
+  // Close on escape
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setShowSuggestions(false)
+    }
+    if (showSuggestions) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [showSuggestions])
+
+  const handleSelect = (venue: string) => {
+    onChange(venue)
+    setShowSuggestions(false)
+    onTouched?.()
+  }
+
+  return (
+    <div className={styles.venueAutocomplete} ref={wrapperRef}>
+      <input
+        ref={inputRef}
+        type="text"
+        className={className}
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value)
+          onTouched?.()
+        }}
+        onFocus={() => setShowSuggestions(true)}
+        placeholder="Start typing or select a saved venue..."
+      />
+      {showSuggestions && filteredVenues.length > 0 && (
+        <div className={styles.venueSuggestions}>
+          {filteredVenues.map((venue, idx) => (
+            <button
+              key={idx}
+              type="button"
+              className={styles.venueSuggestionItem}
+              onClick={() => handleSelect(venue)}
+            >
+              {venue}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ============================================================================
 // CREATE/EDIT EVENT MODAL
 // ============================================================================
 
@@ -481,6 +609,7 @@ function EventModal({
   const isEdit = !!event
   const isCopy = !!copyFrom
   const sourceEvent = event || copyFrom
+  const isCreate = !isEdit && !isCopy
 
   // Parse existing event data or use defaults
   const defaultStart = new Date()
@@ -494,7 +623,7 @@ function EventModal({
   defaultVisible.setDate(defaultVisible.getDate() - 5)
 
   // Load saved draft for new events (not edit or copy)
-  const savedDraft = (!isEdit && !isCopy) ? (() => {
+  const savedDraft = isCreate ? (() => {
     try {
       const stored = localStorage.getItem(EVENT_DRAFT_KEY)
       return stored ? JSON.parse(stored) as EventDraft : null
@@ -503,19 +632,26 @@ function EventModal({
     }
   })() : null
 
+  // Track which fields have been manually touched (for type-based defaults)
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
+  const markTouched = (field: string) => {
+    setTouchedFields(prev => new Set(prev).add(field))
+  }
+
   const [title, setTitle] = useState(sourceEvent?.title || savedDraft?.title || '')
   const [description, setDescription] = useState(sourceEvent?.description || savedDraft?.description || '')
   const [location, setLocation] = useState(sourceEvent?.location || savedDraft?.location || '')
+
   // Map legacy 'match' to 'tournament' when editing
   const initialKind = sourceEvent?.kind === 'match' ? 'tournament' : (sourceEvent?.kind || savedDraft?.kind || 'session')
   const [kind, setKind] = useState<EventKind>(initialKind)
+
   // For copying, default to next week same day; for edit use existing date
   const [startDate, setStartDate] = useState(() => {
     if (isEdit && event?.starts_at_utc) {
       return event.starts_at_utc.slice(0, 10)
     }
     if (isCopy && copyFrom?.starts_at_utc) {
-      // Default to next week same time
       const original = new Date(copyFrom.starts_at_utc)
       original.setDate(original.getDate() + 7)
       return original.toISOString().slice(0, 10)
@@ -525,19 +661,21 @@ function EventModal({
     }
     return defaultStart.toISOString().slice(0, 10)
   })
+
   const [startTime, setStartTime] = useState(
     sourceEvent?.starts_at_utc ? formatTime(sourceEvent.starts_at_utc) : savedDraft?.startTime || '21:00'
   )
+
   const [endTime, setEndTime] = useState(() => {
     if (sourceEvent?.ends_at_utc) {
       return formatTime(sourceEvent.ends_at_utc)
     }
     if (savedDraft?.endTime) return savedDraft.endTime
-    return '22:00' // Default 1 hour after 21:00
+    return '22:00'
   })
+
   const [isAllDay, setIsAllDay] = useState(() => {
     if (sourceEvent) {
-      // Check if it's an all-day event (spans midnight or multiple days)
       const start = new Date(sourceEvent.starts_at_utc)
       const end = new Date(sourceEvent.ends_at_utc)
       const diffHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60)
@@ -545,19 +683,56 @@ function EventModal({
     }
     return savedDraft?.isAllDay || false
   })
+
   const [endDate, setEndDate] = useState(() => {
     if (sourceEvent?.ends_at_utc) {
       return sourceEvent.ends_at_utc.slice(0, 10)
     }
     if (savedDraft?.endDate) return savedDraft.endDate
-    // Default to same as start date
     return ''
   })
+
   const [paymentMode, setPaymentMode] = useState<'included' | 'one_off' | 'free'>(
     sourceEvent?.payment_mode || savedDraft?.paymentMode || 'included'
   )
   const [feeCents, setFeeCents] = useState(sourceEvent?.fee_cents || savedDraft?.feeCents || 0)
   const [visibilityDays, setVisibilityDays] = useState(savedDraft?.visibilityDays || 5)
+
+  // Collapsible options section (collapsed by default on create)
+  const [optionsExpanded, setOptionsExpanded] = useState(isEdit || isCopy)
+
+  // Handle type change - apply defaults for untouched fields (CREATE mode only)
+  const handleTypeChange = (newKind: EventKind) => {
+    setKind(newKind)
+
+    // Only apply defaults in CREATE mode for untouched fields
+    if (!isCreate) return
+
+    const defaults = TYPE_DEFAULTS[newKind]
+
+    // Apply all-day setting
+    if (!touchedFields.has('isAllDay')) {
+      setIsAllDay(defaults.isAllDay)
+      if (defaults.isAllDay && !endDate) {
+        setEndDate(startDate)
+      }
+    }
+
+    // Apply end time based on duration (only if not all-day)
+    if (!touchedFields.has('endTime') && !defaults.isAllDay && defaults.durationMin > 0) {
+      setEndTime(addMinutesToTime(startTime, defaults.durationMin))
+    }
+
+    // Apply payment mode
+    if (!touchedFields.has('paymentMode')) {
+      setPaymentMode(defaults.paymentMode)
+    }
+
+    // Apply visibility days
+    if (!touchedFields.has('visibilityDays')) {
+      setVisibilityDays(defaults.visibilityDays)
+    }
+  }
 
   // Keep a ref to current values for saving on unmount
   const draftRef = useRef<EventDraft>({
@@ -608,6 +783,14 @@ function EventModal({
     }
   }, [isEdit, isCopy])
 
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [])
+
   // Clear draft helper
   const clearDraft = () => {
     localStorage.removeItem(EVENT_DRAFT_KEY)
@@ -623,14 +806,11 @@ function EventModal({
     let endsAt: Date
 
     if (isAllDay) {
-      // All-day event: start at midnight, end at end of end date
       startsAt = new Date(`${startDate}T00:00:00`)
       endsAt = new Date(`${endDate}T23:59:59`)
     } else {
-      // Regular event with start and end time
       startsAt = new Date(`${startDate}T${startTime}:00`)
       endsAt = new Date(`${startDate}T${endTime}:00`)
-      // If end time is before start time, assume it's the next day
       if (endsAt <= startsAt) {
         endsAt.setDate(endsAt.getDate() + 1)
       }
@@ -638,7 +818,6 @@ function EventModal({
 
     const visibleFrom = new Date(startsAt.getTime() - visibilityDays * 24 * 60 * 60 * 1000)
 
-    // Clear draft before saving (will be removed on success)
     clearDraft()
 
     onSave({
@@ -668,6 +847,7 @@ function EventModal({
     setPaymentMode('included')
     setFeeCents(0)
     setVisibilityDays(5)
+    setTouchedFields(new Set())
   }
 
   return (
@@ -675,186 +855,250 @@ function EventModal({
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3>{isEdit ? 'Edit Event' : isCopy ? 'Copy Event' : 'Create Event'}</h3>
-          <button className={styles.modalClose} onClick={onClose}>
+          <button type="button" className={styles.modalClose} onClick={onClose}>
             &times;
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className={styles.modalBody}>
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Title</label>
-              <input
-                type="text"
-                className={styles.formInput}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Tuesday Session"
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.checkboxLabel}>
-                <input
-                  type="checkbox"
-                  checked={isAllDay}
-                  onChange={(e) => {
-                    setIsAllDay(e.target.checked)
-                    if (e.target.checked && !endDate) {
-                      setEndDate(startDate)
-                    }
-                  }}
-                />
-                <span>All-day / Multi-day event</span>
-              </label>
-            </div>
-
-            {isAllDay ? (
+            {/* SECTION: Type (first for CREATE) */}
+            <div className={styles.formSection}>
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Start Date</label>
-                  <input
-                    type="date"
+                  <label className={styles.formLabel}>Type</label>
+                  <select
                     className={styles.formInput}
-                    value={startDate}
+                    value={kind}
+                    onChange={(e) => handleTypeChange(e.target.value as EventKind)}
+                  >
+                    <option value="session">Session</option>
+                    <option value="training">Training</option>
+                    <option value="ladies">Ladies</option>
+                    <option value="tournament">Tournament</option>
+                    <option value="social">Social</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Title</label>
+                  <input
+                    type="text"
+                    className={styles.formInput}
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. Tuesday Session"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION: When */}
+            <div className={styles.formSection}>
+              <div className={styles.formSectionHeader}>When</div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={isAllDay}
                     onChange={(e) => {
-                      setStartDate(e.target.value)
-                      if (endDate && e.target.value > endDate) {
-                        setEndDate(e.target.value)
+                      setIsAllDay(e.target.checked)
+                      markTouched('isAllDay')
+                      if (e.target.checked && !endDate) {
+                        setEndDate(startDate)
                       }
                     }}
-                    required
                   />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>End Date</label>
-                  <input
-                    type="date"
-                    className={styles.formInput}
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    min={startDate}
-                    required
-                  />
-                </div>
+                  <span>All-day / Multi-day event</span>
+                </label>
               </div>
-            ) : (
-              <div className={styles.formRow}>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Date</label>
-                  <input
-                    type="date"
-                    className={styles.formInput}
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Start Time</label>
-                  <input
-                    type="time"
-                    className={styles.formInput}
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>End Time</label>
-                  <input
-                    type="time"
-                    className={styles.formInput}
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                    required
-                  />
-                </div>
-              </div>
-            )}
 
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Location</label>
-              <input
-                type="text"
-                className={styles.formInput}
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. West Wickham Leisure Centre"
-              />
-            </div>
-
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Type</label>
-                <select
-                  className={styles.formInput}
-                  value={kind}
-                  onChange={(e) => setKind(e.target.value as EventKind)}
-                >
-                  <option value="session">Session</option>
-                  <option value="training">Training</option>
-                  <option value="ladies">Ladies</option>
-                  <option value="tournament">Tournament</option>
-                  <option value="social">Social</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Visibility (days before)</label>
-                <input
-                  type="number"
-                  className={styles.formInput}
-                  value={visibilityDays}
-                  onChange={(e) => setVisibilityDays(parseInt(e.target.value) || 5)}
-                  min={0}
-                  max={90}
-                />
-              </div>
-            </div>
-
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Payment</label>
-                <select
-                  className={styles.formInput}
-                  value={paymentMode}
-                  onChange={(e) => setPaymentMode(e.target.value as typeof paymentMode)}
-                >
-                  <option value="included">Included in subscription</option>
-                  <option value="one_off">One-off payment</option>
-                  <option value="free">Free</option>
-                </select>
-              </div>
-              {paymentMode === 'one_off' && (
-                <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Fee (pence)</label>
-                  <input
-                    type="number"
-                    className={styles.formInput}
-                    value={feeCents}
-                    onChange={(e) => setFeeCents(parseInt(e.target.value) || 0)}
-                    min={0}
-                  />
+              {isAllDay ? (
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Start Date</label>
+                    <input
+                      type="date"
+                      className={styles.formInput}
+                      value={startDate}
+                      onChange={(e) => {
+                        setStartDate(e.target.value)
+                        if (endDate && e.target.value > endDate) {
+                          setEndDate(e.target.value)
+                        }
+                      }}
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>End Date</label>
+                    <input
+                      type="date"
+                      className={styles.formInput}
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      min={startDate}
+                      required
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Date</label>
+                    <input
+                      type="date"
+                      className={styles.formInput}
+                      value={startDate}
+                      onChange={(e) => setStartDate(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>Start</label>
+                    <input
+                      type="time"
+                      className={styles.formInput}
+                      value={startTime}
+                      onChange={(e) => {
+                        setStartTime(e.target.value)
+                        // Auto-update end time if not touched
+                        if (!touchedFields.has('endTime') && isCreate) {
+                          const defaults = TYPE_DEFAULTS[kind]
+                          if (defaults.durationMin > 0) {
+                            setEndTime(addMinutesToTime(e.target.value, defaults.durationMin))
+                          }
+                        }
+                      }}
+                      required
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>End</label>
+                    <input
+                      type="time"
+                      className={styles.formInput}
+                      value={endTime}
+                      onChange={(e) => {
+                        setEndTime(e.target.value)
+                        markTouched('endTime')
+                      }}
+                      required
+                    />
+                  </div>
                 </div>
               )}
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Description</label>
-              <textarea
-                className={styles.formTextarea}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Optional description..."
-                rows={3}
-              />
+            {/* SECTION: Where */}
+            <div className={styles.formSection}>
+              <div className={styles.formSectionHeader}>Where</div>
+              <div className={styles.formGroup}>
+                <VenueAutocomplete
+                  value={location}
+                  onChange={setLocation}
+                  className={styles.formInput}
+                />
+              </div>
+            </div>
+
+            {/* SECTION: Details */}
+            <div className={styles.formSection}>
+              <div className={styles.formSectionHeader}>Details</div>
+              <div className={styles.formGroup}>
+                <textarea
+                  className={styles.formTextarea}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Optional description..."
+                  rows={3}
+                />
+              </div>
+            </div>
+
+            {/* SECTION: Options (collapsible) */}
+            <div className={styles.formSection}>
+              <button
+                type="button"
+                className={styles.formSectionToggle}
+                onClick={() => setOptionsExpanded(!optionsExpanded)}
+                aria-expanded={optionsExpanded}
+              >
+                <span>Options</span>
+                <svg
+                  className={`${styles.chevronIcon} ${optionsExpanded ? styles.chevronExpanded : ''}`}
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  width="16"
+                  height="16"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+
+              {optionsExpanded && (
+                <div className={styles.formSectionContent}>
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>Payment</label>
+                      <select
+                        className={styles.formInput}
+                        value={paymentMode}
+                        onChange={(e) => {
+                          setPaymentMode(e.target.value as typeof paymentMode)
+                          markTouched('paymentMode')
+                        }}
+                      >
+                        <option value="included">Included in subscription</option>
+                        <option value="one_off">One-off payment</option>
+                        <option value="free">Free</option>
+                      </select>
+                    </div>
+                    {paymentMode === 'one_off' && (
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Fee (pence)</label>
+                        <input
+                          type="number"
+                          className={styles.formInput}
+                          value={feeCents}
+                          onChange={(e) => setFeeCents(parseInt(e.target.value) || 0)}
+                          min={0}
+                        />
+                      </div>
+                    )}
+                  </div>
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>Visibility (days before event)</label>
+                      <input
+                        type="number"
+                        className={styles.formInput}
+                        value={visibilityDays}
+                        onChange={(e) => {
+                          setVisibilityDays(parseInt(e.target.value) || 5)
+                          markTouched('visibilityDays')
+                        }}
+                        min={0}
+                        max={365}
+                      />
+                      <p className={styles.formHint}>
+                        Event will be visible to members this many days before it starts
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           <div className={styles.modalFooterSticky}>
-            {!isEdit && !isCopy && savedDraft && (
+            {isCreate && savedDraft && (
               <button type="button" className={styles.btnDangerOutline} onClick={handleClearDraft}>
                 Clear Draft
               </button>
@@ -904,9 +1148,10 @@ function SeriesModal({
   saving: boolean
 }) {
   const isEdit = !!series
+  const isCreate = !isEdit
 
   // Load saved draft for new series (not edit)
-  const savedDraft = !isEdit ? (() => {
+  const savedDraft = isCreate ? (() => {
     try {
       const stored = localStorage.getItem(SERIES_DRAFT_KEY)
       return stored ? JSON.parse(stored) as SeriesDraft : null
@@ -940,6 +1185,9 @@ function SeriesModal({
   const feeCents = series?.default_fee_cents || 0
   const [generateWeeks, setGenerateWeeks] = useState(savedDraft?.generateWeeks || 8)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+
+  // Collapsible options section (collapsed by default on create)
+  const [optionsExpanded, setOptionsExpanded] = useState(isEdit)
 
   // Keep a ref to current values for saving on unmount
   const draftRef = useRef<SeriesDraft>({
@@ -987,6 +1235,14 @@ function SeriesModal({
       }
     }
   }, [isEdit])
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [])
 
   // Clear draft helper
   const clearDraft = () => {
@@ -1044,160 +1300,213 @@ function SeriesModal({
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
           <h3>{isEdit ? 'Edit Series' : 'Create Recurring Series'}</h3>
-          <button className={styles.modalClose} onClick={onClose}>
+          <button type="button" className={styles.modalClose} onClick={onClose}>
             &times;
           </button>
         </div>
 
         <form onSubmit={handleSubmit}>
           <div className={styles.modalBody}>
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Title</label>
-              <input
-                type="text"
-                className={styles.formInput}
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Tuesday Session"
-                required
-              />
-            </div>
-
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Days of Week</label>
-              <div className={styles.weekdayPicker}>
-                {WEEKDAY_NAMES.map((name, i) => (
-                  <button
-                    key={name}
-                    type="button"
-                    className={`${styles.weekdayBtn} ${weekdays.includes(i) ? styles.active : ''}`}
-                    onClick={() => toggleWeekday(i)}
-                  >
-                    {name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className={styles.formRow}>
+            {/* SECTION: Basics */}
+            <div className={styles.formSection}>
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Start Time</label>
+                <label className={styles.formLabel}>Title</label>
                 <input
-                  type="time"
+                  type="text"
                   className={styles.formInput}
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. Tuesday Session"
                   required
                 />
               </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Duration (min)</label>
-                <input
-                  type="number"
-                  className={styles.formInput}
-                  value={duration}
-                  onChange={(e) => setDuration(parseInt(e.target.value) || 90)}
-                  min={15}
-                  max={480}
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Visibility (days)</label>
-                <input
-                  type="number"
-                  className={styles.formInput}
-                  value={visibilityDays}
-                  onChange={(e) => setVisibilityDays(parseInt(e.target.value) || 5)}
-                  min={0}
-                  max={30}
-                />
-              </div>
             </div>
 
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Location</label>
-              <input
-                type="text"
-                className={styles.formInput}
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. West Wickham Leisure Centre"
-              />
-            </div>
+            {/* SECTION: When */}
+            <div className={styles.formSection}>
+              <div className={styles.formSectionHeader}>When</div>
 
-            <div className={styles.formRow}>
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Start Date</label>
-                <input
-                  type="date"
-                  className={styles.formInput}
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  required
-                />
+                <label className={styles.formLabel}>Days of Week</label>
+                <div className={styles.weekdayPicker}>
+                  {WEEKDAY_NAMES.map((name, i) => (
+                    <button
+                      key={name}
+                      type="button"
+                      className={`${styles.weekdayBtn} ${weekdays.includes(i) ? styles.active : ''}`}
+                      onClick={() => toggleWeekday(i)}
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
               </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Start Time</label>
                   <input
-                    type="checkbox"
-                    checked={hasEndDate}
-                    onChange={(e) => setHasEndDate(e.target.checked)}
-                  />{' '}
-                  Has End Date
-                </label>
-                {hasEndDate && (
+                    type="time"
+                    className={styles.formInput}
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Duration (min)</label>
+                  <input
+                    type="number"
+                    className={styles.formInput}
+                    value={duration}
+                    onChange={(e) => setDuration(parseInt(e.target.value) || 90)}
+                    min={15}
+                    max={480}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Starting From</label>
                   <input
                     type="date"
                     className={styles.formInput}
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    required
                   />
-                )}
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.checkboxLabel}>
+                    <input
+                      type="checkbox"
+                      checked={hasEndDate}
+                      onChange={(e) => setHasEndDate(e.target.checked)}
+                    />
+                    <span>Has End Date</span>
+                  </label>
+                  {hasEndDate && (
+                    <input
+                      type="date"
+                      className={styles.formInput}
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      min={startDate}
+                    />
+                  )}
+                </div>
               </div>
             </div>
 
-            {!isEdit && (
+            {/* SECTION: Where */}
+            <div className={styles.formSection}>
+              <div className={styles.formSectionHeader}>Where</div>
               <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Generate events for next (weeks)</label>
-                <input
-                  type="number"
+                <VenueAutocomplete
+                  value={location}
+                  onChange={setLocation}
                   className={styles.formInput}
-                  value={generateWeeks}
-                  onChange={(e) => setGenerateWeeks(parseInt(e.target.value) || 8)}
-                  min={1}
-                  max={52}
                 />
               </div>
-            )}
-
-            <div className={styles.formGroup}>
-              <label className={styles.formLabel}>Description</label>
-              <textarea
-                className={styles.formTextarea}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Optional description..."
-                rows={3}
-              />
             </div>
 
-            {/* Danger zone for edit mode */}
-            {isEdit && onDelete && (
-              <div className={styles.dangerZone}>
-                <h4 className={styles.dangerZoneTitle}>Danger Zone</h4>
-                <button
-                  type="button"
-                  className={styles.btnDangerOutline}
-                  onClick={() => setShowDeleteConfirm(true)}
-                >
-                  Delete Series
-                </button>
+            {/* SECTION: Details */}
+            <div className={styles.formSection}>
+              <div className={styles.formSectionHeader}>Details</div>
+              <div className={styles.formGroup}>
+                <textarea
+                  className={styles.formTextarea}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Optional description..."
+                  rows={3}
+                />
               </div>
-            )}
+            </div>
+
+            {/* SECTION: Options (collapsible) */}
+            <div className={styles.formSection}>
+              <button
+                type="button"
+                className={styles.formSectionToggle}
+                onClick={() => setOptionsExpanded(!optionsExpanded)}
+                aria-expanded={optionsExpanded}
+              >
+                <span>Options</span>
+                <svg
+                  className={`${styles.chevronIcon} ${optionsExpanded ? styles.chevronExpanded : ''}`}
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  width="16"
+                  height="16"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+
+              {optionsExpanded && (
+                <div className={styles.formSectionContent}>
+                  <div className={styles.formRow}>
+                    <div className={styles.formGroup}>
+                      <label className={styles.formLabel}>Visibility (days before event)</label>
+                      <input
+                        type="number"
+                        className={styles.formInput}
+                        value={visibilityDays}
+                        onChange={(e) => setVisibilityDays(parseInt(e.target.value) || 5)}
+                        min={0}
+                        max={365}
+                      />
+                      <p className={styles.formHint}>
+                        Events will be visible to members this many days before they start
+                      </p>
+                    </div>
+                  </div>
+
+                  {isCreate && (
+                    <div className={styles.formRow}>
+                      <div className={styles.formGroup}>
+                        <label className={styles.formLabel}>Generate events for (weeks)</label>
+                        <input
+                          type="number"
+                          className={styles.formInput}
+                          value={generateWeeks}
+                          onChange={(e) => setGenerateWeeks(parseInt(e.target.value) || 8)}
+                          min={1}
+                          max={52}
+                        />
+                        <p className={styles.formHint}>
+                          Number of weeks of events to create initially
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Danger zone for edit mode */}
+                  {isEdit && onDelete && (
+                    <div className={styles.dangerZone}>
+                      <h4 className={styles.dangerZoneTitle}>Danger Zone</h4>
+                      <button
+                        type="button"
+                        className={styles.btnDangerOutline}
+                        onClick={() => setShowDeleteConfirm(true)}
+                      >
+                        Delete Series
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className={styles.modalFooterSticky}>
-            {!isEdit && savedDraft && (
+            {isCreate && savedDraft && (
               <button type="button" className={styles.btnDangerOutline} onClick={handleClearDraft}>
                 Clear Draft
               </button>
