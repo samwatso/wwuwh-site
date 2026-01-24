@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import { useSubscribe } from '@/hooks/useSubscribe'
+import { useAwards } from '@/hooks/useAwards'
 import { Button, Input, FormField, Spinner, Avatar, ImageCropper } from '@/components'
 import { supabase } from '@/lib/supabase'
 import { deleteAccount } from '@/lib/api'
@@ -19,6 +20,7 @@ export function Profile() {
   const { user, signOut } = useAuth()
   const { person, memberships, subscriptions, loading, error, synced, updateName, updatePhoto, updateEmail } = useProfile()
   const { openBillingPortal, openingPortal } = useSubscribe()
+  const { awards, lockedAwards, currentStreak, loading: awardsLoading } = useAwards()
   const navigate = useNavigate()
 
   const [isEditing, setIsEditing] = useState(false)
@@ -458,6 +460,63 @@ export function Profile() {
             <Link to="/app/subscribe" className={styles.subscribeLink}>
               View membership plans
             </Link>
+          </div>
+        )}
+      </div>
+
+      {/* Awards Card */}
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Awards</h2>
+          {currentStreak > 0 && (
+            <span className={styles.streakBadge}>
+              🔥 {currentStreak} streak
+            </span>
+          )}
+        </div>
+
+        {awardsLoading ? (
+          <div className={styles.loadingState}>
+            <Spinner size="sm" />
+          </div>
+        ) : awards.length > 0 ? (
+          <div className={styles.awardsList}>
+            {awards.map((award) => (
+              <div key={award.id} className={styles.awardItem}>
+                <span className={styles.awardIcon}>{award.icon || '🏅'}</span>
+                <div className={styles.awardInfo}>
+                  <span className={styles.awardName}>{award.name}</span>
+                  <span className={styles.awardDate}>
+                    Earned {new Date(award.granted_at).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.placeholder}>
+            <p>No awards yet. Keep attending sessions!</p>
+          </div>
+        )}
+
+        {lockedAwards.length > 0 && (
+          <div className={styles.lockedAwardsSection}>
+            <p className={styles.lockedAwardsTitle}>Locked Awards</p>
+            <div className={styles.lockedAwardsList}>
+              {lockedAwards.map((award) => (
+                <div key={award.id} className={styles.lockedAwardItem}>
+                  <span className={styles.lockedAwardIcon}>🔒</span>
+                  <div className={styles.lockedAwardInfo}>
+                    <span className={styles.lockedAwardName}>{award.name}</span>
+                    <span className={styles.lockedAwardDesc}>{award.description}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
