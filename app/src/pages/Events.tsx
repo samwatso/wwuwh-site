@@ -399,23 +399,6 @@ function EventCard({ event, onRsvp, rsvpLoading, onPay, payLoading, isPast }: Ev
       {/* Expanded Details */}
       {expanded && (
         <div className={styles.expandedDetails}>
-          {/* Full location (only shown once, in expanded) */}
-          {event.location && (
-            <a
-              href={getGoogleMapsUrl(event.location)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.locationExpanded}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                <circle cx="12" cy="10" r="3" />
-              </svg>
-              <span>{event.location}</span>
-            </a>
-          )}
-
           {/* Attendee list */}
           <div className={styles.attendeesSection}>
             {attendees ? (
