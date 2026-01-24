@@ -593,6 +593,33 @@
   color: var(--color-white);
 }
 
+/* Calendar Button */
+.calendarBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background: transparent;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-md);
+  color: var(--grey-500);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.calendarBtn:hover {
+  background: var(--grey-100);
+  border-color: var(--color-water);
+  color: var(--color-water);
+}
+
+.calendarBtn svg {
+  width: 20px;
+  height: 20px;
+}
+
 /* Pay Button */
 .payBtn {
   display: flex;

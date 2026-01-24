@@ -2,7 +2,7 @@ import { useMemo, useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useProfile } from '@/hooks/useProfile'
 import { useEvents } from '@/hooks/useEvents'
-import { Spinner, Avatar } from '@/components'
+import { Spinner, Avatar, CalendarPopup } from '@/components'
 import { getEventAttendees, Attendee } from '@/lib/api'
 import type { EventWithRsvp, RsvpResponse } from '@/types/database'
 import styles from './Events.module.css'
@@ -238,6 +238,7 @@ function EventCard({ event, onRsvp, rsvpLoading, onPay, payLoading, isPast }: Ev
   const [expanded, setExpanded] = useState(false)
   const [attendees, setAttendees] = useState<{ yes: Attendee[]; maybe: Attendee[]; no: Attendee[] } | null>(null)
   const [attendeesLoading, setAttendeesLoading] = useState(false)
+  const [showCalendarPopup, setShowCalendarPopup] = useState(false)
 
   const handleRsvp = (response: RsvpResponse) => {
     if (!rsvpLoading) {
@@ -376,6 +377,22 @@ function EventCard({ event, onRsvp, rsvpLoading, onPay, payLoading, isPast }: Ev
         </div>
 
         <div className={styles.actionsRight}>
+          {/* Calendar button */}
+          <button
+            type="button"
+            className={styles.calendarBtn}
+            onClick={(e) => { e.stopPropagation(); setShowCalendarPopup(true); }}
+            aria-label="Add to calendar"
+            title="Add to calendar"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </button>
+
           {event.payment_required && !isPast && (
             <button
               type="button"
@@ -395,6 +412,14 @@ function EventCard({ event, onRsvp, rsvpLoading, onPay, payLoading, isPast }: Ev
           )}
         </div>
       </div>
+
+      {/* Calendar Popup */}
+      {showCalendarPopup && (
+        <CalendarPopup
+          event={event}
+          onClose={() => setShowCalendarPopup(false)}
+        />
+      )}
 
       {/* Expanded Details */}
       {expanded && (

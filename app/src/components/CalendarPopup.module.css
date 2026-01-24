@@ -1,0 +1,160 @@
+/* CalendarPopup Component Styles */
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-md);
+}
+
+.popup {
+  position: relative;
+  background: var(--color-white);
+  border-radius: var(--radius-card);
+  padding: var(--space-lg);
+  max-width: 360px;
+  width: 100%;
+  box-shadow: var(--shadow-medium);
+}
+
+.closeBtn {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--grey-500);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.closeBtn:hover {
+  background: var(--grey-100);
+  color: var(--grey-700);
+}
+
+.closeBtn svg {
+  width: 18px;
+  height: 18px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-navy);
+  margin: 0 0 var(--space-sm);
+  padding-right: var(--space-lg);
+}
+
+.details {
+  margin-bottom: var(--space-md);
+}
+
+.datetime {
+  font-size: var(--text-sm);
+  color: var(--grey-700);
+  margin: 0 0 var(--space-xs);
+}
+
+.location {
+  font-size: var(--text-sm);
+  color: var(--grey-500);
+  margin: 0;
+}
+
+/* Download button */
+.downloadBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-water);
+  color: var(--color-white);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.downloadBtn:hover {
+  background: var(--color-navy);
+}
+
+.downloadIcon {
+  width: 18px;
+  height: 18px;
+}
+
+/* Subscribe section */
+.subscribeSection {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--grey-200);
+}
+
+.subscribeLabel {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--grey-600);
+  margin: 0 0 var(--space-sm);
+  text-align: center;
+}
+
+.subscribeButtons {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.subscribeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: var(--grey-100);
+  color: var(--grey-600);
+  border: 1px solid var(--grey-200);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+
+.subscribeBtn:hover {
+  background: var(--grey-200);
+  color: var(--color-navy);
+  border-color: var(--grey-300);
+}
+
+.subscribeBtn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.subscribeHint {
+  font-size: var(--text-xs);
+  color: var(--grey-500);
+  margin: var(--space-sm) 0 0;
+  text-align: center;
+}
