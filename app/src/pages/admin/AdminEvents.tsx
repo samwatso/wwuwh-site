@@ -73,7 +73,7 @@ interface SeriesDraft {
   location: string
   weekdays: number[]
   startTime: string
-  duration: number
+  endTime: string
   startDate: string
   hasEndDate: boolean
   endDate: string
@@ -1175,7 +1175,14 @@ function SeriesModal({
     return [2] // Default to Tuesday
   })
   const [startTime, setStartTime] = useState(series?.start_time_local || savedDraft?.startTime || '20:00')
-  const [duration, setDuration] = useState(series?.duration_min || savedDraft?.duration || 90)
+  const [endTime, setEndTime] = useState(() => {
+    // Calculate end time from start time + duration
+    if (series?.start_time_local && series?.duration_min) {
+      return addMinutesToTime(series.start_time_local, series.duration_min)
+    }
+    if (savedDraft?.endTime) return savedDraft.endTime
+    return '21:30' // Default 1.5 hours after 20:00
+  })
   const [startDate, setStartDate] = useState(
     series?.start_date || savedDraft?.startDate || new Date().toISOString().slice(0, 10)
   )
@@ -1196,7 +1203,7 @@ function SeriesModal({
     location,
     weekdays,
     startTime,
-    duration,
+    endTime,
     startDate,
     hasEndDate,
     endDate,
@@ -1212,20 +1219,20 @@ function SeriesModal({
       location,
       weekdays,
       startTime,
-      duration,
+      endTime,
       startDate,
       hasEndDate,
       endDate,
       visibilityDays,
       generateWeeks,
     }
-  }, [title, description, location, weekdays, startTime, duration, startDate, hasEndDate, endDate, visibilityDays, generateWeeks])
+  }, [title, description, location, weekdays, startTime, endTime, startDate, hasEndDate, endDate, visibilityDays, generateWeeks])
 
   // Save draft to localStorage when values change (only for new series)
   useEffect(() => {
     if (isEdit) return
     localStorage.setItem(SERIES_DRAFT_KEY, JSON.stringify(draftRef.current))
-  }, [isEdit, title, description, location, weekdays, startTime, duration, startDate, hasEndDate, endDate, visibilityDays, generateWeeks])
+  }, [isEdit, title, description, location, weekdays, startTime, endTime, startDate, hasEndDate, endDate, visibilityDays, generateWeeks])
 
   // Save draft on unmount (catches navigation away)
   useEffect(() => {
@@ -1256,7 +1263,7 @@ function SeriesModal({
     setLocation('')
     setWeekdays([2])
     setStartTime('20:00')
-    setDuration(90)
+    setEndTime('21:30')
     setStartDate(new Date().toISOString().slice(0, 10))
     setHasEndDate(false)
     setEndDate('')
@@ -1270,12 +1277,25 @@ function SeriesModal({
     )
   }
 
+  // Calculate duration in minutes from start and end time
+  const calculateDuration = (start: string, end: string): number => {
+    const [startH, startM] = start.split(':').map(Number)
+    const [endH, endM] = end.split(':').map(Number)
+    let duration = (endH * 60 + endM) - (startH * 60 + startM)
+    // Handle overnight events
+    if (duration <= 0) duration += 24 * 60
+    return duration
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title || weekdays.length === 0 || !startTime || !startDate) return
+    if (!title || weekdays.length === 0 || !startTime || !endTime || !startDate) return
 
     // Calculate weekday mask
     const weekdayMask = weekdays.reduce((mask, day) => mask | (1 << day), 0)
+
+    // Calculate duration from start and end time
+    const durationMin = calculateDuration(startTime, endTime)
 
     // Clear draft before saving
     clearDraft()
@@ -1286,7 +1306,7 @@ function SeriesModal({
       location: location || undefined,
       weekday_mask: weekdayMask,
       start_time_local: startTime,
-      duration_min: duration,
+      duration_min: durationMin,
       start_date: startDate,
       end_date: hasEndDate && endDate ? endDate : undefined,
       visibility_days: visibilityDays,
@@ -1344,7 +1364,7 @@ function SeriesModal({
 
               <div className={styles.formRow}>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Start Time</label>
+                  <label className={styles.formLabel}>Start</label>
                   <input
                     type="time"
                     className={styles.formInput}
@@ -1354,14 +1374,13 @@ function SeriesModal({
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Duration (min)</label>
+                  <label className={styles.formLabel}>End</label>
                   <input
-                    type="number"
+                    type="time"
                     className={styles.formInput}
-                    value={duration}
-                    onChange={(e) => setDuration(parseInt(e.target.value) || 90)}
-                    min={15}
-                    max={480}
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    required
                   />
                 </div>
               </div>
