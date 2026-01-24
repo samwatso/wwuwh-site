@@ -38,7 +38,7 @@ interface EventDraft {
   kind: 'session' | 'match' | 'tournament' | 'social' | 'other'
   startDate: string
   startTime: string
-  duration: number
+  endTime: string
   isAllDay: boolean
   endDate: string
   paymentMode: 'included' | 'one_off' | 'free'
@@ -300,7 +300,13 @@ function EventModal({
   const [startTime, setStartTime] = useState(
     sourceEvent?.starts_at_utc ? formatTime(sourceEvent.starts_at_utc) : savedDraft?.startTime || '21:00'
   )
-  const [duration, setDuration] = useState(savedDraft?.duration || 60)
+  const [endTime, setEndTime] = useState(() => {
+    if (sourceEvent?.ends_at_utc) {
+      return formatTime(sourceEvent.ends_at_utc)
+    }
+    if (savedDraft?.endTime) return savedDraft.endTime
+    return '22:00' // Default 1 hour after 21:00
+  })
   const [isAllDay, setIsAllDay] = useState(() => {
     if (sourceEvent) {
       // Check if it's an all-day event (spans midnight or multiple days)
@@ -333,7 +339,7 @@ function EventModal({
     kind,
     startDate,
     startTime,
-    duration,
+    endTime,
     isAllDay,
     endDate,
     paymentMode,
@@ -350,20 +356,20 @@ function EventModal({
       kind,
       startDate,
       startTime,
-      duration,
+      endTime,
       isAllDay,
       endDate,
       paymentMode,
       feeCents,
       visibilityDays,
     }
-  }, [title, description, location, kind, startDate, startTime, duration, isAllDay, endDate, paymentMode, feeCents, visibilityDays])
+  }, [title, description, location, kind, startDate, startTime, endTime, isAllDay, endDate, paymentMode, feeCents, visibilityDays])
 
   // Save draft to localStorage when values change (only for new events)
   useEffect(() => {
     if (isEdit || isCopy) return
     localStorage.setItem(EVENT_DRAFT_KEY, JSON.stringify(draftRef.current))
-  }, [isEdit, isCopy, title, description, location, kind, startDate, startTime, duration, isAllDay, endDate, paymentMode, feeCents, visibilityDays])
+  }, [isEdit, isCopy, title, description, location, kind, startDate, startTime, endTime, isAllDay, endDate, paymentMode, feeCents, visibilityDays])
 
   // Save draft on unmount (catches navigation away)
   useEffect(() => {
@@ -382,7 +388,7 @@ function EventModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !startDate) return
-    if (!isAllDay && !startTime) return
+    if (!isAllDay && (!startTime || !endTime)) return
     if (isAllDay && !endDate) return
 
     let startsAt: Date
@@ -393,9 +399,13 @@ function EventModal({
       startsAt = new Date(`${startDate}T00:00:00`)
       endsAt = new Date(`${endDate}T23:59:59`)
     } else {
-      // Regular event with time and duration
+      // Regular event with start and end time
       startsAt = new Date(`${startDate}T${startTime}:00`)
-      endsAt = new Date(startsAt.getTime() + duration * 60 * 1000)
+      endsAt = new Date(`${startDate}T${endTime}:00`)
+      // If end time is before start time, assume it's the next day
+      if (endsAt <= startsAt) {
+        endsAt.setDate(endsAt.getDate() + 1)
+      }
     }
 
     const visibleFrom = new Date(startsAt.getTime() - visibilityDays * 24 * 60 * 60 * 1000)
@@ -424,7 +434,7 @@ function EventModal({
     setKind('session')
     setStartDate(defaultStart.toISOString().slice(0, 10))
     setStartTime('21:00')
-    setDuration(60)
+    setEndTime('22:00')
     setIsAllDay(false)
     setEndDate('')
     setPaymentMode('included')
@@ -514,7 +524,7 @@ function EventModal({
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Time</label>
+                  <label className={styles.formLabel}>Start Time</label>
                   <input
                     type="time"
                     className={styles.formInput}
@@ -524,14 +534,13 @@ function EventModal({
                   />
                 </div>
                 <div className={styles.formGroup}>
-                  <label className={styles.formLabel}>Duration (min)</label>
+                  <label className={styles.formLabel}>End Time</label>
                   <input
-                    type="number"
+                    type="time"
                     className={styles.formInput}
-                    value={duration}
-                    onChange={(e) => setDuration(parseInt(e.target.value) || 60)}
-                    min={15}
-                    max={480}
+                    value={endTime}
+                    onChange={(e) => setEndTime(e.target.value)}
+                    required
                   />
                 </div>
               </div>
