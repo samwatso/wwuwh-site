@@ -53,7 +53,11 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
   }
 
   try {
-    const body = await context.request.json() as { response?: string; note?: string }
+    const body = await context.request.json() as {
+      response?: string
+      note?: string
+      confirm_late_cancel?: boolean
+    }
 
     if (!body.response || !['yes', 'no', 'maybe'].includes(body.response)) {
       return errorResponse('Invalid response. Must be yes, no, or maybe.', 400)
@@ -98,6 +102,30 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       .bind(eventId, person.id)
       .first<{ response: string }>()
 
+    // Check if user has a team assignment (for late cancellation warning)
+    const teamAssignment = await db
+      .prepare(`
+        SELECT eta.team_id, et.name as team_name
+        FROM event_team_assignments eta
+        LEFT JOIN event_teams et ON et.id = eta.team_id
+        WHERE eta.event_id = ? AND eta.person_id = ?
+      `)
+      .bind(eventId, person.id)
+      .first<{ team_id: string | null; team_name: string | null }>()
+
+    // If user is changing from yes to no/maybe and has a team assignment
+    const isDeclineFromYes = currentRsvp?.response === 'yes' && body.response !== 'yes'
+    const hasTeamAssignment = !!teamAssignment?.team_id
+
+    if (isDeclineFromYes && hasTeamAssignment && !body.confirm_late_cancel) {
+      // Return warning - client needs to confirm
+      return jsonResponse({
+        requires_confirmation: true,
+        team_name: teamAssignment.team_name,
+        message: `You are assigned to ${teamAssignment.team_name || 'a team'}. Declining will remove you from the team.`,
+      }, 409) // 409 Conflict - requires confirmation
+    }
+
     // Check for active subscription
     const subscription = await db
       .prepare(`
@@ -110,16 +138,31 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       .bind(event.club_id, person.id)
       .first<{ id: string; weekly_sessions_allowed: number }>()
 
-    // Upsert RSVP
+    // Determine if this is a late cancellation
+    const isLateCancellation = isDeclineFromYes && hasTeamAssignment && body.confirm_late_cancel
+
+    // Upsert RSVP (include cancelled_late flag)
     await db
       .prepare(`
-        INSERT INTO event_rsvps (event_id, person_id, response, note, responded_at)
-        VALUES (?, ?, ?, ?, datetime('now'))
+        INSERT INTO event_rsvps (event_id, person_id, response, note, responded_at, cancelled_late)
+        VALUES (?, ?, ?, ?, datetime('now'), ?)
         ON CONFLICT (event_id, person_id)
-        DO UPDATE SET response = excluded.response, note = excluded.note, responded_at = datetime('now')
+        DO UPDATE SET
+          response = excluded.response,
+          note = excluded.note,
+          responded_at = datetime('now'),
+          cancelled_late = CASE WHEN ? = 1 THEN 1 ELSE cancelled_late END
       `)
-      .bind(eventId, person.id, body.response, body.note || null)
+      .bind(eventId, person.id, body.response, body.note || null, isLateCancellation ? 1 : 0, isLateCancellation ? 1 : 0)
       .run()
+
+    // If late cancellation confirmed, remove team assignment
+    if (isLateCancellation) {
+      await db
+        .prepare('DELETE FROM event_team_assignments WHERE event_id = ? AND person_id = ?')
+        .bind(eventId, person.id)
+        .run()
+    }
 
     // Handle subscription usage - only for sessions with payment_mode = 'included'
     const isSubscriptionEligible = event.kind === 'session' && event.payment_mode === 'included'
@@ -178,6 +221,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     return jsonResponse({
       rsvp,
       subscription_used: !!subscriptionUsed,
+      late_cancellation: isLateCancellation,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Database error'

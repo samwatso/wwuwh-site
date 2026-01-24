@@ -79,10 +79,12 @@ interface PlayerCardProps {
 
 function PlayerCard({ assignment, isAdmin, onEdit }: PlayerCardProps) {
   const position = POSITIONS.find((p) => p.code === assignment.position_code)
+  const isNoShow = assignment.attendance_status === 'absent'
+  const isLate = assignment.attendance_status === 'late'
 
   return (
     <div
-      className={`${styles.playerCard} ${isAdmin ? styles.playerCardEditable : ''}`}
+      className={`${styles.playerCard} ${isAdmin ? styles.playerCardEditable : ''} ${isNoShow ? styles.playerCardNoShow : ''} ${isLate ? styles.playerCardLate : ''}`}
       onClick={isAdmin ? () => onEdit(assignment) : undefined}
     >
       <Avatar
@@ -92,7 +94,11 @@ function PlayerCard({ assignment, isAdmin, onEdit }: PlayerCardProps) {
         className={styles.playerAvatar}
       />
       <div className={styles.playerInfo}>
-        <div className={styles.playerName}>{assignment.person_name}</div>
+        <div className={styles.playerName}>
+          {assignment.person_name}
+          {isNoShow && <span className={styles.noShowBadge}>No Show</span>}
+          {isLate && <span className={styles.lateBadge}>Late</span>}
+        </div>
         {position && <div className={styles.playerPosition}>{position.name}</div>}
         {assignment.notes && <div className={styles.playerNotes}>{assignment.notes}</div>}
       </div>
@@ -171,6 +177,14 @@ interface EditPlayerModalProps {
   saving: boolean
 }
 
+const ATTENDANCE_OPTIONS = [
+  { value: null, label: 'Not Set' },
+  { value: 'present', label: 'Present' },
+  { value: 'absent', label: 'No Show' },
+  { value: 'late', label: 'Late' },
+  { value: 'excused', label: 'Excused' },
+] as const
+
 function EditPlayerModal({ assignment, teams, onSave, onClose, saving }: EditPlayerModalProps) {
   const [teamId, setTeamId] = useState<string | null>(assignment?.team_id || null)
   const [activity, setActivity] = useState<AssignmentUpdate['activity']>(
@@ -180,6 +194,9 @@ function EditPlayerModal({ assignment, teams, onSave, onClose, saving }: EditPla
     assignment?.position_code || null
   )
   const [notes, setNotes] = useState(assignment?.notes || '')
+  const [attendanceStatus, setAttendanceStatus] = useState<AssignmentUpdate['attendance_status']>(
+    assignment?.attendance_status || null
+  )
 
   if (!assignment) return null
 
@@ -190,6 +207,7 @@ function EditPlayerModal({ assignment, teams, onSave, onClose, saving }: EditPla
       activity,
       position_code: position,
       notes: notes || null,
+      attendance_status: attendanceStatus,
     })
   }
 
@@ -276,6 +294,22 @@ function EditPlayerModal({ assignment, teams, onSave, onClose, saving }: EditPla
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional notes..."
             />
+          </div>
+
+          {/* Attendance Status */}
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Attendance</label>
+            <div className={styles.segmentedControl}>
+              {ATTENDANCE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.value ?? 'null'}
+                  className={`${styles.segmentBtn} ${attendanceStatus === opt.value ? styles.segmentBtnActive : ''} ${opt.value === 'absent' && attendanceStatus === 'absent' ? styles.segmentBtnNoShow : ''}`}
+                  onClick={() => setAttendanceStatus(opt.value)}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
@@ -462,6 +496,7 @@ export function EventTeams() {
       person_name: player.person_name,
       person_email: player.person_email,
       person_photo_url: player.person_photo_url,
+      attendance_status: null,
     })
   }
 

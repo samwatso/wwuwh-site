@@ -45,6 +45,111 @@
   border: 1px solid var(--color-error);
 }
 
+/* ============================================================================
+   CONFIRMATION MODAL
+   ============================================================================ */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-md);
+}
+
+.confirmModal {
+  width: 100%;
+  max-width: 400px;
+  background: var(--color-white);
+  border-radius: var(--radius-card);
+  padding: var(--space-lg);
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.confirmTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--color-navy);
+  margin: 0 0 var(--space-sm);
+}
+
+.confirmMessage {
+  font-size: var(--text-sm);
+  color: var(--grey-600);
+  margin: 0 0 var(--space-sm);
+  line-height: 1.5;
+}
+
+.confirmMessage:last-of-type {
+  margin-bottom: var(--space-lg);
+}
+
+.confirmMessage strong {
+  color: var(--color-navy);
+}
+
+.confirmActions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+}
+
+.btnSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-white);
+  color: var(--grey-700);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.btnSecondary:hover {
+  border-color: var(--color-water);
+  color: var(--color-water);
+}
+
+.btnDanger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-error);
+  color: var(--color-white);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border: none;
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.btnDanger:hover {
+  background: #b91c1c;
+}
+
 .dismissBtn {
   display: flex;
   align-items: center;

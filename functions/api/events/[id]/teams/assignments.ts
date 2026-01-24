@@ -14,6 +14,7 @@ interface AssignmentUpdate {
   activity: 'play' | 'swim_sets' | 'not_playing' | 'other'
   position_code?: 'F' | 'W' | 'C' | 'B' | null
   notes?: string | null
+  attendance_status?: 'present' | 'absent' | 'late' | 'excused' | null
 }
 
 /**
@@ -72,7 +73,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     const results = []
 
     for (const assignment of assignments) {
-      const { person_id, team_id, activity, position_code, notes } = assignment
+      const { person_id, team_id, activity, position_code, notes, attendance_status } = assignment
 
       // Validate person exists
       const personExists = await db
@@ -123,18 +124,48 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
         )
         .run()
 
+      // Handle attendance status if provided
+      if (attendance_status !== undefined) {
+        if (attendance_status === null) {
+          // Remove attendance record
+          await db
+            .prepare('DELETE FROM event_attendance WHERE event_id = ? AND person_id = ?')
+            .bind(eventId, person_id)
+            .run()
+        } else {
+          // Upsert attendance record
+          await db
+            .prepare(`
+              INSERT INTO event_attendance (event_id, person_id, status, checked_in_at)
+              VALUES (?, ?, ?, datetime('now'))
+              ON CONFLICT(event_id, person_id) DO UPDATE SET
+                status = excluded.status,
+                checked_in_at = datetime('now')
+            `)
+            .bind(eventId, person_id, attendance_status)
+            .run()
+        }
+      }
+
       results.push({
         person_id,
         team_id,
         activity: activity || 'play',
         position_code: position_code || null,
+        attendance_status: attendance_status ?? null,
       })
     }
 
     return jsonResponse({
       success: true,
       updated: results.length,
-      assignments: results,
+      assignments: results as Array<{
+        person_id: string
+        team_id: string | null
+        activity: string
+        position_code: string | null
+        attendance_status: string | null
+      }>,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Database error'

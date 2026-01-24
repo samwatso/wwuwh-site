@@ -196,15 +196,54 @@ export async function getEventRsvp(eventId: string): Promise<EventRsvpResponse> 
   return api<EventRsvpResponse>(`/events/${eventId}/rsvp`)
 }
 
+export interface SetEventRsvpOptions {
+  response: RsvpResponseType
+  note?: string
+  confirm_late_cancel?: boolean
+}
+
+export interface SetEventRsvpResult {
+  rsvp?: EventRsvp | null
+  subscription_used?: boolean
+  late_cancellation?: boolean
+  // When requires_confirmation is true, user must confirm before proceeding
+  requires_confirmation?: boolean
+  team_name?: string
+  message?: string
+}
+
 export async function setEventRsvp(
   eventId: string,
-  response: RsvpResponseType,
-  note?: string
-): Promise<EventRsvpResponse> {
-  return api<EventRsvpResponse>(`/events/${eventId}/rsvp`, {
+  options: SetEventRsvpOptions
+): Promise<SetEventRsvpResult> {
+  const { data: { session } } = await supabase.auth.getSession()
+
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  }
+
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`
+  }
+
+  const res = await fetch(`${API_BASE}/events/${eventId}/rsvp`, {
     method: 'POST',
-    body: { response, note },
+    headers,
+    body: JSON.stringify(options),
   })
+
+  const json = await res.json()
+
+  // 409 means confirmation required (user is on a team)
+  if (res.status === 409 && json.requires_confirmation) {
+    return json as SetEventRsvpResult
+  }
+
+  if (!res.ok) {
+    throw new Error(json.error || 'Failed to update RSVP')
+  }
+
+  return json as SetEventRsvpResult
 }
 
 export interface Attendee {
@@ -331,6 +370,7 @@ export interface TeamAssignment {
   person_name: string
   person_email: string
   person_photo_url: string | null
+  attendance_status: 'present' | 'absent' | 'late' | 'excused' | null
 }
 
 export interface TeamWithAssignments extends EventTeam {
@@ -384,6 +424,7 @@ export interface AssignmentUpdate {
   activity: 'play' | 'swim_sets' | 'not_playing' | 'other'
   position_code?: 'F' | 'W' | 'C' | 'B' | null
   notes?: string | null
+  attendance_status?: 'present' | 'absent' | 'late' | 'excused' | null
 }
 
 export interface UpdateAssignmentsRequest {
@@ -399,6 +440,7 @@ export interface UpdateAssignmentsResponse {
     team_id: string | null
     activity: string
     position_code: string | null
+    attendance_status: string | null
   }>
 }
 

@@ -272,6 +272,44 @@
   font-style: italic;
 }
 
+/* No-show and Late player cards */
+.playerCardNoShow {
+  background: var(--color-error-light);
+  opacity: 0.8;
+}
+
+.playerCardNoShow .playerName {
+  text-decoration: line-through;
+  color: var(--grey-500);
+}
+
+.playerCardLate {
+  background: var(--color-warning-light);
+}
+
+.noShowBadge,
+.lateBadge {
+  display: inline-block;
+  margin-left: var(--space-xs);
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+}
+
+.noShowBadge {
+  background: var(--color-error);
+  color: var(--color-white);
+}
+
+.lateBadge {
+  background: var(--color-warning);
+  color: var(--color-navy);
+}
+
 /* Available Players Avatar */
 .availableAvatar {
   flex-shrink: 0;
@@ -634,6 +672,16 @@
   background: var(--color-white);
   color: var(--color-navy);
   box-shadow: var(--shadow-sm);
+}
+
+.segmentBtnNoShow {
+  background: var(--color-error);
+  color: var(--color-white);
+}
+
+.segmentBtnNoShow:hover {
+  background: var(--color-error);
+  color: var(--color-white);
 }
 
 /* Share Button */

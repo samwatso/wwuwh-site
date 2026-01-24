@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { listEvents, setEventRsvp, createCheckout, EventsListParams, SubscriptionInfo } from '@/lib/api'
+import { listEvents, setEventRsvp, createCheckout, EventsListParams, SubscriptionInfo, SetEventRsvpResult } from '@/lib/api'
 import type { EventWithRsvp, RsvpResponse } from '@/types/database'
 
 export interface UseEventsParams {
@@ -15,13 +15,22 @@ export interface UseEventsParams {
   status?: 'scheduled' | 'cancelled' | 'completed'
 }
 
+export interface RsvpConfirmation {
+  eventId: string
+  response: RsvpResponse
+  teamName: string
+  message: string
+}
+
 export interface UseEventsReturn {
   events: EventWithRsvp[]
   loading: boolean
   error: string | null
   refresh: () => Promise<void>
-  rsvp: (eventId: string, response: RsvpResponse) => Promise<void>
+  rsvp: (eventId: string, response: RsvpResponse, confirmLateCancel?: boolean) => Promise<SetEventRsvpResult>
   rsvpLoading: string | null // Event ID currently being updated
+  rsvpConfirmation: RsvpConfirmation | null // When user needs to confirm late cancellation
+  clearRsvpConfirmation: () => void
   pay: (eventId: string) => Promise<void>
   payLoading: string | null // Event ID currently being processed for payment
   subscription: SubscriptionInfo | null
@@ -33,9 +42,14 @@ export function useEvents(params: UseEventsParams): UseEventsReturn {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [rsvpLoading, setRsvpLoading] = useState<string | null>(null)
+  const [rsvpConfirmation, setRsvpConfirmation] = useState<RsvpConfirmation | null>(null)
   const [payLoading, setPayLoading] = useState<string | null>(null)
   const [subscription, setSubscription] = useState<SubscriptionInfo | null>(null)
   const [memberType, setMemberType] = useState<'member' | 'guest' | null>(null)
+
+  const clearRsvpConfirmation = useCallback(() => {
+    setRsvpConfirmation(null)
+  }, [])
 
   const fetchEvents = useCallback(async () => {
     if (!params.clubId) {
@@ -75,11 +89,29 @@ export function useEvents(params: UseEventsParams): UseEventsReturn {
     fetchEvents()
   }, [fetchEvents])
 
-  const rsvp = useCallback(async (eventId: string, response: RsvpResponse) => {
+  const rsvp = useCallback(async (eventId: string, response: RsvpResponse, confirmLateCancel?: boolean): Promise<SetEventRsvpResult> => {
     setRsvpLoading(eventId)
 
     try {
-      await setEventRsvp(eventId, response)
+      const result = await setEventRsvp(eventId, {
+        response,
+        confirm_late_cancel: confirmLateCancel,
+      })
+
+      // If confirmation is required, store it and return
+      if (result.requires_confirmation) {
+        setRsvpConfirmation({
+          eventId,
+          response,
+          teamName: result.team_name || 'a team',
+          message: result.message || 'You are assigned to a team. Are you sure you want to decline?',
+        })
+        setRsvpLoading(null)
+        return result
+      }
+
+      // Clear any existing confirmation
+      setRsvpConfirmation(null)
 
       // Update local state optimistically
       setEvents((prev) =>
@@ -109,6 +141,8 @@ export function useEvents(params: UseEventsParams): UseEventsReturn {
           }
         })
       )
+
+      return result
     } catch (err) {
       // Refresh on error to get correct state
       await fetchEvents()
@@ -138,6 +172,8 @@ export function useEvents(params: UseEventsParams): UseEventsReturn {
     refresh: fetchEvents,
     rsvp,
     rsvpLoading,
+    rsvpConfirmation,
+    clearRsvpConfirmation,
     pay,
     payLoading,
     subscription,

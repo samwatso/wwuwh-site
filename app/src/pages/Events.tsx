@@ -445,11 +445,23 @@ export function Events() {
     error,
     rsvp,
     rsvpLoading,
+    rsvpConfirmation,
+    clearRsvpConfirmation,
     pay,
     payLoading,
     refresh,
     subscription,
   } = useEvents({ clubId })
+
+  // Handle late cancellation confirmation
+  const handleConfirmLateCancel = async () => {
+    if (!rsvpConfirmation) return
+    try {
+      await rsvp(rsvpConfirmation.eventId, rsvpConfirmation.response, true)
+    } catch (err) {
+      console.error('Failed to update RSVP:', err)
+    }
+  }
 
   const pastFrom = useMemo(() => {
     const d = new Date()
@@ -561,6 +573,36 @@ export function Events() {
 
   return (
     <div className={styles.container}>
+      {/* Late Cancellation Confirmation Modal */}
+      {rsvpConfirmation && (
+        <div className={styles.modalOverlay} onClick={clearRsvpConfirmation}>
+          <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.confirmTitle}>Confirm Cancellation</h3>
+            <p className={styles.confirmMessage}>
+              You are assigned to <strong>{rsvpConfirmation.teamName}</strong> for this event.
+              Declining now will remove you from the team and be recorded as a late cancellation.
+            </p>
+            <p className={styles.confirmMessage}>
+              Are you sure you want to decline?
+            </p>
+            <div className={styles.confirmActions}>
+              <button
+                className={styles.btnSecondary}
+                onClick={clearRsvpConfirmation}
+              >
+                Keep RSVP
+              </button>
+              <button
+                className={styles.btnDanger}
+                onClick={handleConfirmLateCancel}
+              >
+                Yes, Decline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {paymentMessage && (
         <div className={paymentMessage.type === 'success' ? styles.successMessage : styles.errorMessage}>
           {paymentMessage.text}
