@@ -143,7 +143,7 @@ assets/
 | Thursday | 9–10 PM | Downham Leisure Centre | Members & Guests |
 | Sunday | 3:30–4:30 PM | De Stafford Sports Centre, Caterham | Juniors |
 
-Register attendance via [Spond](https://spond.com).
+Register attendance via our [members app](https://wwuwh.com/app/).
 
 ---
 
