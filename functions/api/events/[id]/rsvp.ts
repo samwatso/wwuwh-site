@@ -141,6 +141,12 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     // Determine if this is a late cancellation
     const isLateCancellation = isDeclineFromYes && hasTeamAssignment && body.confirm_late_cancel
 
+    // Determine cancelled_late value:
+    // - If changing to 'yes', clear the flag (they're back!)
+    // - If late cancellation, set the flag
+    // - Otherwise, keep existing value
+    const cancelledLateValue = body.response === 'yes' ? 0 : (isLateCancellation ? 1 : null)
+
     // Upsert RSVP (include cancelled_late flag)
     await db
       .prepare(`
@@ -151,9 +157,21 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
           response = excluded.response,
           note = excluded.note,
           responded_at = datetime('now'),
-          cancelled_late = CASE WHEN ? = 1 THEN 1 ELSE cancelled_late END
+          cancelled_late = CASE
+            WHEN ? = 0 THEN 0
+            WHEN ? = 1 THEN 1
+            ELSE cancelled_late
+          END
       `)
-      .bind(eventId, person.id, body.response, body.note || null, isLateCancellation ? 1 : 0, isLateCancellation ? 1 : 0)
+      .bind(
+        eventId,
+        person.id,
+        body.response,
+        body.note || null,
+        isLateCancellation ? 1 : 0,
+        cancelledLateValue,
+        cancelledLateValue
+      )
       .run()
 
     // If late cancellation confirmed, keep the team assignment but the cancelled_late
