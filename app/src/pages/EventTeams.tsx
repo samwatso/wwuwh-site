@@ -463,7 +463,6 @@ export function EventTeams() {
     teams,
     unassigned,
     availablePlayers,
-    totalAssigned,
     totalRsvpYes,
     loading,
     error,
@@ -718,8 +717,6 @@ export function EventTeams() {
         <h1 className={styles.title}>{event.title}</h1>
         <p className={styles.subtitle}>{formatDate(event.starts_at_utc)}</p>
         <div className={styles.stats}>
-          <span>{totalAssigned} assigned</span>
-          <span className={styles.statDivider}>|</span>
           <span>{totalRsvpYes} RSVP'd yes</span>
         </div>
         {teams.length > 0 && (
