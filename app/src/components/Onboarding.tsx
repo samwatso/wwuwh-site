@@ -76,7 +76,7 @@ const slides: Slide[] = [
   {
     icon: <CheckInIcon />,
     title: 'Register + turn up',
-    description: "Once we've confirmed the best session for you, register attendance on Spond so we can plan numbers and keep sessions running smoothly.",
+    description: "Once we've confirmed the best session for you, register attendance through our members app so we can plan numbers and keep sessions running smoothly.",
     detail: "On the night we'll introduce you, pair you with someone, and ease you into drills or game time based on experience. Safety and welcome come first.",
   },
 ]
