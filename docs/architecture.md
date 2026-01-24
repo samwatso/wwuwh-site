@@ -203,6 +203,64 @@ Located in `/functions/api/*`. Each function:
 | GET | `/api/events` | List upcoming events |
 | POST | `/api/events/:id/rsvp` | RSVP to an event |
 
+### Admin Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/api/admin/events` | List all events (including hidden) |
+| POST | `/api/admin/events` | Create a new event |
+| PUT | `/api/admin/events/:id` | Update an event |
+| DELETE | `/api/admin/events/:id` | Cancel/delete an event |
+| GET | `/api/admin/external-events` | List UK events for review |
+| POST | `/api/admin/external-events/:id/promote` | Create club event from UK event |
+| POST | `/api/admin/external-events/:id/ignore` | Mark UK event as ignored |
+| POST | `/api/admin/external-events/:id/undo` | Undo promote/ignore decision |
+
+---
+
+## External Events (UK Events Integration)
+
+The app supports importing events from external sources (like the UK UWH calendar). Admins can review these events and either promote them to club events or ignore them.
+
+### Database Tables
+
+```sql
+-- external_events: Events from external sources
+CREATE TABLE external_events (
+  id              TEXT PRIMARY KEY,
+  source          TEXT NOT NULL DEFAULT 'uk_uwh',
+  source_event_id TEXT NOT NULL,
+  title           TEXT NOT NULL,
+  description     TEXT,
+  location        TEXT,
+  starts_at_utc   TEXT NOT NULL,
+  ends_at_utc     TEXT,
+  raw_data_json   TEXT,
+  fetched_at      TEXT NOT NULL,
+  UNIQUE(source, source_event_id)
+);
+
+-- external_event_links: Per-club decisions on external events
+CREATE TABLE external_event_links (
+  external_event_id TEXT NOT NULL REFERENCES external_events(id),
+  club_id           TEXT NOT NULL REFERENCES clubs(id),
+  decision          TEXT NOT NULL CHECK(decision IN ('promoted','ignored')),
+  linked_event_id   TEXT REFERENCES events(id),
+  decided_by_person_id TEXT,
+  decided_at        TEXT NOT NULL,
+  PRIMARY KEY (external_event_id, club_id)
+);
+```
+
+### Workflow
+
+1. External events are fetched and stored in `external_events` table
+2. Admins view UK events in the Admin Events page (tab: "UK Events")
+3. For each event, admins can:
+   - **Promote**: Creates a club event linked to the external event
+   - **Ignore**: Marks as not relevant for the club
+   - **Undo**: Reverses the decision (deletes promoted event if no RSVPs)
+
 ---
 
 ## Environment Variables

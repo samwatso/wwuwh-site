@@ -4,14 +4,14 @@
  * Manage events and recurring series.
  */
 
-import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Link, useSearchParams } from 'react-router-dom'
 import { useProfile } from '@/hooks/useProfile'
 import { useAdminEvents } from '@/hooks/useAdminEvents'
 import { useAdminGroups } from '@/hooks/useAdminGroups'
 import { useAdminMembers } from '@/hooks/useAdminMembers'
 import { Spinner } from '@/components'
-import type { AdminEvent, EventSeries, AdminGroup, AdminMember } from '@/lib/api'
+import type { AdminEvent, EventSeries, AdminGroup, AdminMember, ExternalEvent } from '@/lib/api'
 import type { EventKind } from '@/types/database'
 import {
   getEventInvitations,
@@ -23,8 +23,15 @@ import {
   adminCreateRsvp,
   PersonInvitation,
   GroupInvitation,
+  getExternalEvents,
+  promoteExternalEvent,
+  ignoreExternalEvent,
+  undoExternalEventDecision,
 } from '@/lib/api'
 import styles from './AdminEvents.module.css'
+
+// Tab type for URL state
+type EventTab = 'club' | 'uk'
 
 const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -448,6 +455,82 @@ function EventRow({
         />
       )}
     </>
+  )
+}
+
+// ============================================================================
+// EXTERNAL EVENT CARD (UK Events)
+// ============================================================================
+
+interface ExternalEventCardProps {
+  event: ExternalEvent
+  onPromote: () => void
+  onIgnore: () => void
+  onUndo: () => void
+  processing: boolean
+}
+
+function ExternalEventCard({ event, onPromote, onIgnore, onUndo, processing }: ExternalEventCardProps) {
+  const isPromoted = event.decision === 'promoted'
+  const isIgnored = event.decision === 'ignored'
+  const hasDecision = isPromoted || isIgnored
+
+  return (
+    <div className={`${styles.externalEventCard} ${isIgnored ? styles.externalIgnored : ''} ${isPromoted ? styles.externalPromoted : ''}`}>
+      <div className={styles.externalEventContent}>
+        {/* Date/Time meta */}
+        <div className={styles.eventMeta}>
+          {formatDateCompact(event.starts_at_utc)}
+          {event.ends_at_utc && ` · ${formatTime(event.starts_at_utc)}`}
+        </div>
+
+        {/* Title */}
+        <div className={styles.eventTitle}>{event.title}</div>
+
+        {/* Location */}
+        {event.location && (
+          <div className={styles.externalEventLocation}>{event.location}</div>
+        )}
+
+        {/* Status badge */}
+        {hasDecision && (
+          <div className={styles.externalDecisionBadge}>
+            {isPromoted && <span className={styles.decisionPromoted}>Promoted</span>}
+            {isIgnored && <span className={styles.decisionIgnored}>Ignored</span>}
+          </div>
+        )}
+      </div>
+
+      {/* Actions */}
+      <div className={styles.externalEventActions}>
+        {!hasDecision ? (
+          <>
+            <button
+              className={styles.btnPrimarySmall}
+              onClick={onPromote}
+              disabled={processing}
+            >
+              {processing ? <Spinner size="sm" /> : 'Promote'}
+            </button>
+            <button
+              className={styles.btnGhostSmall}
+              onClick={onIgnore}
+              disabled={processing}
+            >
+              Ignore
+            </button>
+          </>
+        ) : (
+          <button
+            className={styles.btnGhostSmall}
+            onClick={onUndo}
+            disabled={processing}
+          >
+            {processing ? <Spinner size="sm" /> : 'Undo'}
+          </button>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -2065,6 +2148,13 @@ function AddAttendeeModal({
 export function AdminEvents() {
   const { memberships, loading: profileLoading } = useProfile()
   const clubId = memberships.length > 0 ? memberships[0].club_id : ''
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  // Tab state from URL (default: 'club')
+  const activeTab = (searchParams.get('tab') as EventTab) || 'club'
+  const setActiveTab = (tab: EventTab) => {
+    setSearchParams({ tab })
+  }
 
   const {
     events,
@@ -2097,6 +2187,78 @@ export function AdminEvents() {
   const [managingInvitesSeries, setManagingInvitesSeries] = useState<EventSeries | null>(null)
   const [addingAttendeeEvent, setAddingAttendeeEvent] = useState<AdminEvent | null>(null)
   const [filter, setFilter] = useState<EventFilter>('all')
+
+  // UK Events (external events) state
+  const [externalEvents, setExternalEvents] = useState<ExternalEvent[]>([])
+  const [externalEventsLoading, setExternalEventsLoading] = useState(false)
+  const [externalEventsError, setExternalEventsError] = useState<string | null>(null)
+  const [processingExternalId, setProcessingExternalId] = useState<string | null>(null)
+
+  // Fetch external events when UK tab is active
+  const fetchExternalEvents = useCallback(async () => {
+    if (!clubId) return
+    setExternalEventsLoading(true)
+    setExternalEventsError(null)
+    try {
+      const response = await getExternalEvents({ club_id: clubId, limit: 50 })
+      setExternalEvents(response.external_events)
+    } catch (err) {
+      setExternalEventsError(err instanceof Error ? err.message : 'Failed to load UK events')
+    } finally {
+      setExternalEventsLoading(false)
+    }
+  }, [clubId])
+
+  useEffect(() => {
+    if (activeTab === 'uk' && clubId) {
+      fetchExternalEvents()
+    }
+  }, [activeTab, clubId, fetchExternalEvents])
+
+  // UK Events handlers
+  const handlePromoteEvent = async (externalEvent: ExternalEvent) => {
+    if (!clubId || processingExternalId) return
+    setProcessingExternalId(externalEvent.id)
+    try {
+      await promoteExternalEvent(externalEvent.id, { club_id: clubId })
+      await fetchExternalEvents()
+      refreshEvents()
+    } catch (err) {
+      console.error('Failed to promote event:', err)
+      alert(err instanceof Error ? err.message : 'Failed to promote event')
+    } finally {
+      setProcessingExternalId(null)
+    }
+  }
+
+  const handleIgnoreEvent = async (externalEventId: string) => {
+    if (!clubId || processingExternalId) return
+    setProcessingExternalId(externalEventId)
+    try {
+      await ignoreExternalEvent(externalEventId, clubId)
+      await fetchExternalEvents()
+    } catch (err) {
+      console.error('Failed to ignore event:', err)
+      alert(err instanceof Error ? err.message : 'Failed to ignore event')
+    } finally {
+      setProcessingExternalId(null)
+    }
+  }
+
+  const handleUndoDecision = async (externalEventId: string) => {
+    if (!clubId || processingExternalId) return
+    setProcessingExternalId(externalEventId)
+    try {
+      await undoExternalEventDecision(externalEventId, clubId)
+      await fetchExternalEvents()
+      refreshEvents()
+    } catch (err) {
+      console.error('Failed to undo decision:', err)
+      alert(err instanceof Error ? err.message : 'Failed to undo decision')
+    } finally {
+      setProcessingExternalId(null)
+    }
+  }
 
   // Split events into upcoming and past, then filter
   const allUpcomingEvents = events.filter((e) => !isPastEvent(e))
@@ -2219,90 +2381,148 @@ export function AdminEvents() {
         <h1 className={styles.title}>Events</h1>
       </div>
 
-      {/* Actions - Create buttons */}
-      <div className={styles.actionsCompact}>
-        <button className={styles.btnPrimary} onClick={() => setShowEventModal(true)}>
-          + Create Event
+      {/* Tabs */}
+      <div className={styles.tabs}>
+        <button
+          className={`${styles.tab} ${activeTab === 'club' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('club')}
+        >
+          Club Events
         </button>
-        <button className={styles.btnSecondary} onClick={() => setShowSeriesModal(true)}>
-          + Create Series
+        <button
+          className={`${styles.tab} ${activeTab === 'uk' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('uk')}
+        >
+          UK Events
         </button>
       </div>
 
-      {/* Recurring Series */}
-      {!seriesLoading && series.length > 0 && (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Recurring Series</h2>
-          <div className={styles.seriesList}>
-            {series.map((s) => (
-              <SeriesCard
-                key={s.id}
-                series={s}
-                onEdit={() => setEditingSeries(s)}
-                onGenerate={() => handleGenerateEvents(s.id)}
-                onManageInvites={() => setManagingInvitesSeries(s)}
-                onDelete={() => handleDeleteSeries(s.id)}
-                generating={generatingSeriesId === s.id}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Upcoming Events */}
-      <section className={styles.section}>
-        <h2 className={styles.sectionTitle}>Upcoming Events</h2>
-
-        {/* Filter bar */}
-        <FilterBar selected={filter} onChange={setFilter} />
-
-        {upcomingEvents.length === 0 ? (
-          <div className={styles.empty}>
-            <p>{filter === 'all' ? 'No upcoming events' : `No upcoming ${filter} events`}</p>
-          </div>
-        ) : (
-          <div className={styles.eventsList}>
-            {upcomingEvents.map((event) => (
-              <EventRow
-                key={event.id}
-                event={event}
-                onEdit={() => setEditingEvent(event)}
-                onCancel={() => handleCancelEvent(event.id)}
-                onCopy={() => handleCopyEvent(event)}
-                onManageInvites={() => setManagingInvitesEvent(event)}
-                onAddAttendee={() => setAddingAttendeeEvent(event)}
-              />
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* Past Events */}
-      {allPastEvents.length > 0 && (
-        <section className={styles.section}>
-          <button
-            className={styles.togglePast}
-            onClick={() => setShowPastEvents(!showPastEvents)}
-          >
-            {showPastEvents ? '− Hide' : '+ Show'} previous events ({pastEvents.length})
-          </button>
-          {showPastEvents && (
-            <div className={styles.eventsList}>
-              {pastEvents.map((event) => (
-                <EventRow
-                  key={event.id}
-                  event={event}
-                  onEdit={() => setEditingEvent(event)}
-                  onCancel={() => handleCancelEvent(event.id)}
-                  onCopy={() => handleCopyEvent(event)}
-                  onManageInvites={() => setManagingInvitesEvent(event)}
-                  onAddAttendee={() => setAddingAttendeeEvent(event)}
-                  isPast
+      {/* UK Events Tab Content */}
+      {activeTab === 'uk' && (
+        <div className={styles.ukEventsSection}>
+          {externalEventsLoading ? (
+            <div className={styles.loading}>
+              <Spinner />
+              <p>Loading UK events...</p>
+            </div>
+          ) : externalEventsError ? (
+            <div className={styles.error}>
+              <div className={styles.errorIcon}>!</div>
+              <p>{externalEventsError}</p>
+              <button className={styles.btnSecondary} onClick={fetchExternalEvents}>
+                Try Again
+              </button>
+            </div>
+          ) : externalEvents.length === 0 ? (
+            <div className={styles.empty}>
+              <p>No upcoming UK events found</p>
+            </div>
+          ) : (
+            <div className={styles.ukEventsList}>
+              {externalEvents.map((extEvent) => (
+                <ExternalEventCard
+                  key={extEvent.id}
+                  event={extEvent}
+                  onPromote={() => handlePromoteEvent(extEvent)}
+                  onIgnore={() => handleIgnoreEvent(extEvent.id)}
+                  onUndo={() => handleUndoDecision(extEvent.id)}
+                  processing={processingExternalId === extEvent.id}
                 />
               ))}
             </div>
           )}
-        </section>
+        </div>
+      )}
+
+      {/* Club Events Tab Content */}
+      {activeTab === 'club' && (
+        <>
+          {/* Actions - Create buttons */}
+          <div className={styles.actionsCompact}>
+            <button className={styles.btnPrimary} onClick={() => setShowEventModal(true)}>
+              + Create Event
+            </button>
+            <button className={styles.btnSecondary} onClick={() => setShowSeriesModal(true)}>
+              + Create Series
+            </button>
+          </div>
+
+          {/* Recurring Series */}
+          {!seriesLoading && series.length > 0 && (
+            <section className={styles.section}>
+              <h2 className={styles.sectionTitle}>Recurring Series</h2>
+              <div className={styles.seriesList}>
+                {series.map((s) => (
+                  <SeriesCard
+                    key={s.id}
+                    series={s}
+                    onEdit={() => setEditingSeries(s)}
+                    onGenerate={() => handleGenerateEvents(s.id)}
+                    onManageInvites={() => setManagingInvitesSeries(s)}
+                    onDelete={() => handleDeleteSeries(s.id)}
+                    generating={generatingSeriesId === s.id}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Upcoming Events */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Upcoming Events</h2>
+
+            {/* Filter bar */}
+            <FilterBar selected={filter} onChange={setFilter} />
+
+            {upcomingEvents.length === 0 ? (
+              <div className={styles.empty}>
+                <p>{filter === 'all' ? 'No upcoming events' : `No upcoming ${filter} events`}</p>
+              </div>
+            ) : (
+              <div className={styles.eventsList}>
+                {upcomingEvents.map((event) => (
+                  <EventRow
+                    key={event.id}
+                    event={event}
+                    onEdit={() => setEditingEvent(event)}
+                    onCancel={() => handleCancelEvent(event.id)}
+                    onCopy={() => handleCopyEvent(event)}
+                    onManageInvites={() => setManagingInvitesEvent(event)}
+                    onAddAttendee={() => setAddingAttendeeEvent(event)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          {/* Past Events */}
+          {allPastEvents.length > 0 && (
+            <section className={styles.section}>
+              <button
+                className={styles.togglePast}
+                onClick={() => setShowPastEvents(!showPastEvents)}
+              >
+                {showPastEvents ? '− Hide' : '+ Show'} previous events ({pastEvents.length})
+              </button>
+              {showPastEvents && (
+                <div className={styles.eventsList}>
+                  {pastEvents.map((event) => (
+                    <EventRow
+                      key={event.id}
+                      event={event}
+                      onEdit={() => setEditingEvent(event)}
+                      onCancel={() => handleCancelEvent(event.id)}
+                      onCopy={() => handleCopyEvent(event)}
+                      onManageInvites={() => setManagingInvitesEvent(event)}
+                      onAddAttendee={() => setAddingAttendeeEvent(event)}
+                      isPast
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+        </>
       )}
 
       {/* Create Event Modal (or Copy Event) */}

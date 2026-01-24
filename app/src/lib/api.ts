@@ -1180,3 +1180,96 @@ export async function adminCreateRsvp(eventId: string, request: AdminRsvpRequest
     body: request,
   })
 }
+
+// ============================================
+// Admin - External Events (UK Events)
+// ============================================
+
+export interface ExternalEvent {
+  id: string
+  source: string
+  source_event_id: string
+  title: string
+  description: string | null
+  location: string | null
+  starts_at_utc: string
+  ends_at_utc: string | null
+  fetched_at: string
+  // From club's decision
+  decision: 'promoted' | 'ignored' | null
+  linked_event_id: string | null
+  decided_at: string | null
+}
+
+export interface ExternalEventsResponse {
+  external_events: ExternalEvent[]
+}
+
+export interface ExternalEventsParams {
+  club_id: string
+  from?: string
+  limit?: number
+}
+
+export async function getExternalEvents(params: ExternalEventsParams): Promise<ExternalEventsResponse> {
+  const searchParams = new URLSearchParams()
+  searchParams.set('club_id', params.club_id)
+  if (params.from) searchParams.set('from', params.from)
+  if (params.limit) searchParams.set('limit', String(params.limit))
+  return api<ExternalEventsResponse>(`/admin/external-events?${searchParams}`)
+}
+
+export interface PromoteExternalEventRequest {
+  club_id: string
+  title?: string
+  description?: string
+  location?: string
+  capacity?: number
+  visible_from?: string
+}
+
+export interface PromoteExternalEventResponse {
+  event: AdminEvent
+  already_promoted: boolean
+}
+
+export async function promoteExternalEvent(
+  externalEventId: string,
+  request: PromoteExternalEventRequest
+): Promise<PromoteExternalEventResponse> {
+  return api<PromoteExternalEventResponse>(`/admin/external-events/${externalEventId}/promote`, {
+    method: 'POST',
+    body: request,
+  })
+}
+
+export interface IgnoreExternalEventResponse {
+  success: boolean
+  already_ignored: boolean
+}
+
+export async function ignoreExternalEvent(
+  externalEventId: string,
+  clubId: string
+): Promise<IgnoreExternalEventResponse> {
+  return api<IgnoreExternalEventResponse>(`/admin/external-events/${externalEventId}/ignore`, {
+    method: 'POST',
+    body: { club_id: clubId },
+  })
+}
+
+export interface UndoExternalEventResponse {
+  success: boolean
+  had_decision: boolean
+  previous_decision?: 'promoted' | 'ignored'
+}
+
+export async function undoExternalEventDecision(
+  externalEventId: string,
+  clubId: string
+): Promise<UndoExternalEventResponse> {
+  return api<UndoExternalEventResponse>(`/admin/external-events/${externalEventId}/undo`, {
+    method: 'POST',
+    body: { club_id: clubId },
+  })
+}

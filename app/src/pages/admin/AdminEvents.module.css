@@ -1356,3 +1356,159 @@
     padding: 2px 6px;
   }
 }
+
+/* ============================================================================
+   TABS
+   ============================================================================ */
+
+.tabs {
+  display: flex;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+  border-bottom: 1px solid var(--grey-200);
+  padding-bottom: var(--space-xs);
+}
+
+.tab {
+  padding: var(--space-xs) var(--space-md);
+  background: transparent;
+  border: none;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--grey-500);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all var(--transition-fast);
+}
+
+.tab:hover {
+  color: var(--color-navy);
+}
+
+.tabActive {
+  color: var(--color-water);
+  border-bottom-color: var(--color-water);
+}
+
+/* ============================================================================
+   UK EVENTS (EXTERNAL EVENTS)
+   ============================================================================ */
+
+.ukEventsSection {
+  margin-bottom: var(--space-lg);
+}
+
+.ukEventsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.externalEventCard {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-md);
+  background: var(--color-white);
+  border-radius: var(--radius-card);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+  border-left: 4px solid var(--color-navy);
+}
+
+.externalPromoted {
+  border-left-color: var(--color-success);
+  opacity: 0.7;
+}
+
+.externalIgnored {
+  border-left-color: var(--grey-300);
+  opacity: 0.5;
+}
+
+.externalEventContent {
+  flex: 1;
+  min-width: 0;
+}
+
+.externalEventLocation {
+  font-size: var(--text-sm);
+  color: var(--grey-500);
+  margin-top: var(--space-xs);
+}
+
+.externalDecisionBadge {
+  margin-top: var(--space-xs);
+}
+
+.decisionPromoted {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--color-success-light);
+  color: var(--color-success);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  border-radius: 10px;
+}
+
+.decisionIgnored {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--grey-100);
+  color: var(--grey-500);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  border-radius: 10px;
+}
+
+.externalEventActions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.btnGhostSmall {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: 6px 12px;
+  background: transparent;
+  color: var(--grey-500);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border: 1px solid var(--grey-300);
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.btnGhostSmall:hover:not(:disabled) {
+  background: var(--grey-100);
+  color: var(--grey-700);
+  border-color: var(--grey-400);
+}
+
+.btnGhostSmall:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 600px) {
+  .externalEventCard {
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  .externalEventActions {
+    flex-direction: row;
+    width: 100%;
+  }
+
+  .externalEventActions button {
+    flex: 1;
+  }
+}
