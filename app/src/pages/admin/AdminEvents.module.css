@@ -769,7 +769,7 @@
   color: var(--color-error);
 }
 
-/* Danger Zone in modals */
+/* Deep End in modals */
 .dangerZone {
   margin-top: var(--space-lg);
   padding-top: var(--space-md);

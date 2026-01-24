@@ -1516,10 +1516,10 @@ function SeriesModal({
                     </div>
                   )}
 
-                  {/* Danger zone for edit mode */}
+                  {/* Deep End for edit mode */}
                   {isEdit && onDelete && (
                     <div className={styles.dangerZone}>
-                      <h4 className={styles.dangerZoneTitle}>Danger Zone</h4>
+                      <h4 className={styles.dangerZoneTitle}>Deep End</h4>
                       <button
                         type="button"
                         className={styles.btnDangerOutline}

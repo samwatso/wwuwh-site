@@ -466,10 +466,10 @@ export function Profile() {
         </div>
       </div>
 
-      {/* Danger Zone */}
+      {/* Deep End */}
       <div className={`${styles.card} ${styles.dangerCard}`}>
         <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Danger Zone</h2>
+          <h2 className={styles.cardTitle}>Deep End</h2>
         </div>
         <div className={styles.dangerContent}>
           <p className={styles.dangerText}>
