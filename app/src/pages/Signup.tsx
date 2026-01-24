@@ -2,6 +2,7 @@ import { useState, useEffect, FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, Input, FormField, Onboarding } from '@/components'
 import { useAuth } from '@/hooks/useAuth'
+import { supabase } from '@/lib/supabase'
 
 const ONBOARDING_SEEN_KEY = 'wwuwh_onboarding_seen'
 
@@ -23,6 +24,10 @@ export function Signup() {
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<FormErrors>({})
   const [success, setSuccess] = useState(false)
+  const [resending, setResending] = useState(false)
+  const [resendSuccess, setResendSuccess] = useState(false)
+  const [resendError, setResendError] = useState<string | null>(null)
+  const [changingEmail, setChangingEmail] = useState(false)
 
   // Check if user has seen onboarding
   useEffect(() => {
@@ -93,6 +98,35 @@ export function Signup() {
     setSuccess(true)
   }
 
+  const handleResendEmail = async () => {
+    setResending(true)
+    setResendError(null)
+    setResendSuccess(false)
+
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email,
+    })
+
+    setResending(false)
+
+    if (error) {
+      setResendError(error.message)
+    } else {
+      setResendSuccess(true)
+    }
+  }
+
+  const handleChangeEmail = () => {
+    // Reset to form state so user can enter a different email
+    setSuccess(false)
+    setResendSuccess(false)
+    setResendError(null)
+    setPassword('')
+    setConfirmPassword('')
+    setChangingEmail(true)
+  }
+
   // Don't render anything until we've checked localStorage
   if (!onboardingChecked) {
     return null
@@ -106,9 +140,9 @@ export function Signup() {
   if (success) {
     return (
       <div className="auth-layout">
-        <div className="auth-card">
+        <div className="auth-card auth-card--confirmation">
           <div className="auth-logo">
-            <img src="/assets/logo.png" alt="WWUWH" />
+            <img src={`${import.meta.env.BASE_URL}assets/logo.png`} alt="WWUWH" />
           </div>
 
           <div className="auth-header">
@@ -116,13 +150,62 @@ export function Signup() {
             <p className="auth-subtitle">We've sent you a confirmation link</p>
           </div>
 
-          <div className="alert alert-success">
-            A confirmation email has been sent to <strong>{email}</strong>.
-            Please click the link in the email to activate your account.
+          <div className="confirmation-content">
+            <div className="alert alert-success">
+              <p>
+                A confirmation email has been sent to:
+              </p>
+              <p className="confirmation-email">
+                <strong>{email}</strong>
+              </p>
+              <p>
+                Click the link in the email to activate your account.
+              </p>
+            </div>
+
+            {resendSuccess && (
+              <div className="alert alert-success" style={{ marginTop: 'var(--space-sm)' }}>
+                Email sent! Check your inbox (and spam folder).
+              </div>
+            )}
+
+            {resendError && (
+              <div className="alert alert-error" style={{ marginTop: 'var(--space-sm)' }}>
+                {resendError}
+              </div>
+            )}
+
+            <div className="confirmation-actions">
+              <Button
+                variant="secondary"
+                onClick={handleResendEmail}
+                loading={resending}
+                disabled={resendSuccess}
+                fullWidth
+              >
+                {resendSuccess ? 'Email Sent' : 'Resend Email'}
+              </Button>
+
+              <Button
+                variant="ghost"
+                onClick={handleChangeEmail}
+                fullWidth
+              >
+                Use Different Email
+              </Button>
+            </div>
+
+            <p className="confirmation-hint">
+              Didn't receive it? Check your spam folder or try resending.
+            </p>
           </div>
 
-          <div className="auth-footer" style={{ marginTop: 'var(--space-lg)' }}>
-            <Link to="/app/login">Back to Sign In</Link>
+          <div className="auth-divider">or</div>
+
+          <div className="auth-footer">
+            <Link to="/app/login" className="confirmation-signin-link">
+              Back to Sign In
+            </Link>
           </div>
         </div>
       </div>
@@ -133,12 +216,12 @@ export function Signup() {
     <div className="auth-layout">
       <div className="auth-card">
         <div className="auth-logo">
-          <img src="/assets/logo.png" alt="WWUWH" />
+          <img src={`${import.meta.env.BASE_URL}assets/logo.png`} alt="WWUWH" />
         </div>
 
         <div className="auth-header">
-          <h1 className="auth-title">Create Account</h1>
-          <p className="auth-subtitle">Join West Wickham UWH</p>
+          <h1 className="auth-title">{changingEmail ? 'Change Email' : 'Create Account'}</h1>
+          <p className="auth-subtitle">{changingEmail ? 'Enter a different email address' : 'Join West Wickham UWH'}</p>
         </div>
 
         {errors.general && (
