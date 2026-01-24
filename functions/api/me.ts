@@ -10,7 +10,6 @@
 
 import { Env, jsonResponse, errorResponse } from '../types'
 import { withAuth, AuthUser } from '../middleware/auth'
-import { createClient } from '@supabase/supabase-js'
 
 // TODO: STAGE 4 - Implement these handlers
 
@@ -294,22 +293,29 @@ export const onRequestDelete: PagesFunction<Env> = withAuth(async (context, user
         .run()
     }
 
-    // Delete the Supabase auth user
+    // Delete the Supabase auth user via REST API
     const supabaseUrl = context.env.SUPABASE_URL
     const supabaseServiceKey = context.env.SUPABASE_SERVICE_ROLE_KEY
 
     if (supabaseUrl && supabaseServiceKey) {
-      const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      })
+      try {
+        const deleteResponse = await fetch(
+          `${supabaseUrl}/auth/v1/admin/users/${user.id}`,
+          {
+            method: 'DELETE',
+            headers: {
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+              'apikey': supabaseServiceKey,
+            },
+          }
+        )
 
-      const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(user.id)
-
-      if (deleteError) {
-        console.error('Failed to delete Supabase user:', deleteError)
+        if (!deleteResponse.ok) {
+          console.error('Failed to delete Supabase user:', await deleteResponse.text())
+          // Continue anyway - the membership is already deactivated
+        }
+      } catch (err) {
+        console.error('Failed to delete Supabase user:', err)
         // Continue anyway - the membership is already deactivated
       }
     }
