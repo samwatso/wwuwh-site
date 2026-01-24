@@ -27,11 +27,16 @@ import {
   promoteExternalEvent,
   ignoreExternalEvent,
   undoExternalEventDecision,
+  createManualExternalEvent,
+  updateManualExternalEvent,
+  deleteManualExternalEvent,
+  ExternalEventVisibility,
+  ExternalEventStatus,
 } from '@/lib/api'
 import styles from './AdminEvents.module.css'
 
 // Tab type for URL state
-type EventTab = 'club' | 'uk'
+type EventTab = 'club' | 'uk' | 'manual'
 
 const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -529,6 +534,456 @@ function ExternalEventCard({ event, onPromote, onIgnore, onUndo, processing }: E
             {processing ? <Spinner size="sm" /> : 'Undo'}
           </button>
         )}
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
+// MANUAL EVENT CARD (with Edit action)
+// ============================================================================
+
+interface ManualEventCardProps {
+  event: ExternalEvent
+  onEdit: () => void
+  onPromote: () => void
+  onIgnore: () => void
+  onUndo: () => void
+  onDelete: () => void
+  processing: boolean
+}
+
+function ManualEventCard({ event, onEdit, onPromote, onIgnore, onUndo, onDelete, processing }: ManualEventCardProps) {
+  const isPromoted = event.decision === 'promoted'
+  const isIgnored = event.decision === 'ignored'
+  const hasDecision = isPromoted || isIgnored
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false)
+
+  // Source label mapping
+  const sourceLabels: Record<string, string> = {
+    intl_comp: 'International',
+    coach_private: 'Coach',
+    other: 'Other',
+  }
+  const sourceLabel = sourceLabels[event.source] || event.source
+
+  // Visibility badge
+  const visibilityLabels: Record<string, string> = {
+    public: 'Public',
+    admin_only: 'Admin only',
+    coach_only: 'Coach only',
+  }
+  const visibilityLabel = event.visibility ? visibilityLabels[event.visibility] : null
+
+  return (
+    <>
+      <div className={`${styles.externalEventCard} ${isIgnored ? styles.externalIgnored : ''} ${isPromoted ? styles.externalPromoted : ''}`}>
+        <div className={styles.externalEventContent}>
+          {/* Date/Time meta */}
+          <div className={styles.eventMeta}>
+            {formatDateCompact(event.starts_at_utc)}
+            {event.ends_at_utc && ` · ${formatTime(event.starts_at_utc)}`}
+            {sourceLabel && <span className={styles.sourceTag}>{sourceLabel}</span>}
+          </div>
+
+          {/* Title */}
+          <div className={styles.eventTitle}>{event.title}</div>
+
+          {/* Location */}
+          {event.location && (
+            <div className={styles.externalEventLocation}>{event.location}</div>
+          )}
+
+          {/* Badges row */}
+          <div className={styles.manualEventBadges}>
+            {visibilityLabel && (
+              <span className={styles.visibilityBadge}>{visibilityLabel}</span>
+            )}
+            {event.status === 'cancelled' && (
+              <span className={styles.statusCancelled}>Cancelled</span>
+            )}
+            {event.status === 'tentative' && (
+              <span className={styles.statusTentative}>Tentative</span>
+            )}
+            {hasDecision && (
+              <>
+                {isPromoted && <span className={styles.decisionPromoted}>Promoted</span>}
+                {isIgnored && <span className={styles.decisionIgnored}>Ignored</span>}
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className={styles.externalEventActions}>
+          <button
+            className={styles.btnSecondarySmall}
+            onClick={onEdit}
+            disabled={processing}
+          >
+            Edit
+          </button>
+          {!hasDecision ? (
+            <>
+              <button
+                className={styles.btnPrimarySmall}
+                onClick={onPromote}
+                disabled={processing}
+              >
+                {processing ? <Spinner size="sm" /> : 'Promote'}
+              </button>
+              <button
+                className={styles.btnGhostSmall}
+                onClick={onIgnore}
+                disabled={processing}
+              >
+                Ignore
+              </button>
+            </>
+          ) : (
+            <button
+              className={styles.btnGhostSmall}
+              onClick={onUndo}
+              disabled={processing}
+            >
+              {processing ? <Spinner size="sm" /> : 'Undo'}
+            </button>
+          )}
+          <button
+            className={styles.btnDangerSmall}
+            onClick={() => setShowConfirmDelete(true)}
+            disabled={processing}
+            title="Delete"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="16" height="16">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {showConfirmDelete && (
+        <ConfirmModal
+          title="Delete Event"
+          message={`Are you sure you want to delete "${event.title}"? This cannot be undone.`}
+          confirmLabel="Delete"
+          onConfirm={() => {
+            setShowConfirmDelete(false)
+            onDelete()
+          }}
+          onCancel={() => setShowConfirmDelete(false)}
+          destructive
+        />
+      )}
+    </>
+  )
+}
+
+// ============================================================================
+// MANUAL EVENT MODAL (Create/Edit)
+// ============================================================================
+
+// Source options for manual events
+const MANUAL_SOURCE_OPTIONS = [
+  { value: 'intl_comp', label: 'International Competition' },
+  { value: 'coach_private', label: 'Coach / Private' },
+  { value: 'other', label: 'Other' },
+]
+
+// Visibility options
+const VISIBILITY_OPTIONS: { value: ExternalEventVisibility; label: string }[] = [
+  { value: 'admin_only', label: 'Admin only (default)' },
+  { value: 'coach_only', label: 'Coach only' },
+  { value: 'public', label: 'Public' },
+]
+
+// Status options
+const STATUS_OPTIONS: { value: ExternalEventStatus; label: string }[] = [
+  { value: 'active', label: 'Active' },
+  { value: 'tentative', label: 'Tentative' },
+  { value: 'cancelled', label: 'Cancelled' },
+]
+
+interface ManualEventModalProps {
+  event: ExternalEvent | null
+  onSave: (data: {
+    title: string
+    description?: string | null
+    location?: string | null
+    url?: string | null
+    source?: string
+    starts_at_utc: string
+    ends_at_utc?: string | null
+    status?: ExternalEventStatus
+    visibility?: ExternalEventVisibility
+  }) => void
+  onClose: () => void
+  saving: boolean
+}
+
+function ManualEventModal({ event, onSave, onClose, saving }: ManualEventModalProps) {
+  const isEdit = !!event
+
+  // Parse existing event data or use defaults
+  const defaultStart = new Date()
+  defaultStart.setHours(9, 0, 0, 0)
+  defaultStart.setDate(defaultStart.getDate() + 14)
+
+  const [title, setTitle] = useState(event?.title || '')
+  const [description, setDescription] = useState(event?.description || '')
+  const [location, setLocation] = useState(event?.location || '')
+  const [url, setUrl] = useState(event?.url || '')
+  const [source, setSource] = useState(event?.source || 'other')
+  const [visibility, setVisibility] = useState<ExternalEventVisibility>((event?.visibility as ExternalEventVisibility) || 'admin_only')
+  const [status, setStatus] = useState<ExternalEventStatus>((event?.status as ExternalEventStatus) || 'active')
+
+  const [startDate, setStartDate] = useState(() => {
+    if (event?.starts_at_utc) {
+      return event.starts_at_utc.slice(0, 10)
+    }
+    return defaultStart.toISOString().slice(0, 10)
+  })
+
+  const [startTime, setStartTime] = useState(() => {
+    if (event?.starts_at_utc) {
+      return formatTime(event.starts_at_utc)
+    }
+    return '09:00'
+  })
+
+  const [hasEndTime, setHasEndTime] = useState(!!event?.ends_at_utc)
+  const [endDate, setEndDate] = useState(() => {
+    if (event?.ends_at_utc) {
+      return event.ends_at_utc.slice(0, 10)
+    }
+    return startDate
+  })
+  const [endTime, setEndTime] = useState(() => {
+    if (event?.ends_at_utc) {
+      return formatTime(event.ends_at_utc)
+    }
+    return '17:00'
+  })
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [])
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title || !startDate) return
+
+    const startsAt = new Date(`${startDate}T${startTime}:00`)
+    let endsAt: Date | null = null
+    if (hasEndTime && endDate && endTime) {
+      endsAt = new Date(`${endDate}T${endTime}:00`)
+    }
+
+    onSave({
+      title,
+      description: description || null,
+      location: location || null,
+      url: url || null,
+      source,
+      starts_at_utc: startsAt.toISOString(),
+      ends_at_utc: endsAt ? endsAt.toISOString() : null,
+      status,
+      visibility,
+    })
+  }
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h3>{isEdit ? 'Edit External Event' : 'Add External Event'}</h3>
+          <button type="button" className={styles.modalClose} onClick={onClose}>
+            &times;
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <div className={styles.modalBody}>
+            {/* Title */}
+            <div className={styles.formSection}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Title *</label>
+                <input
+                  type="text"
+                  className={styles.formInput}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g. European Championships 2026"
+                  required
+                />
+              </div>
+            </div>
+
+            {/* Source & Visibility */}
+            <div className={styles.formSection}>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Source</label>
+                  <select
+                    className={styles.formInput}
+                    value={source}
+                    onChange={(e) => setSource(e.target.value)}
+                  >
+                    {MANUAL_SOURCE_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Visibility</label>
+                  <select
+                    className={styles.formInput}
+                    value={visibility}
+                    onChange={(e) => setVisibility(e.target.value as ExternalEventVisibility)}
+                  >
+                    {VISIBILITY_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* When */}
+            <div className={styles.formSection}>
+              <div className={styles.formSectionHeader}>When</div>
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Start Date *</label>
+                  <input
+                    type="date"
+                    className={styles.formInput}
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Start Time</label>
+                  <input
+                    type="time"
+                    className={styles.formInput}
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.checkboxLabel}>
+                  <input
+                    type="checkbox"
+                    checked={hasEndTime}
+                    onChange={(e) => setHasEndTime(e.target.checked)}
+                  />
+                  Has end date/time
+                </label>
+              </div>
+
+              {hasEndTime && (
+                <div className={styles.formRow}>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>End Date</label>
+                    <input
+                      type="date"
+                      className={styles.formInput}
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                    />
+                  </div>
+                  <div className={styles.formGroup}>
+                    <label className={styles.formLabel}>End Time</label>
+                    <input
+                      type="time"
+                      className={styles.formInput}
+                      value={endTime}
+                      onChange={(e) => setEndTime(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Location */}
+            <div className={styles.formSection}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Location</label>
+                <input
+                  type="text"
+                  className={styles.formInput}
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. Zagreb, Croatia"
+                />
+              </div>
+            </div>
+
+            {/* URL */}
+            <div className={styles.formSection}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Event URL</label>
+                <input
+                  type="url"
+                  className={styles.formInput}
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                  placeholder="https://..."
+                />
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className={styles.formSection}>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Description</label>
+                <textarea
+                  className={styles.formInput}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={3}
+                  placeholder="Optional notes about the event..."
+                />
+              </div>
+            </div>
+
+            {/* Status (only show in edit mode) */}
+            {isEdit && (
+              <div className={styles.formSection}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Status</label>
+                  <select
+                    className={styles.formInput}
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as ExternalEventStatus)}
+                  >
+                    {STATUS_OPTIONS.map((opt) => (
+                      <option key={opt.value} value={opt.value}>{opt.label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className={styles.modalFooter}>
+            <button type="button" className={styles.btnSecondary} onClick={onClose} disabled={saving}>
+              Cancel
+            </button>
+            <button type="submit" className={styles.btnPrimary} disabled={saving || !title}>
+              {saving ? <Spinner size="sm" /> : isEdit ? 'Save Changes' : 'Add Event'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )
@@ -2194,13 +2649,21 @@ export function AdminEvents() {
   const [externalEventsError, setExternalEventsError] = useState<string | null>(null)
   const [processingExternalId, setProcessingExternalId] = useState<string | null>(null)
 
-  // Fetch external events when UK tab is active
+  // Manual Events state
+  const [manualEvents, setManualEvents] = useState<ExternalEvent[]>([])
+  const [manualEventsLoading, setManualEventsLoading] = useState(false)
+  const [manualEventsError, setManualEventsError] = useState<string | null>(null)
+  const [showManualEventModal, setShowManualEventModal] = useState(false)
+  const [editingManualEvent, setEditingManualEvent] = useState<ExternalEvent | null>(null)
+  const [savingManualEvent, setSavingManualEvent] = useState(false)
+
+  // Fetch UK external events
   const fetchExternalEvents = useCallback(async () => {
     if (!clubId) return
     setExternalEventsLoading(true)
     setExternalEventsError(null)
     try {
-      const response = await getExternalEvents({ club_id: clubId, limit: 50 })
+      const response = await getExternalEvents({ club_id: clubId, kind: 'uk', limit: 50 })
       setExternalEvents(response.external_events)
     } catch (err) {
       setExternalEventsError(err instanceof Error ? err.message : 'Failed to load UK events')
@@ -2209,11 +2672,32 @@ export function AdminEvents() {
     }
   }, [clubId])
 
+  // Fetch manual external events
+  const fetchManualEvents = useCallback(async () => {
+    if (!clubId) return
+    setManualEventsLoading(true)
+    setManualEventsError(null)
+    try {
+      const response = await getExternalEvents({ club_id: clubId, kind: 'manual', limit: 50 })
+      setManualEvents(response.external_events)
+    } catch (err) {
+      setManualEventsError(err instanceof Error ? err.message : 'Failed to load manual events')
+    } finally {
+      setManualEventsLoading(false)
+    }
+  }, [clubId])
+
   useEffect(() => {
     if (activeTab === 'uk' && clubId) {
       fetchExternalEvents()
     }
   }, [activeTab, clubId, fetchExternalEvents])
+
+  useEffect(() => {
+    if (activeTab === 'manual' && clubId) {
+      fetchManualEvents()
+    }
+  }, [activeTab, clubId, fetchManualEvents])
 
   // UK Events handlers
   const handlePromoteEvent = async (externalEvent: ExternalEvent) => {
@@ -2251,6 +2735,116 @@ export function AdminEvents() {
     try {
       await undoExternalEventDecision(externalEventId, clubId)
       await fetchExternalEvents()
+      refreshEvents()
+    } catch (err) {
+      console.error('Failed to undo decision:', err)
+      alert(err instanceof Error ? err.message : 'Failed to undo decision')
+    } finally {
+      setProcessingExternalId(null)
+    }
+  }
+
+  // Manual Events handlers
+  const handleCreateManualEvent = async (data: {
+    title: string
+    description?: string | null
+    location?: string | null
+    url?: string | null
+    source?: string
+    starts_at_utc: string
+    ends_at_utc?: string | null
+    status?: ExternalEventStatus
+    visibility?: ExternalEventVisibility
+  }) => {
+    if (!clubId) return
+    setSavingManualEvent(true)
+    try {
+      await createManualExternalEvent({ club_id: clubId, ...data })
+      setShowManualEventModal(false)
+      await fetchManualEvents()
+    } catch (err) {
+      console.error('Failed to create manual event:', err)
+      alert(err instanceof Error ? err.message : 'Failed to create event')
+    } finally {
+      setSavingManualEvent(false)
+    }
+  }
+
+  const handleUpdateManualEvent = async (data: {
+    title: string
+    description?: string | null
+    location?: string | null
+    url?: string | null
+    source?: string
+    starts_at_utc: string
+    ends_at_utc?: string | null
+    status?: ExternalEventStatus
+    visibility?: ExternalEventVisibility
+  }) => {
+    if (!clubId || !editingManualEvent) return
+    setSavingManualEvent(true)
+    try {
+      await updateManualExternalEvent(editingManualEvent.id, { club_id: clubId, ...data })
+      setEditingManualEvent(null)
+      await fetchManualEvents()
+    } catch (err) {
+      console.error('Failed to update manual event:', err)
+      alert(err instanceof Error ? err.message : 'Failed to update event')
+    } finally {
+      setSavingManualEvent(false)
+    }
+  }
+
+  const handleDeleteManualEvent = async (eventId: string) => {
+    if (!clubId || processingExternalId) return
+    setProcessingExternalId(eventId)
+    try {
+      await deleteManualExternalEvent(eventId, clubId)
+      await fetchManualEvents()
+    } catch (err) {
+      console.error('Failed to delete manual event:', err)
+      alert(err instanceof Error ? err.message : 'Failed to delete event')
+    } finally {
+      setProcessingExternalId(null)
+    }
+  }
+
+  // Manual events - promote/ignore/undo reuse same handlers but need to refresh manual list
+  const handlePromoteManualEvent = async (externalEvent: ExternalEvent) => {
+    if (!clubId || processingExternalId) return
+    setProcessingExternalId(externalEvent.id)
+    try {
+      await promoteExternalEvent(externalEvent.id, { club_id: clubId })
+      await fetchManualEvents()
+      refreshEvents()
+    } catch (err) {
+      console.error('Failed to promote event:', err)
+      alert(err instanceof Error ? err.message : 'Failed to promote event')
+    } finally {
+      setProcessingExternalId(null)
+    }
+  }
+
+  const handleIgnoreManualEvent = async (externalEventId: string) => {
+    if (!clubId || processingExternalId) return
+    setProcessingExternalId(externalEventId)
+    try {
+      await ignoreExternalEvent(externalEventId, clubId)
+      await fetchManualEvents()
+    } catch (err) {
+      console.error('Failed to ignore event:', err)
+      alert(err instanceof Error ? err.message : 'Failed to ignore event')
+    } finally {
+      setProcessingExternalId(null)
+    }
+  }
+
+  const handleUndoManualDecision = async (externalEventId: string) => {
+    if (!clubId || processingExternalId) return
+    setProcessingExternalId(externalEventId)
+    try {
+      await undoExternalEventDecision(externalEventId, clubId)
+      await fetchManualEvents()
       refreshEvents()
     } catch (err) {
       console.error('Failed to undo decision:', err)
@@ -2395,6 +2989,12 @@ export function AdminEvents() {
         >
           UK Events
         </button>
+        <button
+          className={`${styles.tab} ${activeTab === 'manual' ? styles.tabActive : ''}`}
+          onClick={() => setActiveTab('manual')}
+        >
+          Manual / Coach
+        </button>
       </div>
 
       {/* UK Events Tab Content */}
@@ -2432,6 +3032,66 @@ export function AdminEvents() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Manual Events Tab Content */}
+      {activeTab === 'manual' && (
+        <div className={styles.ukEventsSection}>
+          {/* Actions */}
+          <div className={styles.actionsCompact}>
+            <button className={styles.btnPrimary} onClick={() => setShowManualEventModal(true)}>
+              + Add External Event
+            </button>
+          </div>
+
+          {manualEventsLoading ? (
+            <div className={styles.loading}>
+              <Spinner />
+              <p>Loading manual events...</p>
+            </div>
+          ) : manualEventsError ? (
+            <div className={styles.error}>
+              <div className={styles.errorIcon}>!</div>
+              <p>{manualEventsError}</p>
+              <button className={styles.btnSecondary} onClick={fetchManualEvents}>
+                Try Again
+              </button>
+            </div>
+          ) : manualEvents.length === 0 ? (
+            <div className={styles.empty}>
+              <p>No manual events yet</p>
+              <p className={styles.subtitle}>Add external events like international competitions or coach-specific events</p>
+            </div>
+          ) : (
+            <div className={styles.ukEventsList}>
+              {manualEvents.map((extEvent) => (
+                <ManualEventCard
+                  key={extEvent.id}
+                  event={extEvent}
+                  onEdit={() => setEditingManualEvent(extEvent)}
+                  onPromote={() => handlePromoteManualEvent(extEvent)}
+                  onIgnore={() => handleIgnoreManualEvent(extEvent.id)}
+                  onUndo={() => handleUndoManualDecision(extEvent.id)}
+                  onDelete={() => handleDeleteManualEvent(extEvent.id)}
+                  processing={processingExternalId === extEvent.id}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Manual Event Modal */}
+      {(showManualEventModal || editingManualEvent) && (
+        <ManualEventModal
+          event={editingManualEvent}
+          onSave={editingManualEvent ? handleUpdateManualEvent : handleCreateManualEvent}
+          onClose={() => {
+            setShowManualEventModal(false)
+            setEditingManualEvent(null)
+          }}
+          saving={savingManualEvent}
+        />
       )}
 
       {/* Club Events Tab Content */}

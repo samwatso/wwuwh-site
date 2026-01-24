@@ -1182,8 +1182,12 @@ export async function adminCreateRsvp(eventId: string, request: AdminRsvpRequest
 }
 
 // ============================================
-// Admin - External Events (UK Events)
+// Admin - External Events (UK Events + Manual)
 // ============================================
+
+export type ExternalEventOrigin = 'import' | 'manual'
+export type ExternalEventVisibility = 'public' | 'admin_only' | 'coach_only'
+export type ExternalEventStatus = 'active' | 'cancelled' | 'tentative'
 
 export interface ExternalEvent {
   id: string
@@ -1192,8 +1196,13 @@ export interface ExternalEvent {
   title: string
   description: string | null
   location: string | null
+  url: string | null
   starts_at_utc: string
   ends_at_utc: string | null
+  status: ExternalEventStatus
+  origin: ExternalEventOrigin | null
+  visibility: ExternalEventVisibility | null
+  created_by_person_id: string | null
   // From club's decision
   decision: 'promoted' | 'ignored' | 'undecided' | null
   event_id: string | null
@@ -1206,6 +1215,7 @@ export interface ExternalEventsResponse {
 
 export interface ExternalEventsParams {
   club_id: string
+  kind?: 'uk' | 'manual'
   from?: string
   limit?: number
 }
@@ -1213,9 +1223,74 @@ export interface ExternalEventsParams {
 export async function getExternalEvents(params: ExternalEventsParams): Promise<ExternalEventsResponse> {
   const searchParams = new URLSearchParams()
   searchParams.set('club_id', params.club_id)
+  if (params.kind) searchParams.set('kind', params.kind)
   if (params.from) searchParams.set('from', params.from)
   if (params.limit) searchParams.set('limit', String(params.limit))
   return api<ExternalEventsResponse>(`/admin/external-events?${searchParams}`)
+}
+
+// Manual External Events
+
+export interface CreateManualEventRequest {
+  club_id: string
+  title: string
+  description?: string | null
+  location?: string | null
+  url?: string | null
+  source?: string
+  starts_at_utc: string
+  ends_at_utc?: string | null
+  status?: ExternalEventStatus
+  visibility?: ExternalEventVisibility
+}
+
+export interface CreateManualEventResponse {
+  external_event: ExternalEvent
+}
+
+export async function createManualExternalEvent(
+  request: CreateManualEventRequest
+): Promise<CreateManualEventResponse> {
+  return api<CreateManualEventResponse>('/admin/external-events', {
+    method: 'POST',
+    body: request,
+  })
+}
+
+export interface UpdateManualEventRequest {
+  club_id: string
+  title?: string
+  description?: string | null
+  location?: string | null
+  url?: string | null
+  source?: string
+  starts_at_utc?: string
+  ends_at_utc?: string | null
+  status?: ExternalEventStatus
+  visibility?: ExternalEventVisibility
+}
+
+export interface UpdateManualEventResponse {
+  external_event: ExternalEvent
+}
+
+export async function updateManualExternalEvent(
+  externalEventId: string,
+  request: UpdateManualEventRequest
+): Promise<UpdateManualEventResponse> {
+  return api<UpdateManualEventResponse>(`/admin/external-events/${externalEventId}`, {
+    method: 'PUT',
+    body: request,
+  })
+}
+
+export async function deleteManualExternalEvent(
+  externalEventId: string,
+  clubId: string
+): Promise<{ success: boolean }> {
+  return api<{ success: boolean }>(`/admin/external-events/${externalEventId}?club_id=${clubId}`, {
+    method: 'DELETE',
+  })
 }
 
 export interface PromoteExternalEventRequest {
