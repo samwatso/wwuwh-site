@@ -1,0 +1,22 @@
+{
+  "name": "West Wickham UWH",
+  "short_name": "WWUWH",
+  "description": "West Wickham Underwater Hockey Club - Member App",
+  "start_url": "/app/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e2b60",
+  "icons": [
+    {
+      "src": "/app/assets/water-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/app/assets/favicon.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    }
+  ]
+}
