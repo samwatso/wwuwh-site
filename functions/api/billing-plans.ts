@@ -39,7 +39,7 @@ export const onRequestGet: PagesFunction<Env> = async (context) => {
           stripe_price_id
         FROM billing_plans
         WHERE club_id = ? AND active = 1
-        ORDER BY price_cents ASC
+        ORDER BY sort_order ASC, price_cents DESC
       `)
       .bind(clubId)
       .all<BillingPlanResponse>()
