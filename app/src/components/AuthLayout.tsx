@@ -52,8 +52,15 @@ export function AuthLayout({ children }: AuthLayoutProps) {
 
   const handleSignOut = async () => {
     setMenuOpen(false)
-    await signOut()
-    navigate('/app/login', { replace: true })
+    try {
+      await signOut()
+      // Navigate after sign out completes
+      navigate('/app/login', { replace: true })
+    } catch (err) {
+      console.error('Sign out failed:', err)
+      // Still try to navigate to login
+      navigate('/app/login', { replace: true })
+    }
   }
 
   // Get display name for avatar

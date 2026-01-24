@@ -82,7 +82,16 @@ export function useAuth(): UseAuthReturn {
   }, [])
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut({ scope: 'local' })
+    if (error) {
+      console.error('[Auth] Sign out error:', error.message)
+    }
+    // Clear state immediately to ensure UI updates
+    setState({
+      user: null,
+      session: null,
+      loading: false,
+    })
   }, [])
 
   const refreshSession = useCallback(async () => {
