@@ -12,6 +12,7 @@ import { useAdminGroups } from '@/hooks/useAdminGroups'
 import { useAdminMembers } from '@/hooks/useAdminMembers'
 import { Spinner } from '@/components'
 import type { AdminEvent, EventSeries, AdminGroup, AdminMember } from '@/lib/api'
+import type { EventKind } from '@/types/database'
 import {
   getEventInvitations,
   addEventInvitations,
@@ -31,11 +32,31 @@ const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const EVENT_DRAFT_KEY = 'wwuwh_event_draft'
 const SERIES_DRAFT_KEY = 'wwuwh_series_draft'
 
+// Filter options for event list
+type EventFilter = 'all' | 'session' | 'training' | 'ladies' | 'tournament'
+
+const FILTER_OPTIONS: { value: EventFilter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'session', label: 'Sessions' },
+  { value: 'training', label: 'Training' },
+  { value: 'ladies', label: 'Ladies' },
+  { value: 'tournament', label: 'Tournaments' },
+]
+
+// Check if event matches filter (handles legacy 'match' → 'tournament')
+function eventMatchesFilter(event: AdminEvent, filter: EventFilter): boolean {
+  if (filter === 'all') return true
+  if (filter === 'tournament') {
+    return event.kind === 'tournament' || event.kind === 'match'
+  }
+  return event.kind === filter
+}
+
 interface EventDraft {
   title: string
   description: string
   location: string
-  kind: 'session' | 'match' | 'tournament' | 'social' | 'other'
+  kind: EventKind
   startDate: string
   startTime: string
   endTime: string
@@ -69,13 +90,13 @@ function getWeekdayNames(mask: number): string[] {
   return days
 }
 
-// Helper to format date
-function formatDate(dateStr: string): string {
+// Helper to format date compactly: "Wed 28 Jan"
+function formatDateCompact(dateStr: string): string {
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })
 }
 
-// Helper to format time
+// Helper to format time: "21:00"
 function formatTime(dateStr: string): string {
   const date = new Date(dateStr)
   return date.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
@@ -92,65 +113,246 @@ function isPastEvent(event: AdminEvent): boolean {
   return new Date(event.starts_at_utc) < new Date()
 }
 
-// Series card component
+// Format RSVP count with correct grammar
+function formatRsvpCount(count: number): string {
+  return count === 1 ? '1 RSVP' : `${count} RSVPs`
+}
+
+// Truncate location for display
+function truncateLocation(location: string | null, maxLength = 30): string {
+  if (!location) return ''
+  if (location.length <= maxLength) return location
+  return location.slice(0, maxLength - 1) + '…'
+}
+
+// ============================================================================
+// OVERFLOW MENU COMPONENT
+// ============================================================================
+
+interface OverflowMenuItem {
+  label: string
+  onClick: () => void
+  destructive?: boolean
+}
+
+interface OverflowMenuProps {
+  items: OverflowMenuItem[]
+  disabled?: boolean
+}
+
+function OverflowMenu({ items, disabled }: OverflowMenuProps) {
+  const [open, setOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // Close on click outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setOpen(false)
+      }
+    }
+    if (open) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [open])
+
+  // Close on escape
+  useEffect(() => {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    if (open) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [open])
+
+  const handleItemClick = (item: OverflowMenuItem) => {
+    setOpen(false)
+    item.onClick()
+  }
+
+  return (
+    <div className={styles.overflowMenu} ref={menuRef}>
+      <button
+        type="button"
+        className={styles.overflowBtn}
+        onClick={() => setOpen(!open)}
+        disabled={disabled}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        aria-label="More actions"
+      >
+        <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+          <circle cx="12" cy="5" r="2" />
+          <circle cx="12" cy="12" r="2" />
+          <circle cx="12" cy="19" r="2" />
+        </svg>
+      </button>
+      {open && (
+        <div className={styles.overflowDropdown} role="menu">
+          {items.map((item, idx) => (
+            <button
+              key={idx}
+              type="button"
+              className={`${styles.overflowItem} ${item.destructive ? styles.overflowItemDestructive : ''}`}
+              onClick={() => handleItemClick(item)}
+              role="menuitem"
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ============================================================================
+// CONFIRM MODAL COMPONENT
+// ============================================================================
+
+interface ConfirmModalProps {
+  title: string
+  message: string
+  confirmLabel: string
+  onConfirm: () => void
+  onCancel: () => void
+  destructive?: boolean
+  saving?: boolean
+}
+
+function ConfirmModal({ title, message, confirmLabel, onConfirm, onCancel, destructive, saving }: ConfirmModalProps) {
+  return (
+    <div className={styles.modalOverlay} onClick={onCancel}>
+      <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+        <h3 className={styles.confirmTitle}>{title}</h3>
+        <p className={styles.confirmMessage}>{message}</p>
+        <div className={styles.confirmActions}>
+          <button type="button" className={styles.btnSecondary} onClick={onCancel} disabled={saving}>
+            Cancel
+          </button>
+          <button
+            type="button"
+            className={destructive ? styles.btnDanger : styles.btnPrimary}
+            onClick={onConfirm}
+            disabled={saving}
+          >
+            {saving ? <Spinner size="sm" /> : confirmLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
+// FILTER BAR COMPONENT
+// ============================================================================
+
+interface FilterBarProps {
+  selected: EventFilter
+  onChange: (filter: EventFilter) => void
+}
+
+function FilterBar({ selected, onChange }: FilterBarProps) {
+  return (
+    <div className={styles.filterBar}>
+      {FILTER_OPTIONS.map((opt) => (
+        <button
+          key={opt.value}
+          type="button"
+          className={`${styles.filterChip} ${selected === opt.value ? styles.filterChipActive : ''}`}
+          onClick={() => onChange(opt.value)}
+          aria-pressed={selected === opt.value}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ============================================================================
+// SERIES CARD COMPONENT
+// ============================================================================
+
 function SeriesCard({
   series,
   onEdit,
   onGenerate,
   onManageInvites,
+  onDelete,
   generating,
 }: {
   series: EventSeries
   onEdit: () => void
   onGenerate: () => void
   onManageInvites: () => void
+  onDelete: () => void
   generating: boolean
 }) {
   const weekdays = getWeekdayNames(series.weekday_mask)
+  const [showConfirm, setShowConfirm] = useState(false)
+
+  const overflowItems: OverflowMenuItem[] = [
+    { label: 'Extend series', onClick: onGenerate },
+    { label: 'Delete series', onClick: () => setShowConfirm(true), destructive: true },
+  ]
 
   return (
-    <div className={styles.seriesCard}>
-      <div className={styles.seriesHeader}>
-        <div>
-          <h3 className={styles.seriesName}>{series.title}</h3>
+    <>
+      <div className={styles.seriesCard}>
+        <div className={styles.seriesHeader}>
+          <div className={styles.seriesTitleRow}>
+            <h3 className={styles.seriesName}>{series.title}</h3>
+            <span className={styles.upcomingBadge}>{series.upcoming_events || 0} upcoming</span>
+          </div>
           <span className={styles.seriesSchedule}>
             Every {weekdays.join(', ')} at {series.start_time_local}
           </span>
         </div>
-        <div className={styles.seriesStats}>
-          <span>{series.upcoming_events || 0} upcoming</span>
+
+        <div className={styles.seriesMeta}>
+          {series.next_event_at && (
+            <span>Next: {formatDateCompact(series.next_event_at)}</span>
+          )}
+          {series.location && <span>{truncateLocation(series.location, 40)}</span>}
+        </div>
+
+        <div className={styles.seriesActions}>
+          <button className={styles.btnPrimarySmall} onClick={onEdit}>
+            Edit
+          </button>
+          <button className={styles.btnSecondarySmall} onClick={onManageInvites}>
+            Manage invites
+          </button>
+          <OverflowMenu items={overflowItems} disabled={generating} />
         </div>
       </div>
 
-      <div className={styles.seriesMeta}>
-        {series.next_event_at && (
-          <span>Next: {formatDate(series.next_event_at)}</span>
-        )}
-        <span>{series.visibility_days} days visibility</span>
-        {series.location && <span>{series.location}</span>}
-      </div>
-
-      <div className={styles.seriesActions}>
-        <button className={styles.btnSecondary} onClick={onManageInvites}>
-          Invites
-        </button>
-        <button className={styles.btnSecondary} onClick={onEdit}>
-          Edit
-        </button>
-        <button
-          className={styles.btnSecondary}
-          onClick={onGenerate}
-          disabled={generating}
-          title="Add 8 more weeks of events"
-        >
-          {generating ? <Spinner size="sm" /> : '+ Extend Series'}
-        </button>
-      </div>
-    </div>
+      {showConfirm && (
+        <ConfirmModal
+          title="Delete Series"
+          message="Are you sure you want to delete this series and all future events?"
+          confirmLabel="Delete"
+          onConfirm={() => {
+            setShowConfirm(false)
+            onDelete()
+          }}
+          onCancel={() => setShowConfirm(false)}
+          destructive
+        />
+      )}
+    </>
   )
 }
 
-// Event row component
+// ============================================================================
+// EVENT ROW COMPONENT
+// ============================================================================
+
 function EventRow({
   event,
   onEdit,
@@ -170,63 +372,89 @@ function EventRow({
 }) {
   const inviteSent = isInviteSent(event)
   const isCancelled = event.status === 'cancelled'
+  const [showConfirm, setShowConfirm] = useState(false)
+
+  // Build overflow menu items
+  const overflowItems: OverflowMenuItem[] = [
+    { label: 'Add attendee', onClick: onAddAttendee },
+    { label: 'Copy', onClick: onCopy },
+  ]
+  if (!isCancelled && !isPast) {
+    overflowItems.push({ label: 'Cancel', onClick: () => setShowConfirm(true), destructive: true })
+  }
+
+  // Status pill content
+  const getStatusPill = () => {
+    if (isCancelled) {
+      return <span className={`${styles.statusPill} ${styles.statusPillCancelled}`}>Cancelled</span>
+    }
+    if (inviteSent) {
+      return <span className={`${styles.statusPill} ${styles.statusPillSent}`}>Sent</span>
+    }
+    return (
+      <span className={`${styles.statusPill} ${styles.statusPillScheduled}`}>
+        Scheduled
+        <span className={styles.statusPillDate}>{formatDateCompact(event.visible_from!)}</span>
+      </span>
+    )
+  }
 
   return (
-    <div className={`${styles.eventRow} ${isCancelled ? styles.cancelled : ''} ${isPast ? styles.past : ''}`}>
-      <div className={styles.eventDate}>
-        <span className={styles.eventDay}>{formatDate(event.starts_at_utc)}</span>
-        <span className={styles.eventTime}>{formatTime(event.starts_at_utc)}</span>
-      </div>
+    <>
+      <div className={`${styles.eventRow} ${isCancelled ? styles.cancelled : ''} ${isPast ? styles.past : ''}`}>
+        {/* 3-line content */}
+        <div className={styles.eventContent}>
+          {/* Line 1: Date/Time meta */}
+          <div className={styles.eventMeta}>
+            {formatDateCompact(event.starts_at_utc)} · {formatTime(event.starts_at_utc)}
+          </div>
 
-      <div className={styles.eventInfo}>
-        <span className={styles.eventTitle}>{event.title}</span>
-        {event.series_title && (
-          <span className={styles.eventSeries}>From: {event.series_title}</span>
-        )}
-      </div>
+          {/* Line 2: Title */}
+          <div className={styles.eventTitle}>{event.title}</div>
 
-      <div className={styles.eventStatus}>
-        {isCancelled ? (
-          <span className={styles.statusCancelled}>Cancelled</span>
-        ) : inviteSent ? (
-          <span className={styles.statusVisible}>Invite sent</span>
-        ) : (
-          <span className={styles.statusHidden}>
-            Invite goes out {formatDate(event.visible_from!)}
-          </span>
-        )}
-      </div>
+          {/* Line 3: Status + RSVPs + Location */}
+          <div className={styles.eventSecondary}>
+            {getStatusPill()}
+            <span className={styles.rsvpCount}>{formatRsvpCount(event.rsvp_yes_count || 0)}</span>
+            {event.location && (
+              <span className={styles.eventLocation}>{truncateLocation(event.location)}</span>
+            )}
+          </div>
+        </div>
 
-      <div className={styles.eventRsvps}>
-        <span className={styles.rsvpCount}>{event.rsvp_yes_count || 0} RSVPs</span>
-      </div>
-
-      <div className={styles.eventActions}>
-        {!isCancelled && (
-          <button className={styles.btnSmall} onClick={onAddAttendee} title="Add attendee">
-            +Attendee
+        {/* Actions */}
+        <div className={styles.eventActions}>
+          <button className={styles.btnPrimarySmall} onClick={onEdit}>
+            Edit
           </button>
-        )}
-        <button className={styles.btnSmall} onClick={onManageInvites} title="Manage invitations">
-          Invites
-        </button>
-        <button className={styles.btnSmall} onClick={onCopy} title="Copy event">
-          Copy
-        </button>
-        <button className={styles.btnSmall} onClick={onEdit}>
-          Edit
-        </button>
-        {!isCancelled && !isPast && (
-          <button className={styles.btnSmallDanger} onClick={onCancel}>
-            Cancel
+          <button className={styles.btnSecondarySmall} onClick={onManageInvites}>
+            Manage invites
           </button>
-        )}
+          <OverflowMenu items={overflowItems} />
+        </div>
       </div>
-    </div>
+
+      {showConfirm && (
+        <ConfirmModal
+          title="Cancel Event"
+          message={`Are you sure you want to cancel "${event.title}"? Members will see it as cancelled.`}
+          confirmLabel="Cancel Event"
+          onConfirm={() => {
+            setShowConfirm(false)
+            onCancel()
+          }}
+          onCancel={() => setShowConfirm(false)}
+          destructive
+        />
+      )}
+    </>
   )
 }
 
-// Create/Edit Event Modal
+// ============================================================================
+// CREATE/EDIT EVENT MODAL
+// ============================================================================
+
 function EventModal({
   event,
   copyFrom,
@@ -240,7 +468,7 @@ function EventModal({
     title: string
     description?: string
     location?: string
-    kind?: 'session' | 'match' | 'tournament' | 'social' | 'other'
+    kind?: EventKind
     starts_at_utc: string
     ends_at_utc: string
     payment_mode?: 'included' | 'one_off' | 'free'
@@ -278,9 +506,9 @@ function EventModal({
   const [title, setTitle] = useState(sourceEvent?.title || savedDraft?.title || '')
   const [description, setDescription] = useState(sourceEvent?.description || savedDraft?.description || '')
   const [location, setLocation] = useState(sourceEvent?.location || savedDraft?.location || '')
-  const [kind, setKind] = useState<'session' | 'match' | 'tournament' | 'social' | 'other'>(
-    sourceEvent?.kind || savedDraft?.kind || 'session'
-  )
+  // Map legacy 'match' to 'tournament' when editing
+  const initialKind = sourceEvent?.kind === 'match' ? 'tournament' : (sourceEvent?.kind || savedDraft?.kind || 'session')
+  const [kind, setKind] = useState<EventKind>(initialKind)
   // For copying, default to next week same day; for edit use existing date
   const [startDate, setStartDate] = useState(() => {
     if (isEdit && event?.starts_at_utc) {
@@ -563,10 +791,11 @@ function EventModal({
                 <select
                   className={styles.formInput}
                   value={kind}
-                  onChange={(e) => setKind(e.target.value as typeof kind)}
+                  onChange={(e) => setKind(e.target.value as EventKind)}
                 >
                   <option value="session">Session</option>
-                  <option value="match">Match</option>
+                  <option value="training">Training</option>
+                  <option value="ladies">Ladies</option>
                   <option value="tournament">Tournament</option>
                   <option value="social">Social</option>
                   <option value="other">Other</option>
@@ -624,18 +853,20 @@ function EventModal({
             </div>
           </div>
 
-          <div className={styles.modalFooter}>
+          <div className={styles.modalFooterSticky}>
             {!isEdit && !isCopy && savedDraft && (
               <button type="button" className={styles.btnDangerOutline} onClick={handleClearDraft}>
                 Clear Draft
               </button>
             )}
-            <button type="button" className={styles.btnSecondary} onClick={onClose}>
-              Cancel
-            </button>
-            <button type="submit" className={styles.btnPrimary} disabled={saving}>
-              {saving ? <Spinner size="sm" /> : isEdit ? 'Save Changes' : isCopy ? 'Copy Event' : 'Create Event'}
-            </button>
+            <div className={styles.modalFooterRight}>
+              <button type="button" className={styles.btnSecondary} onClick={onClose}>
+                Cancel
+              </button>
+              <button type="submit" className={styles.btnPrimary} disabled={saving}>
+                {saving ? <Spinner size="sm" /> : isEdit ? 'Save Changes' : isCopy ? 'Copy Event' : 'Create Event'}
+              </button>
+            </div>
           </div>
         </form>
       </div>
@@ -643,7 +874,10 @@ function EventModal({
   )
 }
 
-// Create/Edit Series Modal
+// ============================================================================
+// CREATE/EDIT SERIES MODAL
+// ============================================================================
+
 function SeriesModal({
   series,
   onSave,
@@ -705,7 +939,7 @@ function SeriesModal({
   const [visibilityDays, setVisibilityDays] = useState(series?.visibility_days ?? savedDraft?.visibilityDays ?? 5)
   const feeCents = series?.default_fee_cents || 0
   const [generateWeeks, setGenerateWeeks] = useState(savedDraft?.generateWeeks || 8)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   // Keep a ref to current values for saving on unmount
   const draftRef = useRef<SeriesDraft>({
@@ -946,47 +1180,29 @@ function SeriesModal({
                 rows={3}
               />
             </div>
+
+            {/* Danger zone for edit mode */}
+            {isEdit && onDelete && (
+              <div className={styles.dangerZone}>
+                <h4 className={styles.dangerZoneTitle}>Danger Zone</h4>
+                <button
+                  type="button"
+                  className={styles.btnDangerOutline}
+                  onClick={() => setShowDeleteConfirm(true)}
+                >
+                  Delete Series
+                </button>
+              </div>
+            )}
           </div>
 
-          <div className={styles.modalFooter}>
-            {isEdit && onDelete && (
-              <>
-                {confirmDelete ? (
-                  <div className={styles.deleteConfirm}>
-                    <span>Delete series and future events?</span>
-                    <button
-                      type="button"
-                      className={styles.btnDanger}
-                      onClick={onDelete}
-                      disabled={saving}
-                    >
-                      Yes, Delete
-                    </button>
-                    <button
-                      type="button"
-                      className={styles.btnSecondary}
-                      onClick={() => setConfirmDelete(false)}
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    className={styles.btnDangerOutline}
-                    onClick={() => setConfirmDelete(true)}
-                  >
-                    Delete Series
-                  </button>
-                )}
-              </>
+          <div className={styles.modalFooterSticky}>
+            {!isEdit && savedDraft && (
+              <button type="button" className={styles.btnDangerOutline} onClick={handleClearDraft}>
+                Clear Draft
+              </button>
             )}
             <div className={styles.modalFooterRight}>
-              {!isEdit && savedDraft && (
-                <button type="button" className={styles.btnDangerOutline} onClick={handleClearDraft}>
-                  Clear Draft
-                </button>
-              )}
               <button type="button" className={styles.btnSecondary} onClick={onClose}>
                 Cancel
               </button>
@@ -996,12 +1212,30 @@ function SeriesModal({
             </div>
           </div>
         </form>
+
+        {showDeleteConfirm && onDelete && (
+          <ConfirmModal
+            title="Delete Series"
+            message="Are you sure you want to delete this series and all future events? This cannot be undone."
+            confirmLabel="Delete"
+            onConfirm={() => {
+              setShowDeleteConfirm(false)
+              onDelete()
+            }}
+            onCancel={() => setShowDeleteConfirm(false)}
+            destructive
+            saving={saving}
+          />
+        )}
       </div>
     </div>
   )
 }
 
-// Invitation Modal
+// ============================================================================
+// INVITATION MODAL
+// ============================================================================
+
 function InvitationModal({
   title,
   type,
@@ -1145,7 +1379,7 @@ function InvitationModal({
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
         <div className={styles.modalHeader}>
-          <h3>Invitations: {title}</h3>
+          <h3>Manage Invites: {title}</h3>
           <button className={styles.modalClose} onClick={onClose}>
             &times;
           </button>
@@ -1321,7 +1555,7 @@ function InvitationModal({
           )}
         </div>
 
-        <div className={styles.modalFooter}>
+        <div className={styles.modalFooterSticky}>
           <button className={styles.btnPrimary} onClick={onClose}>
             Done
           </button>
@@ -1331,7 +1565,10 @@ function InvitationModal({
   )
 }
 
-// Add Attendee Modal - Admin can RSVP on behalf of a member
+// ============================================================================
+// ADD ATTENDEE MODAL
+// ============================================================================
+
 function AddAttendeeModal({
   event,
   allMembers,
@@ -1397,7 +1634,7 @@ function AddAttendeeModal({
           <div className={styles.modalBody}>
             <p className={styles.modalSubtext}>
               Add a member as attending <strong>{event.title}</strong> on{' '}
-              {formatDate(event.starts_at_utc)}
+              {formatDateCompact(event.starts_at_utc)}
             </p>
 
             {error && <div className={styles.errorBox}>{error}</div>}
@@ -1465,7 +1702,7 @@ function AddAttendeeModal({
             </div>
           </div>
 
-          <div className={styles.modalFooter}>
+          <div className={styles.modalFooterSticky}>
             <button type="button" className={styles.btnSecondary} onClick={onClose}>
               Cancel
             </button>
@@ -1482,6 +1719,10 @@ function AddAttendeeModal({
     </div>
   )
 }
+
+// ============================================================================
+// MAIN ADMIN EVENTS PAGE
+// ============================================================================
 
 export function AdminEvents() {
   const { memberships, loading: profileLoading } = useProfile()
@@ -1501,6 +1742,7 @@ export function AdminEvents() {
     updateSeries,
     deleteSeries,
     generateEvents,
+    refreshEvents,
   } = useAdminEvents({ clubId })
 
   const { groups } = useAdminGroups({ clubId })
@@ -1516,10 +1758,14 @@ export function AdminEvents() {
   const [managingInvitesEvent, setManagingInvitesEvent] = useState<AdminEvent | null>(null)
   const [managingInvitesSeries, setManagingInvitesSeries] = useState<EventSeries | null>(null)
   const [addingAttendeeEvent, setAddingAttendeeEvent] = useState<AdminEvent | null>(null)
+  const [filter, setFilter] = useState<EventFilter>('all')
 
-  // Split events into upcoming and past
-  const upcomingEvents = events.filter((e) => !isPastEvent(e))
-  const pastEvents = events.filter((e) => isPastEvent(e))
+  // Split events into upcoming and past, then filter
+  const allUpcomingEvents = events.filter((e) => !isPastEvent(e))
+  const allPastEvents = events.filter((e) => isPastEvent(e))
+
+  const upcomingEvents = allUpcomingEvents.filter((e) => eventMatchesFilter(e, filter))
+  const pastEvents = allPastEvents.filter((e) => eventMatchesFilter(e, filter))
 
   const handleCreateEvent = async (data: Parameters<typeof createEvent>[0]) => {
     try {
@@ -1547,7 +1793,6 @@ export function AdminEvents() {
   }
 
   const handleCancelEvent = async (eventId: string) => {
-    if (!confirm('Cancel this event? Members will see it as cancelled.')) return
     try {
       await cancelEvent(eventId)
     } catch (err) {
@@ -1575,10 +1820,9 @@ export function AdminEvents() {
     }
   }
 
-  const handleDeleteSeries = async () => {
-    if (!editingSeries) return
+  const handleDeleteSeries = async (seriesId: string) => {
     try {
-      await deleteSeries(editingSeries.id)
+      await deleteSeries(seriesId)
       setEditingSeries(null)
     } catch (err) {
       console.error('Failed to delete series:', err)
@@ -1630,16 +1874,15 @@ export function AdminEvents() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.header}>
+      <div className={styles.headerCompact}>
         <Link to="/app/admin" className={styles.backLink}>
           &larr; Back to Admin
         </Link>
         <h1 className={styles.title}>Events</h1>
-        <p className={styles.subtitle}>Manage events and recurring sessions</p>
       </div>
 
-      {/* Actions */}
-      <div className={styles.actions}>
+      {/* Actions - Create buttons */}
+      <div className={styles.actionsCompact}>
         <button className={styles.btnPrimary} onClick={() => setShowEventModal(true)}>
           + Create Event
         </button>
@@ -1660,6 +1903,7 @@ export function AdminEvents() {
                 onEdit={() => setEditingSeries(s)}
                 onGenerate={() => handleGenerateEvents(s.id)}
                 onManageInvites={() => setManagingInvitesSeries(s)}
+                onDelete={() => handleDeleteSeries(s.id)}
                 generating={generatingSeriesId === s.id}
               />
             ))}
@@ -1670,9 +1914,13 @@ export function AdminEvents() {
       {/* Upcoming Events */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Upcoming Events</h2>
+
+        {/* Filter bar */}
+        <FilterBar selected={filter} onChange={setFilter} />
+
         {upcomingEvents.length === 0 ? (
           <div className={styles.empty}>
-            <p>No upcoming events</p>
+            <p>{filter === 'all' ? 'No upcoming events' : `No upcoming ${filter} events`}</p>
           </div>
         ) : (
           <div className={styles.eventsList}>
@@ -1692,7 +1940,7 @@ export function AdminEvents() {
       </section>
 
       {/* Past Events */}
-      {pastEvents.length > 0 && (
+      {allPastEvents.length > 0 && (
         <section className={styles.section}>
           <button
             className={styles.togglePast}
@@ -1759,7 +2007,7 @@ export function AdminEvents() {
           series={editingSeries}
           onSave={handleUpdateSeries}
           onClose={() => setEditingSeries(null)}
-          onDelete={handleDeleteSeries}
+          onDelete={() => handleDeleteSeries(editingSeries.id)}
           saving={saving}
         />
       )}
@@ -1798,7 +2046,7 @@ export function AdminEvents() {
           onClose={() => setAddingAttendeeEvent(null)}
           onSuccess={() => {
             setAddingAttendeeEvent(null)
-            // Note: Ideally refresh events to update RSVP count
+            refreshEvents()
           }}
         />
       )}

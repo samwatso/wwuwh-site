@@ -618,7 +618,7 @@ export interface CreateEventRequest {
   title: string
   description?: string
   location?: string
-  kind?: 'session' | 'match' | 'tournament' | 'social' | 'other'
+  kind?: 'session' | 'match' | 'tournament' | 'social' | 'other' | 'training' | 'ladies'
   starts_at_utc: string
   ends_at_utc: string
   timezone?: string
@@ -640,7 +640,7 @@ export interface UpdateEventRequest {
   title?: string
   description?: string
   location?: string
-  kind?: 'session' | 'match' | 'tournament' | 'social' | 'other'
+  kind?: 'session' | 'match' | 'tournament' | 'social' | 'other' | 'training' | 'ladies'
   starts_at_utc?: string
   ends_at_utc?: string
   timezone?: string

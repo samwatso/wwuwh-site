@@ -122,7 +122,7 @@ export interface EventSeries {
   archived_at: string | null
 }
 
-export type EventKind = 'session' | 'match' | 'tournament' | 'social' | 'other'
+export type EventKind = 'session' | 'match' | 'tournament' | 'social' | 'other' | 'training' | 'ladies'
 export type EventStatus = 'scheduled' | 'cancelled' | 'completed'
 export type PaymentMode = 'included' | 'one_off' | 'free'
 
