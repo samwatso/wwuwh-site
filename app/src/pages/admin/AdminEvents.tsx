@@ -27,6 +27,37 @@ import styles from './AdminEvents.module.css'
 
 const WEEKDAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
+// localStorage keys for draft persistence
+const EVENT_DRAFT_KEY = 'wwuwh_event_draft'
+const SERIES_DRAFT_KEY = 'wwuwh_series_draft'
+
+interface EventDraft {
+  title: string
+  description: string
+  location: string
+  kind: 'session' | 'match' | 'tournament' | 'social' | 'other'
+  startDate: string
+  startTime: string
+  duration: number
+  paymentMode: 'included' | 'one_off' | 'free'
+  feeCents: number
+  visibilityDays: number
+}
+
+interface SeriesDraft {
+  title: string
+  description: string
+  location: string
+  weekdays: number[]
+  startTime: string
+  duration: number
+  startDate: string
+  hasEndDate: boolean
+  endDate: string
+  visibilityDays: number
+  generateWeeks: number
+}
+
 // Helper to get weekday short names from mask
 function getWeekdayNames(mask: number): string[] {
   const days: string[] = []
@@ -232,11 +263,21 @@ function EventModal({
   const defaultVisible = new Date(defaultStart)
   defaultVisible.setDate(defaultVisible.getDate() - 5)
 
-  const [title, setTitle] = useState(sourceEvent?.title || '')
-  const [description, setDescription] = useState(sourceEvent?.description || '')
-  const [location, setLocation] = useState(sourceEvent?.location || '')
+  // Load saved draft for new events (not edit or copy)
+  const savedDraft = (!isEdit && !isCopy) ? (() => {
+    try {
+      const stored = localStorage.getItem(EVENT_DRAFT_KEY)
+      return stored ? JSON.parse(stored) as EventDraft : null
+    } catch {
+      return null
+    }
+  })() : null
+
+  const [title, setTitle] = useState(sourceEvent?.title || savedDraft?.title || '')
+  const [description, setDescription] = useState(sourceEvent?.description || savedDraft?.description || '')
+  const [location, setLocation] = useState(sourceEvent?.location || savedDraft?.location || '')
   const [kind, setKind] = useState<'session' | 'match' | 'tournament' | 'social' | 'other'>(
-    sourceEvent?.kind || 'session'
+    sourceEvent?.kind || savedDraft?.kind || 'session'
   )
   // For copying, default to next week same day; for edit use existing date
   const [startDate, setStartDate] = useState(() => {
@@ -249,17 +290,43 @@ function EventModal({
       original.setDate(original.getDate() + 7)
       return original.toISOString().slice(0, 10)
     }
+    if (savedDraft?.startDate) {
+      return savedDraft.startDate
+    }
     return defaultStart.toISOString().slice(0, 10)
   })
   const [startTime, setStartTime] = useState(
-    sourceEvent?.starts_at_utc ? formatTime(sourceEvent.starts_at_utc) : '20:00'
+    sourceEvent?.starts_at_utc ? formatTime(sourceEvent.starts_at_utc) : savedDraft?.startTime || '20:00'
   )
-  const [duration, setDuration] = useState(90)
+  const [duration, setDuration] = useState(savedDraft?.duration || 90)
   const [paymentMode, setPaymentMode] = useState<'included' | 'one_off' | 'free'>(
-    sourceEvent?.payment_mode || 'included'
+    sourceEvent?.payment_mode || savedDraft?.paymentMode || 'included'
   )
-  const [feeCents, setFeeCents] = useState(sourceEvent?.fee_cents || 0)
-  const [visibilityDays, setVisibilityDays] = useState(5)
+  const [feeCents, setFeeCents] = useState(sourceEvent?.fee_cents || savedDraft?.feeCents || 0)
+  const [visibilityDays, setVisibilityDays] = useState(savedDraft?.visibilityDays || 5)
+
+  // Save draft to localStorage when values change (only for new events)
+  useEffect(() => {
+    if (isEdit || isCopy) return
+    const draft: EventDraft = {
+      title,
+      description,
+      location,
+      kind,
+      startDate,
+      startTime,
+      duration,
+      paymentMode,
+      feeCents,
+      visibilityDays,
+    }
+    localStorage.setItem(EVENT_DRAFT_KEY, JSON.stringify(draft))
+  }, [isEdit, isCopy, title, description, location, kind, startDate, startTime, duration, paymentMode, feeCents, visibilityDays])
+
+  // Clear draft helper
+  const clearDraft = () => {
+    localStorage.removeItem(EVENT_DRAFT_KEY)
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -268,6 +335,9 @@ function EventModal({
     const startsAt = new Date(`${startDate}T${startTime}:00`)
     const endsAt = new Date(startsAt.getTime() + duration * 60 * 1000)
     const visibleFrom = new Date(startsAt.getTime() - visibilityDays * 24 * 60 * 60 * 1000)
+
+    // Clear draft before saving (will be removed on success)
+    clearDraft()
 
     onSave({
       title,
@@ -280,6 +350,20 @@ function EventModal({
       fee_cents: paymentMode === 'one_off' ? feeCents : undefined,
       visible_from: visibleFrom.toISOString(),
     })
+  }
+
+  const handleClearDraft = () => {
+    clearDraft()
+    setTitle('')
+    setDescription('')
+    setLocation('')
+    setKind('session')
+    setStartDate(defaultStart.toISOString().slice(0, 10))
+    setStartTime('20:00')
+    setDuration(90)
+    setPaymentMode('included')
+    setFeeCents(0)
+    setVisibilityDays(5)
   }
 
   return (
@@ -419,6 +503,11 @@ function EventModal({
           </div>
 
           <div className={styles.modalFooter}>
+            {!isEdit && !isCopy && savedDraft && (
+              <button type="button" className={styles.btnDangerOutline} onClick={handleClearDraft}>
+                Clear Draft
+              </button>
+            )}
             <button type="button" className={styles.btnSecondary} onClick={onClose}>
               Cancel
             </button>
@@ -460,28 +549,80 @@ function SeriesModal({
 }) {
   const isEdit = !!series
 
-  const [title, setTitle] = useState(series?.title || '')
-  const [description, setDescription] = useState(series?.description || '')
-  const [location, setLocation] = useState(series?.location || '')
-  const [weekdays, setWeekdays] = useState<number[]>(() => {
-    if (!series) return [2] // Default to Tuesday
-    const days: number[] = []
-    for (let i = 0; i < 7; i++) {
-      if (series.weekday_mask & (1 << i)) days.push(i)
+  // Load saved draft for new series (not edit)
+  const savedDraft = !isEdit ? (() => {
+    try {
+      const stored = localStorage.getItem(SERIES_DRAFT_KEY)
+      return stored ? JSON.parse(stored) as SeriesDraft : null
+    } catch {
+      return null
     }
-    return days
+  })() : null
+
+  const [title, setTitle] = useState(series?.title || savedDraft?.title || '')
+  const [description, setDescription] = useState(series?.description || savedDraft?.description || '')
+  const [location, setLocation] = useState(series?.location || savedDraft?.location || '')
+  const [weekdays, setWeekdays] = useState<number[]>(() => {
+    if (series) {
+      const days: number[] = []
+      for (let i = 0; i < 7; i++) {
+        if (series.weekday_mask & (1 << i)) days.push(i)
+      }
+      return days
+    }
+    if (savedDraft?.weekdays) return savedDraft.weekdays
+    return [2] // Default to Tuesday
   })
-  const [startTime, setStartTime] = useState(series?.start_time_local || '20:00')
-  const [duration, setDuration] = useState(series?.duration_min || 90)
+  const [startTime, setStartTime] = useState(series?.start_time_local || savedDraft?.startTime || '20:00')
+  const [duration, setDuration] = useState(series?.duration_min || savedDraft?.duration || 90)
   const [startDate, setStartDate] = useState(
-    series?.start_date || new Date().toISOString().slice(0, 10)
+    series?.start_date || savedDraft?.startDate || new Date().toISOString().slice(0, 10)
   )
-  const [hasEndDate, setHasEndDate] = useState(!!series?.end_date)
-  const [endDate, setEndDate] = useState(series?.end_date || '')
-  const [visibilityDays, setVisibilityDays] = useState(series?.visibility_days ?? 5)
+  const [hasEndDate, setHasEndDate] = useState(series?.end_date ? true : savedDraft?.hasEndDate || false)
+  const [endDate, setEndDate] = useState(series?.end_date || savedDraft?.endDate || '')
+  const [visibilityDays, setVisibilityDays] = useState(series?.visibility_days ?? savedDraft?.visibilityDays ?? 5)
   const feeCents = series?.default_fee_cents || 0
-  const [generateWeeks, setGenerateWeeks] = useState(8)
+  const [generateWeeks, setGenerateWeeks] = useState(savedDraft?.generateWeeks || 8)
   const [confirmDelete, setConfirmDelete] = useState(false)
+
+  // Save draft to localStorage when values change (only for new series)
+  useEffect(() => {
+    if (isEdit) return
+    const draft: SeriesDraft = {
+      title,
+      description,
+      location,
+      weekdays,
+      startTime,
+      duration,
+      startDate,
+      hasEndDate,
+      endDate,
+      visibilityDays,
+      generateWeeks,
+    }
+    localStorage.setItem(SERIES_DRAFT_KEY, JSON.stringify(draft))
+  }, [isEdit, title, description, location, weekdays, startTime, duration, startDate, hasEndDate, endDate, visibilityDays, generateWeeks])
+
+  // Clear draft helper
+  const clearDraft = () => {
+    localStorage.removeItem(SERIES_DRAFT_KEY)
+  }
+
+  const handleClearDraft = () => {
+    clearDraft()
+    setTitle('')
+    setDescription('')
+    setLocation('')
+    setWeekdays([2])
+    setStartTime('20:00')
+    setDuration(90)
+    setStartDate(new Date().toISOString().slice(0, 10))
+    setHasEndDate(false)
+    setEndDate('')
+    setVisibilityDays(5)
+    setGenerateWeeks(8)
+  }
 
   const toggleWeekday = (day: number) => {
     setWeekdays((prev) =>
@@ -495,6 +636,9 @@ function SeriesModal({
 
     // Calculate weekday mask
     const weekdayMask = weekdays.reduce((mask, day) => mask | (1 << day), 0)
+
+    // Clear draft before saving
+    clearDraft()
 
     onSave({
       title,
@@ -688,6 +832,11 @@ function SeriesModal({
               </>
             )}
             <div className={styles.modalFooterRight}>
+              {!isEdit && savedDraft && (
+                <button type="button" className={styles.btnDangerOutline} onClick={handleClearDraft}>
+                  Clear Draft
+                </button>
+              )}
               <button type="button" className={styles.btnSecondary} onClick={onClose}>
                 Cancel
               </button>
