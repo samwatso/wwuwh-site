@@ -39,6 +39,8 @@ interface EventDraft {
   startDate: string
   startTime: string
   duration: number
+  isAllDay: boolean
+  endDate: string
   paymentMode: 'included' | 'one_off' | 'free'
   feeCents: number
   visibilityDays: number
@@ -299,6 +301,24 @@ function EventModal({
     sourceEvent?.starts_at_utc ? formatTime(sourceEvent.starts_at_utc) : savedDraft?.startTime || '21:00'
   )
   const [duration, setDuration] = useState(savedDraft?.duration || 60)
+  const [isAllDay, setIsAllDay] = useState(() => {
+    if (sourceEvent) {
+      // Check if it's an all-day event (spans midnight or multiple days)
+      const start = new Date(sourceEvent.starts_at_utc)
+      const end = new Date(sourceEvent.ends_at_utc)
+      const diffHours = (end.getTime() - start.getTime()) / (1000 * 60 * 60)
+      return diffHours >= 24
+    }
+    return savedDraft?.isAllDay || false
+  })
+  const [endDate, setEndDate] = useState(() => {
+    if (sourceEvent?.ends_at_utc) {
+      return sourceEvent.ends_at_utc.slice(0, 10)
+    }
+    if (savedDraft?.endDate) return savedDraft.endDate
+    // Default to same as start date
+    return ''
+  })
   const [paymentMode, setPaymentMode] = useState<'included' | 'one_off' | 'free'>(
     sourceEvent?.payment_mode || savedDraft?.paymentMode || 'included'
   )
@@ -314,6 +334,8 @@ function EventModal({
     startDate,
     startTime,
     duration,
+    isAllDay,
+    endDate,
     paymentMode,
     feeCents,
     visibilityDays,
@@ -329,17 +351,19 @@ function EventModal({
       startDate,
       startTime,
       duration,
+      isAllDay,
+      endDate,
       paymentMode,
       feeCents,
       visibilityDays,
     }
-  }, [title, description, location, kind, startDate, startTime, duration, paymentMode, feeCents, visibilityDays])
+  }, [title, description, location, kind, startDate, startTime, duration, isAllDay, endDate, paymentMode, feeCents, visibilityDays])
 
   // Save draft to localStorage when values change (only for new events)
   useEffect(() => {
     if (isEdit || isCopy) return
     localStorage.setItem(EVENT_DRAFT_KEY, JSON.stringify(draftRef.current))
-  }, [isEdit, isCopy, title, description, location, kind, startDate, startTime, duration, paymentMode, feeCents, visibilityDays])
+  }, [isEdit, isCopy, title, description, location, kind, startDate, startTime, duration, isAllDay, endDate, paymentMode, feeCents, visibilityDays])
 
   // Save draft on unmount (catches navigation away)
   useEffect(() => {
@@ -357,10 +381,23 @@ function EventModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!title || !startDate || !startTime) return
+    if (!title || !startDate) return
+    if (!isAllDay && !startTime) return
+    if (isAllDay && !endDate) return
 
-    const startsAt = new Date(`${startDate}T${startTime}:00`)
-    const endsAt = new Date(startsAt.getTime() + duration * 60 * 1000)
+    let startsAt: Date
+    let endsAt: Date
+
+    if (isAllDay) {
+      // All-day event: start at midnight, end at end of end date
+      startsAt = new Date(`${startDate}T00:00:00`)
+      endsAt = new Date(`${endDate}T23:59:59`)
+    } else {
+      // Regular event with time and duration
+      startsAt = new Date(`${startDate}T${startTime}:00`)
+      endsAt = new Date(startsAt.getTime() + duration * 60 * 1000)
+    }
+
     const visibleFrom = new Date(startsAt.getTime() - visibilityDays * 24 * 60 * 60 * 1000)
 
     // Clear draft before saving (will be removed on success)
@@ -388,6 +425,8 @@ function EventModal({
     setStartDate(defaultStart.toISOString().slice(0, 10))
     setStartTime('21:00')
     setDuration(60)
+    setIsAllDay(false)
+    setEndDate('')
     setPaymentMode('included')
     setFeeCents(0)
     setVisibilityDays(5)
@@ -417,39 +456,86 @@ function EventModal({
               />
             </div>
 
-            <div className={styles.formRow}>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Date</label>
+            <div className={styles.formGroup}>
+              <label className={styles.checkboxLabel}>
                 <input
-                  type="date"
-                  className={styles.formInput}
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  required
+                  type="checkbox"
+                  checked={isAllDay}
+                  onChange={(e) => {
+                    setIsAllDay(e.target.checked)
+                    if (e.target.checked && !endDate) {
+                      setEndDate(startDate)
+                    }
+                  }}
                 />
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Time</label>
-                <input
-                  type="time"
-                  className={styles.formInput}
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  required
-                />
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Duration (min)</label>
-                <input
-                  type="number"
-                  className={styles.formInput}
-                  value={duration}
-                  onChange={(e) => setDuration(parseInt(e.target.value) || 90)}
-                  min={15}
-                  max={480}
-                />
-              </div>
+                <span>All-day / Multi-day event</span>
+              </label>
             </div>
+
+            {isAllDay ? (
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Start Date</label>
+                  <input
+                    type="date"
+                    className={styles.formInput}
+                    value={startDate}
+                    onChange={(e) => {
+                      setStartDate(e.target.value)
+                      if (endDate && e.target.value > endDate) {
+                        setEndDate(e.target.value)
+                      }
+                    }}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>End Date</label>
+                  <input
+                    type="date"
+                    className={styles.formInput}
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    min={startDate}
+                    required
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className={styles.formRow}>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Date</label>
+                  <input
+                    type="date"
+                    className={styles.formInput}
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Time</label>
+                  <input
+                    type="time"
+                    className={styles.formInput}
+                    value={startTime}
+                    onChange={(e) => setStartTime(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className={styles.formGroup}>
+                  <label className={styles.formLabel}>Duration (min)</label>
+                  <input
+                    type="number"
+                    className={styles.formInput}
+                    value={duration}
+                    onChange={(e) => setDuration(parseInt(e.target.value) || 60)}
+                    min={15}
+                    max={480}
+                  />
+                </div>
+              </div>
+            )}
 
             <div className={styles.formGroup}>
               <label className={styles.formLabel}>Location</label>
@@ -485,7 +571,7 @@ function EventModal({
                   value={visibilityDays}
                   onChange={(e) => setVisibilityDays(parseInt(e.target.value) || 5)}
                   min={0}
-                  max={30}
+                  max={90}
                 />
               </div>
             </div>
