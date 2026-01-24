@@ -31,10 +31,14 @@ interface TeamSheetProps {
   eventTitle: string
   eventDate: string
   teams: TeamWithAssignments[]
+  showScheduleNote?: boolean
 }
 
 export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
-  ({ eventTitle, eventDate, teams }, ref) => {
+  ({ eventTitle, eventDate, teams, showScheduleNote = false }, ref) => {
+    // Determine layout class based on team count
+    const teamCount = teams.length
+    const layoutClass = teamCount <= 2 ? styles.twoTeams : teamCount === 3 ? styles.threeTeams : styles.fourTeams
     // Group assignments by position for a team
     const getPlayersByPosition = (assignments: TeamWithAssignments['assignments']) => {
       const grouped = new Map<string, typeof assignments>()
@@ -63,7 +67,7 @@ export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
         </div>
 
         {/* Teams */}
-        <div className={styles.teamsContainer}>
+        <div className={`${styles.teamsContainer} ${layoutClass}`}>
           {teams.map((team) => {
             const playersByPosition = getPlayersByPosition(team.assignments)
             const isBlackTeam = team.name.toLowerCase() === 'black'
@@ -132,6 +136,13 @@ export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
             )
           })}
         </div>
+
+        {/* Schedule Note for 3+ teams */}
+        {showScheduleNote && (
+          <div className={styles.scheduleNote}>
+            Game schedule TBC via WhatsApp
+          </div>
+        )}
 
         {/* Footer */}
         <div className={styles.footer}>

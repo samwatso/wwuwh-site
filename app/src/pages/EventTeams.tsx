@@ -31,6 +31,17 @@ const ACTIVITIES = [
   { value: 'other', label: 'Other' },
 ] as const
 
+// Additional team options for larger groups
+const ADDITIONAL_TEAMS = [
+  { name: 'Reds - White', sort_order: 2 },
+  { name: 'Reds - Black', sort_order: 3 },
+  { name: 'Blues - White', sort_order: 4 },
+  { name: 'Blues - Black', sort_order: 5 },
+] as const
+
+// Threshold for showing "add more teams" option
+const LARGE_GROUP_THRESHOLD = 12
+
 // Helper to format date
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr)
@@ -281,6 +292,85 @@ function EditPlayerModal({ assignment, teams, onSave, onClose, saving }: EditPla
   )
 }
 
+interface AddTeamsModalProps {
+  existingTeams: string[]
+  onAdd: (teamNames: string[]) => void
+  onClose: () => void
+  saving: boolean
+}
+
+function AddTeamsModal({ existingTeams, onAdd, onClose, saving }: AddTeamsModalProps) {
+  const [selectedTeams, setSelectedTeams] = useState<string[]>([])
+
+  // Filter out teams that already exist
+  const availableTeams = ADDITIONAL_TEAMS.filter(
+    t => !existingTeams.some(et => et.toLowerCase() === t.name.toLowerCase())
+  )
+
+  const toggleTeam = (teamName: string) => {
+    setSelectedTeams(prev =>
+      prev.includes(teamName)
+        ? prev.filter(t => t !== teamName)
+        : [...prev, teamName]
+    )
+  }
+
+  const handleAdd = () => {
+    if (selectedTeams.length > 0) {
+      onAdd(selectedTeams)
+    }
+  }
+
+  return (
+    <div className={styles.modalOverlay} onClick={onClose}>
+      <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
+        <div className={styles.modalHeader}>
+          <h3>Add More Teams</h3>
+          <button className={styles.modalClose} onClick={onClose}>
+            &times;
+          </button>
+        </div>
+
+        <div className={styles.modalBody}>
+          <p className={styles.modalHint}>
+            For larger groups, add additional teams. Select which teams to create:
+          </p>
+
+          <div className={styles.teamCheckboxes}>
+            {availableTeams.map(team => (
+              <label key={team.name} className={styles.teamCheckbox}>
+                <input
+                  type="checkbox"
+                  checked={selectedTeams.includes(team.name)}
+                  onChange={() => toggleTeam(team.name)}
+                />
+                <span className={styles.teamCheckboxLabel}>{team.name}</span>
+              </label>
+            ))}
+          </div>
+
+          {availableTeams.length === 0 && (
+            <p className={styles.noTeamsText}>All additional teams have been created.</p>
+          )}
+        </div>
+
+        <div className={styles.modalFooter}>
+          <button className={styles.btnSecondary} onClick={onClose} disabled={saving}>
+            Cancel
+          </button>
+          <button
+            className={styles.btnPrimary}
+            onClick={handleAdd}
+            disabled={saving || selectedTeams.length === 0}
+          >
+            {saving ? <Spinner size="sm" /> : `Add ${selectedTeams.length} Team${selectedTeams.length !== 1 ? 's' : ''}`}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 interface AvailablePlayersProps {
   players: AvailablePlayer[]
   isAdmin: boolean
@@ -340,8 +430,13 @@ export function EventTeams() {
   const [editingPlayer, setEditingPlayer] = useState<TeamAssignment | null>(null)
   const [showCreateTeams, setShowCreateTeams] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [showAddTeamsModal, setShowAddTeamsModal] = useState(false)
   const [sharing, setSharing] = useState(false)
   const teamSheetRef = useRef<HTMLDivElement>(null)
+
+  // Check if we should show the add teams option
+  const canAddMoreTeams = isAdmin && teams.length >= 2 && teams.length < 4 && totalRsvpYes > LARGE_GROUP_THRESHOLD
+  const showScheduleNote = teams.length >= 3
 
   // Handle saving player assignment
   const handleSaveAssignment = async (update: AssignmentUpdate) => {
@@ -380,6 +475,23 @@ export function EventTeams() {
       setShowCreateTeams(false)
     } catch (err) {
       console.error('Failed to create teams:', err)
+    }
+  }
+
+  // Handle adding additional teams (for large groups)
+  const handleAddTeams = async (teamNames: string[]) => {
+    try {
+      const newTeams = teamNames.map((name, idx) => {
+        const template = ADDITIONAL_TEAMS.find(t => t.name === name)
+        return {
+          name,
+          sort_order: template?.sort_order ?? (teams.length + idx),
+        }
+      })
+      await createTeams(newTeams)
+      setShowAddTeamsModal(false)
+    } catch (err) {
+      console.error('Failed to add teams:', err)
     }
   }
 
@@ -581,8 +693,18 @@ export function EventTeams() {
 
       {isAdmin && (
         <div className={styles.adminBar}>
-          <span className={styles.adminLabel}>Admin Mode</span>
-          <span className={styles.adminHint}>Tap a player to edit</span>
+          <div className={styles.adminBarLeft}>
+            <span className={styles.adminLabel}>Admin Mode</span>
+            <span className={styles.adminHint}>Tap a player to edit</span>
+          </div>
+          {canAddMoreTeams && (
+            <button
+              className={styles.addTeamsBtn}
+              onClick={() => setShowAddTeamsModal(true)}
+            >
+              + Add Teams
+            </button>
+          )}
         </div>
       )}
 
@@ -652,6 +774,7 @@ export function EventTeams() {
                 eventTitle={event.title}
                 eventDate={formattedDate}
                 teams={teams}
+                showScheduleNote={showScheduleNote}
               />
             </div>
 
@@ -680,6 +803,16 @@ export function EventTeams() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Add Teams Modal */}
+      {showAddTeamsModal && (
+        <AddTeamsModal
+          existingTeams={teams.map(t => t.name)}
+          onAdd={handleAddTeams}
+          onClose={() => setShowAddTeamsModal(false)}
+          saving={saving}
+        />
       )}
     </div>
   )
