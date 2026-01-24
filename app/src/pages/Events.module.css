@@ -568,14 +568,18 @@
   background: var(--color-white);
   color: var(--grey-600);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: background-color 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .rsvpSegment:first-child {
   border-right: 1px solid var(--grey-300);
 }
 
-.rsvpSegment:hover:not(:disabled) {
+.rsvpSegment:hover:not(:disabled):not(.rsvpSegmentActive) {
   background: var(--grey-50);
 }
 
@@ -590,27 +594,19 @@
 
 .rsvpSegment:disabled {
   cursor: not-allowed;
+  opacity: 0.6;
 }
 
-.rsvpSegmentAttend.rsvpSegmentActive,
-.rsvpSegmentAttend.rsvpSegmentActive:focus,
-.rsvpSegmentAttend.rsvpSegmentActive:active {
-  background: var(--color-success);
-  color: var(--color-white);
+/* Active attend state - green background */
+.rsvpSegmentAttend.rsvpSegmentActive {
+  background: var(--color-success) !important;
+  color: var(--color-white) !important;
 }
 
-.rsvpSegmentDecline.rsvpSegmentActive,
-.rsvpSegmentDecline.rsvpSegmentActive:focus,
-.rsvpSegmentDecline.rsvpSegmentActive:active {
-  background: var(--grey-500);
-  color: var(--color-white);
-}
-
-/* Non-active states need explicit focus/active to prevent white flash on mobile */
-.rsvpSegment:not(.rsvpSegmentActive):focus,
-.rsvpSegment:not(.rsvpSegmentActive):active {
-  background: var(--grey-50);
-  color: var(--grey-600);
+/* Active decline state - grey background */
+.rsvpSegmentDecline.rsvpSegmentActive {
+  background: var(--grey-500) !important;
+  color: var(--color-white) !important;
 }
 
 /* Calendar Button */
