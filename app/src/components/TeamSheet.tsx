@@ -40,13 +40,14 @@ export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
     const teamCount = teams.length
     const layoutClass = teamCount <= 2 ? styles.twoTeams : teamCount === 3 ? styles.threeTeams : styles.fourTeams
     // Group assignments by position for a team
+    // Excludes dropouts (cancelled_late) and no-shows (attendance_status === 'absent')
     const getPlayersByPosition = (assignments: TeamWithAssignments['assignments']) => {
       const grouped = new Map<string, typeof assignments>()
       POSITIONS.forEach((pos) => grouped.set(pos.code, []))
       grouped.set('none', [])
 
       assignments
-        .filter((a) => a.activity === 'play')
+        .filter((a) => a.activity === 'play' && !a.cancelled_late && a.attendance_status !== 'absent')
         .forEach((a) => {
           const key = a.position_code || 'none'
           const group = grouped.get(key) || []
@@ -71,7 +72,10 @@ export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
           {teams.map((team) => {
             const playersByPosition = getPlayersByPosition(team.assignments)
             const isBlackTeam = team.name.toLowerCase() === 'black'
-            const playingCount = team.assignments.filter((a) => a.activity === 'play').length
+            // Count only active players (exclude dropouts and no-shows)
+            const playingCount = team.assignments.filter(
+              (a) => a.activity === 'play' && !a.cancelled_late && a.attendance_status !== 'absent'
+            ).length
 
             return (
               <div
