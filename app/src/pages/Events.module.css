@@ -579,18 +579,38 @@
   background: var(--grey-50);
 }
 
+.rsvpSegment:focus {
+  outline: none;
+}
+
+.rsvpSegment:focus-visible {
+  outline: 2px solid var(--color-water);
+  outline-offset: 2px;
+}
+
 .rsvpSegment:disabled {
   cursor: not-allowed;
 }
 
-.rsvpSegmentAttend.rsvpSegmentActive {
+.rsvpSegmentAttend.rsvpSegmentActive,
+.rsvpSegmentAttend.rsvpSegmentActive:focus,
+.rsvpSegmentAttend.rsvpSegmentActive:active {
   background: var(--color-success);
   color: var(--color-white);
 }
 
-.rsvpSegmentDecline.rsvpSegmentActive {
+.rsvpSegmentDecline.rsvpSegmentActive,
+.rsvpSegmentDecline.rsvpSegmentActive:focus,
+.rsvpSegmentDecline.rsvpSegmentActive:active {
   background: var(--grey-500);
   color: var(--color-white);
+}
+
+/* Non-active states need explicit focus/active to prevent white flash on mobile */
+.rsvpSegment:not(.rsvpSegmentActive):focus,
+.rsvpSegment:not(.rsvpSegmentActive):active {
+  background: var(--grey-50);
+  color: var(--grey-600);
 }
 
 /* Calendar Button */
