@@ -1195,8 +1195,8 @@ export interface ExternalEvent {
   starts_at_utc: string
   ends_at_utc: string | null
   // From club's decision
-  decision: 'promoted' | 'ignored' | null
-  linked_event_id: string | null
+  decision: 'promoted' | 'ignored' | 'undecided' | null
+  event_id: string | null
   decided_at: string | null
 }
 

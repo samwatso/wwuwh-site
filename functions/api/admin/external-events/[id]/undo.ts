@@ -53,14 +53,14 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     // Check if link exists
     const existingLink = await db
       .prepare(`
-        SELECT decision, linked_event_id
+        SELECT id, decision, event_id
         FROM external_event_links
         WHERE external_event_id = ? AND club_id = ?
       `)
       .bind(externalEventId, club_id)
-      .first<{ decision: string; linked_event_id: string | null }>()
+      .first<{ id: string; decision: string; event_id: string | null }>()
 
-    if (!existingLink) {
+    if (!existingLink || existingLink.decision === 'undecided') {
       // No decision to undo, return success (idempotent)
       return jsonResponse({
         success: true,
@@ -69,14 +69,14 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     }
 
     // If was promoted with a linked event, check for RSVPs before deleting
-    if (existingLink.decision === 'promoted' && existingLink.linked_event_id) {
+    if (existingLink.decision === 'promoted' && existingLink.event_id) {
       const rsvpCount = await db
         .prepare(`
           SELECT COUNT(*) as count
           FROM event_rsvps
           WHERE event_id = ?
         `)
-        .bind(existingLink.linked_event_id)
+        .bind(existingLink.event_id)
         .first<{ count: number }>()
 
       if (rsvpCount && rsvpCount.count > 0) {
@@ -89,17 +89,22 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       // Delete the linked event (no RSVPs exist)
       await db
         .prepare('DELETE FROM events WHERE id = ?')
-        .bind(existingLink.linked_event_id)
+        .bind(existingLink.event_id)
         .run()
     }
 
-    // Delete the link record
+    // Reset the link record to undecided
     await db
       .prepare(`
-        DELETE FROM external_event_links
-        WHERE external_event_id = ? AND club_id = ?
+        UPDATE external_event_links
+        SET decision = 'undecided',
+            event_id = NULL,
+            decided_by_person_id = NULL,
+            decided_at = NULL,
+            updated_at = datetime('now')
+        WHERE id = ?
       `)
-      .bind(externalEventId, club_id)
+      .bind(existingLink.id)
       .run()
 
     return jsonResponse({

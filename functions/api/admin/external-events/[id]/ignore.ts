@@ -58,12 +58,12 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     // Check if already linked for this club
     const existingLink = await db
       .prepare(`
-        SELECT decision, linked_event_id
+        SELECT id, decision, event_id
         FROM external_event_links
         WHERE external_event_id = ? AND club_id = ?
       `)
       .bind(externalEventId, club_id)
-      .first<{ decision: string; linked_event_id: string | null }>()
+      .first<{ id: string; decision: string; event_id: string | null }>()
 
     // If already ignored, return success (idempotent)
     if (existingLink?.decision === 'ignored') {
@@ -74,7 +74,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     }
 
     // If promoted with a linked event, don't allow ignore (must undo first)
-    if (existingLink?.decision === 'promoted' && existingLink.linked_event_id) {
+    if (existingLink?.decision === 'promoted' && existingLink.event_id) {
       return errorResponse('Cannot ignore a promoted event. Use undo first.', 400)
     }
 
@@ -85,24 +85,26 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
         .prepare(`
           UPDATE external_event_links
           SET decision = 'ignored',
-              linked_event_id = NULL,
+              event_id = NULL,
               decided_by_person_id = ?,
-              decided_at = datetime('now')
-          WHERE external_event_id = ? AND club_id = ?
+              decided_at = datetime('now'),
+              updated_at = datetime('now')
+          WHERE id = ?
         `)
-        .bind(person.id, externalEventId, club_id)
+        .bind(person.id, existingLink.id)
         .run()
     } else {
       // Create new link
+      const linkId = crypto.randomUUID()
       await db
         .prepare(`
           INSERT INTO external_event_links (
-            external_event_id, club_id, decision, linked_event_id,
+            id, club_id, external_event_id, decision, event_id,
             decided_by_person_id, decided_at
           )
-          VALUES (?, ?, 'ignored', NULL, ?, datetime('now'))
+          VALUES (?, ?, ?, 'ignored', NULL, ?, datetime('now'))
         `)
-        .bind(externalEventId, club_id, person.id)
+        .bind(linkId, club_id, externalEventId, person.id)
         .run()
     }
 

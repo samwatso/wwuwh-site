@@ -17,8 +17,8 @@ interface ExternalEvent {
   starts_at_utc: string
   ends_at_utc: string | null
   // From LEFT JOIN with external_event_links
-  decision: 'promoted' | 'ignored' | null
-  linked_event_id: string | null
+  decision: 'promoted' | 'ignored' | 'undecided' | null
+  event_id: string | null
   decided_at: string | null
 }
 
@@ -74,7 +74,7 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
           ee.starts_at_utc,
           ee.ends_at_utc,
           eel.decision,
-          eel.linked_event_id,
+          eel.event_id,
           eel.decided_at
         FROM external_events ee
         LEFT JOIN external_event_links eel

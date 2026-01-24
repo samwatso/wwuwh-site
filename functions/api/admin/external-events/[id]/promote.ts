@@ -75,18 +75,18 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     // Check if already linked for this club
     const existingLink = await db
       .prepare(`
-        SELECT decision, linked_event_id
+        SELECT id, decision, event_id
         FROM external_event_links
         WHERE external_event_id = ? AND club_id = ?
       `)
       .bind(externalEventId, club_id)
-      .first<{ decision: string; linked_event_id: string | null }>()
+      .first<{ id: string; decision: string; event_id: string | null }>()
 
     // If already promoted, return the existing event (idempotent)
-    if (existingLink?.decision === 'promoted' && existingLink.linked_event_id) {
+    if (existingLink?.decision === 'promoted' && existingLink.event_id) {
       const existingEvent = await db
         .prepare('SELECT * FROM events WHERE id = ?')
-        .bind(existingLink.linked_event_id)
+        .bind(existingLink.event_id)
         .first()
 
       return jsonResponse({
@@ -134,29 +134,31 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
 
     // Create or update the link record
     if (existingLink) {
-      // Update existing link (was ignored, now promoting)
+      // Update existing link (was ignored/undecided, now promoting)
       await db
         .prepare(`
           UPDATE external_event_links
           SET decision = 'promoted',
-              linked_event_id = ?,
+              event_id = ?,
               decided_by_person_id = ?,
-              decided_at = datetime('now')
-          WHERE external_event_id = ? AND club_id = ?
+              decided_at = datetime('now'),
+              updated_at = datetime('now')
+          WHERE id = ?
         `)
-        .bind(eventId, person.id, externalEventId, club_id)
+        .bind(eventId, person.id, existingLink.id)
         .run()
     } else {
       // Create new link
+      const linkId = crypto.randomUUID()
       await db
         .prepare(`
           INSERT INTO external_event_links (
-            external_event_id, club_id, decision, linked_event_id,
+            id, club_id, external_event_id, decision, event_id,
             decided_by_person_id, decided_at
           )
-          VALUES (?, ?, 'promoted', ?, ?, datetime('now'))
+          VALUES (?, ?, ?, 'promoted', ?, ?, datetime('now'))
         `)
-        .bind(externalEventId, club_id, eventId, person.id)
+        .bind(linkId, club_id, externalEventId, eventId, person.id)
         .run()
     }
 
