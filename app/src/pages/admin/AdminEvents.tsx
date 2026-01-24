@@ -696,7 +696,17 @@ function EventModal({
     sourceEvent?.payment_mode || savedDraft?.paymentMode || 'included'
   )
   const [feeCents, setFeeCents] = useState(sourceEvent?.fee_cents || savedDraft?.feeCents || 0)
-  const [visibilityDays, setVisibilityDays] = useState(savedDraft?.visibilityDays || 5)
+  const [visibilityDays, setVisibilityDays] = useState(() => {
+    // For edit/copy, calculate from existing event's visible_from
+    if (sourceEvent?.visible_from && sourceEvent?.starts_at_utc) {
+      const start = new Date(sourceEvent.starts_at_utc).getTime()
+      const visible = new Date(sourceEvent.visible_from).getTime()
+      const days = Math.round((start - visible) / (24 * 60 * 60 * 1000))
+      return days > 0 ? days : 5
+    }
+    if (savedDraft?.visibilityDays) return savedDraft.visibilityDays
+    return 5
+  })
 
   // Collapsible options section (collapsed by default on create)
   const [optionsExpanded, setOptionsExpanded] = useState(isEdit || isCopy)
