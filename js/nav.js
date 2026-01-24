@@ -260,3 +260,12 @@
   window.addEventListener("scroll", update, { passive: true });
   window.addEventListener("resize", update);
 })();
+
+// Update copyright year dynamically
+(() => {
+  const copyright = document.querySelector(".footer-copyright");
+  if (!copyright) return;
+
+  const currentYear = new Date().getFullYear();
+  copyright.textContent = copyright.textContent.replace(/© \d{4}/, `© ${currentYear}`);
+})();
