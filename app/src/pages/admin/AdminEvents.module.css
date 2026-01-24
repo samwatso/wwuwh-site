@@ -4,6 +4,7 @@
   max-width: 900px;
   margin: 0 auto;
   padding-bottom: var(--space-xl);
+  overflow-x: hidden;
 }
 
 /* Header */
@@ -408,6 +409,7 @@
   max-width: 550px;
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
   background: var(--color-white);
   border-radius: var(--radius-card);
   animation: fadeIn 0.2s ease;
@@ -807,10 +809,12 @@
 
   .eventActions {
     justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .formRow {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
   }
 
   .actions {
@@ -820,5 +824,83 @@
   .actions .btnPrimary,
   .actions .btnSecondary {
     width: 100%;
+  }
+
+  /* Modal mobile fixes */
+  .modal {
+    max-width: 100%;
+    margin: 0;
+    border-radius: var(--radius-md);
+  }
+
+  .modalOverlay {
+    padding: var(--space-sm);
+    align-items: flex-start;
+    padding-top: var(--space-lg);
+  }
+
+  .modalBody {
+    padding: var(--space-sm);
+  }
+
+  .modalFooter {
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    padding: var(--space-sm);
+  }
+
+  .modalFooterRight {
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  /* Form input mobile sizing */
+  .formInput {
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* Date/time inputs need constrained width */
+  .formInput[type="date"],
+  .formInput[type="time"] {
+    min-width: 0;
+  }
+
+  .formInput[type="number"] {
+    min-width: 0;
+  }
+
+  .formTextarea {
+    font-size: 16px;
+  }
+
+  /* Weekday picker mobile */
+  .weekdayPicker {
+    justify-content: space-between;
+  }
+
+  .weekdayBtn {
+    width: 40px;
+    padding: var(--space-xs);
+  }
+
+  /* Delete confirm mobile */
+  .deleteConfirm {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 400px) {
+  .formRow {
+    grid-template-columns: 1fr;
+  }
+
+  .weekdayBtn {
+    width: 36px;
+    height: 32px;
+    font-size: var(--text-xs);
   }
 }

@@ -254,7 +254,7 @@ function EventModal({
 
   // Parse existing event data or use defaults
   const defaultStart = new Date()
-  defaultStart.setHours(20, 0, 0, 0)
+  defaultStart.setHours(21, 0, 0, 0)
   defaultStart.setDate(defaultStart.getDate() + 7)
 
   const defaultEnd = new Date(defaultStart)
@@ -296,9 +296,9 @@ function EventModal({
     return defaultStart.toISOString().slice(0, 10)
   })
   const [startTime, setStartTime] = useState(
-    sourceEvent?.starts_at_utc ? formatTime(sourceEvent.starts_at_utc) : savedDraft?.startTime || '20:00'
+    sourceEvent?.starts_at_utc ? formatTime(sourceEvent.starts_at_utc) : savedDraft?.startTime || '21:00'
   )
-  const [duration, setDuration] = useState(savedDraft?.duration || 90)
+  const [duration, setDuration] = useState(savedDraft?.duration || 60)
   const [paymentMode, setPaymentMode] = useState<'included' | 'one_off' | 'free'>(
     sourceEvent?.payment_mode || savedDraft?.paymentMode || 'included'
   )
@@ -386,8 +386,8 @@ function EventModal({
     setLocation('')
     setKind('session')
     setStartDate(defaultStart.toISOString().slice(0, 10))
-    setStartTime('20:00')
-    setDuration(90)
+    setStartTime('21:00')
+    setDuration(60)
     setPaymentMode('included')
     setFeeCents(0)
     setVisibilityDays(5)
