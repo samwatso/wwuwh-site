@@ -68,6 +68,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     }
 
     // Check if user is a member of this club
+    console.log('Checking membership for club_id:', plan.club_id, 'person_id:', person.id)
     const membership = await db
       .prepare(`
         SELECT id FROM club_memberships
@@ -77,8 +78,10 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       .first()
 
     if (!membership) {
+      console.log('No active membership found')
       return errorResponse('You must be a club member to subscribe', 403)
     }
+    console.log('Found membership:', membership)
 
     // Check for existing active subscription
     const existingSub = await db
@@ -108,8 +111,10 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
 
     if (previousSub?.stripe_customer_id) {
       stripeCustomerId = previousSub.stripe_customer_id
+      console.log('Using existing Stripe customer:', stripeCustomerId)
     } else {
       // Create new Stripe customer
+      console.log('Creating Stripe customer for:', person.email)
       const customer = await createCustomer(stripeKey, {
         email: person.email,
         name: person.name,
@@ -119,6 +124,12 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
         },
       })
       stripeCustomerId = customer.id
+      console.log('Created Stripe customer:', stripeCustomerId)
+    }
+
+    // Verify we have a customer ID
+    if (!stripeCustomerId) {
+      return errorResponse('Failed to create or retrieve Stripe customer', 500)
     }
 
     // Build URLs
@@ -127,6 +138,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     const finalCancelUrl = cancel_url || `${origin}/app/subscribe?cancelled=true`
 
     // Create subscription checkout session
+    console.log('Creating checkout session with price_id:', plan.stripe_price_id, 'customer:', stripeCustomerId)
     const session = await createSubscriptionCheckout(stripeKey, {
       customer: stripeCustomerId,
       price_id: plan.stripe_price_id,
@@ -138,12 +150,14 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
         plan_id: plan.id,
       },
     })
+    console.log('Created checkout session:', session.id)
 
     return jsonResponse({
       checkout_url: session.url,
       session_id: session.id,
     })
   } catch (error) {
+    console.error('Subscribe error:', error)
     const message = error instanceof Error ? error.message : 'Failed to create checkout'
     return errorResponse(message, 500)
   }
