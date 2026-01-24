@@ -72,13 +72,18 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '50'), 100)
 
     // Build visibility and invitation filter
-    // Admins see all events, others only see events they're invited to (and that are visible)
+    // This is the member-facing endpoint - always filter by visibility
+    // Admins can use /api/admin/events to see all events including hidden ones
     const now = new Date().toISOString()
 
-    // For non-admins: must be invited (directly or via group) AND event must be visible
+    // All users on member-facing view: event must be visible (visible_from has passed or is null)
+    // Admins bypass the invitation check but still respect visibility
+    const visibilityFilter = `AND (e.visible_from IS NULL OR e.visible_from <= '${now}')`
+
+    // Non-admins: must also be invited (directly or via group)
     const invitationFilter = userIsAdmin
-      ? ''
-      : `AND (e.visible_from IS NULL OR e.visible_from <= '${now}')
+      ? visibilityFilter
+      : `${visibilityFilter}
          AND EXISTS (
            SELECT 1 FROM event_invitations ei
            WHERE ei.event_id = e.id
