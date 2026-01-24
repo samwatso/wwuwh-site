@@ -53,6 +53,15 @@ function formatDate(dateStr: string): string {
   })
 }
 
+// Format name as "FirstName L." (first name + last initial)
+function formatShortName(fullName: string): string {
+  const parts = fullName.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0]
+  const firstName = parts[0]
+  const lastInitial = parts[parts.length - 1][0]?.toUpperCase() || ''
+  return `${firstName} ${lastInitial}.`
+}
+
 // Group assignments by position
 function groupByPosition(assignments: TeamAssignment[]): Map<string, TeamAssignment[]> {
   const groups = new Map<string, TeamAssignment[]>()
@@ -79,7 +88,7 @@ interface PlayerCardProps {
 
 function PlayerCard({ assignment, isAdmin, onEdit }: PlayerCardProps) {
   const position = POSITIONS.find((p) => p.code === assignment.position_code)
-  const isDropout = assignment.cancelled_late
+  const isDropout = !!assignment.cancelled_late
   const isNoShow = assignment.attendance_status === 'absent' && !isDropout
   const isLate = assignment.attendance_status === 'late'
 
@@ -96,7 +105,7 @@ function PlayerCard({ assignment, isAdmin, onEdit }: PlayerCardProps) {
       />
       <div className={styles.playerInfo}>
         <div className={styles.playerName}>
-          {assignment.person_name}
+          {formatShortName(assignment.person_name)}
           {isDropout && <span className={styles.dropoutBadge}>Dropped Out</span>}
           {isNoShow && <span className={styles.noShowBadge}>No Show</span>}
           {isLate && <span className={styles.lateBadge}>Late</span>}
@@ -433,7 +442,7 @@ function AvailablePlayers({ players, isAdmin, onAssign }: AvailablePlayersProps)
               size="xs"
               className={styles.availableAvatar}
             />
-            <span>{p.person_name}</span>
+            <span>{formatShortName(p.person_name)}</span>
             {isAdmin && <span className={styles.assignIcon}>+</span>}
           </div>
         ))}
