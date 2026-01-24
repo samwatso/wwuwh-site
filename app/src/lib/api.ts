@@ -1194,7 +1194,6 @@ export interface ExternalEvent {
   location: string | null
   starts_at_utc: string
   ends_at_utc: string | null
-  fetched_at: string
   // From club's decision
   decision: 'promoted' | 'ignored' | null
   linked_event_id: string | null
