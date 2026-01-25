@@ -1672,9 +1672,16 @@ export async function deleteBankMatch(clubId: string, matchIdOrBankRowId: string
 // Exports
 export type BillingExportType = 'attendance' | 'subscriptions' | 'event_fees' | 'transactions' | 'members_billing'
 
-export function getBillingExportUrl(clubId: string, type: BillingExportType, from?: string, to?: string): string {
+export function getBillingExportUrl(
+  clubId: string,
+  type: BillingExportType,
+  from?: string,
+  to?: string,
+  eventId?: string
+): string {
   const params = new URLSearchParams({ club_id: clubId, type })
   if (from) params.set('from', from)
   if (to) params.set('to', to)
+  if (eventId) params.set('event_id', eventId)
   return `${API_BASE}/admin/billing/export?${params}`
 }

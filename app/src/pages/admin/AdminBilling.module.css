@@ -1065,19 +1065,56 @@
 /* Exports Tab */
 .exportsTab {
   max-width: 600px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.exportSection {
+  background: var(--color-white);
+  border-radius: var(--radius-card);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.exportSectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-navy);
+  margin-bottom: var(--space-xs);
+}
+
+.exportSectionDesc {
+  font-size: var(--text-sm);
+  color: var(--grey-500);
+  margin-bottom: var(--space-md);
 }
 
 .dateRange {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-md);
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-md);
 }
 
 @media (max-width: 480px) {
   .dateRange {
     grid-template-columns: 1fr;
   }
+}
+
+.eventSelector {
+  margin-bottom: var(--space-md);
+}
+
+.loadingSmall {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-sm);
 }
 
 .exportList {

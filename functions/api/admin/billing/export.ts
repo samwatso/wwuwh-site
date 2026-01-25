@@ -45,6 +45,7 @@ export const onRequestGet: PagesFunction<Env> = withAdmin(async (context, admin:
   const exportType = url.searchParams.get('type') as ExportType
   const fromParam = url.searchParams.get('from')
   const toParam = url.searchParams.get('to')
+  const eventId = url.searchParams.get('event_id')
 
   if (!exportType) {
     return errorResponse('type parameter is required', 400)
@@ -66,7 +67,7 @@ export const onRequestGet: PagesFunction<Env> = withAdmin(async (context, admin:
         return await exportSubscriptions(db, clubId)
 
       case 'event_fees':
-        return await exportEventFees(db, clubId, from, to)
+        return await exportEventFees(db, clubId, from, to, eventId)
 
       case 'transactions':
         return await exportTransactions(db, clubId, from, to)
@@ -188,10 +189,42 @@ async function exportEventFees(
   db: D1Database,
   clubId: string,
   from: string,
-  to: string
+  to: string,
+  eventId?: string | null
 ): Promise<Response> {
-  const result = await db
-    .prepare(`
+  // Build query based on whether we're filtering by event_id or date range
+  let query: string
+  let bindings: (string | null)[]
+  let filename: string
+
+  if (eventId) {
+    // Single event export
+    query = `
+      SELECT
+        e.title as event_title,
+        e.starts_at_utc,
+        e.fee_cents,
+        p.name as person_name,
+        p.email,
+        prr.status as payment_status,
+        COALESCE(prr.amount_cents, pr.amount_cents, e.fee_cents) as amount_cents,
+        t.created_at as paid_at,
+        t.source as payment_source
+      FROM events e
+      LEFT JOIN payment_requests pr ON pr.event_id = e.id AND pr.club_id = e.club_id
+      LEFT JOIN payment_request_recipients prr ON prr.payment_request_id = pr.id
+      LEFT JOIN people p ON p.id = prr.person_id
+      LEFT JOIN transactions t ON t.event_id = e.id AND t.person_id = prr.person_id
+        AND t.type = 'charge' AND t.status = 'succeeded'
+      WHERE e.club_id = ?
+        AND e.id = ?
+      ORDER BY p.name ASC
+    `
+    bindings = [clubId, eventId]
+    filename = `event_fees_${eventId}.csv`
+  } else {
+    // Date range export
+    query = `
       SELECT
         e.title as event_title,
         e.starts_at_utc,
@@ -213,8 +246,14 @@ async function exportEventFees(
         AND date(e.starts_at_utc) >= date(?)
         AND date(e.starts_at_utc) <= date(?)
       ORDER BY e.starts_at_utc DESC, p.name ASC
-    `)
-    .bind(clubId, from, to)
+    `
+    bindings = [clubId, from, to]
+    filename = `event_fees_${from}_to_${to}.csv`
+  }
+
+  const result = await db
+    .prepare(query)
+    .bind(...bindings)
     .all<{
       event_title: string
       starts_at_utc: string
@@ -240,7 +279,7 @@ async function exportEventFees(
   ])
 
   const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
-  return csvResponse(csv, `event_fees_${from}_to_${to}.csv`)
+  return csvResponse(csv, filename)
 }
 
 async function exportTransactions(

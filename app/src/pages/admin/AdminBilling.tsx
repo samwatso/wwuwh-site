@@ -1348,6 +1348,72 @@ interface PDFExportData {
   rows: (string | number)[][]
 }
 
+// Helper to format name as "First L"
+function formatNameShort(name: string | null): string {
+  if (!name) return ''
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0]
+  const firstName = parts[0]
+  const lastInitial = parts[parts.length - 1][0]
+  return `${firstName} ${lastInitial}`
+}
+
+// Helper to truncate text
+function truncateText(text: string | null, maxLength: number): string {
+  if (!text) return ''
+  if (text.length <= maxLength) return text
+  return text.substring(0, maxLength) + '...'
+}
+
+// Helper to format date as dd-mm-yyyy
+function formatDatePDF(dateStr: string | null): string {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  if (isNaN(date.getTime())) return dateStr
+  const day = String(date.getDate()).padStart(2, '0')
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const year = date.getFullYear()
+  return `${day}-${month}-${year}`
+}
+
+// Transform transaction data for PDF - remove unnecessary columns and format values
+function transformTransactionsForPDF(
+  headers: string[],
+  rows: string[][]
+): { headers: string[]; rows: string[][] } {
+  // Columns to keep and their order
+  const keepColumns = ['Name', 'Event', 'Source', 'Amount', 'Notes', 'Reference', 'Collected By', 'Date', 'Bank Matched']
+
+  // Find indices of columns to keep
+  const indices = keepColumns.map(col => headers.findIndex(h => h === col))
+
+  // Filter headers
+  const newHeaders = keepColumns.filter((_, i) => indices[i] !== -1)
+  const validIndices = indices.filter(i => i !== -1)
+
+  // Transform rows
+  const newRows = rows.map(row => {
+    return validIndices.map((colIndex, newColIndex) => {
+      const value = row[colIndex] || ''
+      const colName = newHeaders[newColIndex]
+
+      // Apply transformations based on column
+      if (colName === 'Name' || colName === 'Collected By') {
+        return formatNameShort(value)
+      }
+      if (colName === 'Event') {
+        return truncateText(value, 12)
+      }
+      if (colName === 'Date') {
+        return formatDatePDF(value)
+      }
+      return value
+    })
+  })
+
+  return { headers: newHeaders, rows: newRows }
+}
+
 async function generatePDF(
   data: PDFExportData,
   clubName: string,
@@ -1417,19 +1483,20 @@ async function generatePDF(
       fillColor: [30, 43, 96], // Navy
       textColor: 255,
       fontStyle: 'bold',
-      fontSize: 9,
+      fontSize: 7,
     },
     bodyStyles: {
-      fontSize: 8,
+      fontSize: 7,
       textColor: [43, 47, 58],
     },
     alternateRowStyles: {
       fillColor: [245, 247, 251],
     },
     styles: {
-      cellPadding: 3,
+      cellPadding: 2,
       lineColor: [215, 220, 232],
       lineWidth: 0.1,
+      overflow: 'linebreak',
     },
     // Footer with page numbers
     didDrawPage: (pageData) => {
@@ -1452,6 +1519,7 @@ function ExportsTab({ clubId }: { clubId: string }) {
   const { memberships } = useProfile()
   const clubName = memberships[0]?.club_name || 'Club'
 
+  // Date range state
   const [from, setFrom] = useState(() => {
     const d = new Date()
     d.setDate(d.getDate() - 90)
@@ -1460,8 +1528,31 @@ function ExportsTab({ clubId }: { clubId: string }) {
   const [to, setTo] = useState(() => new Date().toISOString().split('T')[0])
   const [exporting, setExporting] = useState<string | null>(null)
 
-  async function fetchExportData(type: BillingExportType): Promise<string> {
-    const url = getBillingExportUrl(clubId, type, from, to)
+  // Event selection state for event fees
+  const [events, setEvents] = useState<AdminEvent[]>([])
+  const [loadingEvents, setLoadingEvents] = useState(true)
+  const [selectedEventId, setSelectedEventId] = useState<string>('')
+
+  // Load events with one-off fees
+  useEffect(() => {
+    loadEvents()
+  }, [clubId])
+
+  async function loadEvents() {
+    setLoadingEvents(true)
+    try {
+      const result = await getAdminEvents({ club_id: clubId, limit: 100 })
+      // Filter to events with one-off payment mode (or just show recent events)
+      setEvents(result.events)
+    } catch (err) {
+      console.error('Failed to load events:', err)
+    } finally {
+      setLoadingEvents(false)
+    }
+  }
+
+  async function fetchExportData(type: BillingExportType, eventId?: string): Promise<string> {
+    const url = getBillingExportUrl(clubId, type, from, to, eventId)
 
     const { supabase } = await import('@/lib/supabase')
     const { data: { session } } = await supabase.auth.getSession()
@@ -1528,7 +1619,7 @@ function ExportsTab({ clubId }: { clubId: string }) {
         URL.revokeObjectURL(downloadUrl)
       } else {
         // Generate PDF
-        const { headers, rows } = parseCSV(csvText)
+        let { headers, rows } = parseCSV(csvText)
 
         const titleMap: Record<BillingExportType, string> = {
           attendance: 'Attendance Report',
@@ -1536,6 +1627,13 @@ function ExportsTab({ clubId }: { clubId: string }) {
           event_fees: 'Event Fees Report',
           transactions: 'Transactions Report',
           members_billing: 'Members Billing Report',
+        }
+
+        // Transform data for specific export types
+        if (type === 'transactions') {
+          const transformed = transformTransactionsForPDF(headers, rows)
+          headers = transformed.headers
+          rows = transformed.rows
         }
 
         const doc = await generatePDF(
@@ -1554,65 +1652,166 @@ function ExportsTab({ clubId }: { clubId: string }) {
     }
   }
 
+  async function handleEventFeesExport(format: 'csv' | 'pdf') {
+    if (!selectedEventId) {
+      alert('Please select an event to export')
+      return
+    }
+
+    setExporting(`event_fees-${format}`)
+    try {
+      const csvText = await fetchExportData('event_fees', selectedEventId)
+      const selectedEvent = events.find(e => e.id === selectedEventId)
+      const eventName = selectedEvent?.title.replace(/\s+/g, '_') || selectedEventId
+
+      if (format === 'csv') {
+        const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8' })
+        const downloadUrl = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = downloadUrl
+        link.download = `event_fees_${eventName}.csv`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(downloadUrl)
+      } else {
+        const { headers, rows } = parseCSV(csvText)
+        const eventDate = selectedEvent?.starts_at_utc?.split('T')[0] || ''
+
+        const doc = await generatePDF(
+          { title: `Event Fees: ${selectedEvent?.title || 'Event'}`, headers, rows },
+          clubName,
+          { from: eventDate, to: eventDate }
+        )
+
+        doc.save(`event_fees_${eventName}.pdf`)
+      }
+    } catch (err) {
+      console.error('Export failed:', err)
+      alert(err instanceof Error ? err.message : 'Export failed')
+    } finally {
+      setExporting(null)
+    }
+  }
+
+  const isExportingEventCSV = exporting === 'event_fees-csv'
+  const isExportingEventPDF = exporting === 'event_fees-pdf'
+
   return (
     <div className={styles.exportsTab}>
-      <div className={styles.dateRange}>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>From</label>
-          <input
-            type="date"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            className={styles.formInput}
-          />
+      {/* Date Range Reports Section */}
+      <div className={styles.exportSection}>
+        <h3 className={styles.exportSectionTitle}>Date Range Reports</h3>
+        <p className={styles.exportSectionDesc}>Export data for a specific date range</p>
+
+        <div className={styles.dateRange}>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>From</label>
+            <input
+              type="date"
+              value={from}
+              onChange={(e) => setFrom(e.target.value)}
+              className={styles.formInput}
+            />
+          </div>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>To</label>
+            <input
+              type="date"
+              value={to}
+              onChange={(e) => setTo(e.target.value)}
+              className={styles.formInput}
+            />
+          </div>
         </div>
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>To</label>
-          <input
-            type="date"
-            value={to}
-            onChange={(e) => setTo(e.target.value)}
-            className={styles.formInput}
+
+        <div className={styles.exportList}>
+          <ExportItem
+            title="Attendance"
+            description="RSVP and attendance records for events"
+            type="attendance"
+            exporting={exporting}
+            onExport={handleExport}
+          />
+          <ExportItem
+            title="Subscriptions"
+            description="Active subscriptions with Confirmed/Assumed status"
+            type="subscriptions"
+            exporting={exporting}
+            onExport={handleExport}
+          />
+          <ExportItem
+            title="Transactions"
+            description="All payments including cash, Stripe, bank transfers"
+            type="transactions"
+            exporting={exporting}
+            onExport={handleExport}
+          />
+          <ExportItem
+            title="Members Billing"
+            description="Member billing status and weekly usage"
+            type="members_billing"
+            exporting={exporting}
+            onExport={handleExport}
           />
         </div>
       </div>
 
-      <div className={styles.exportList}>
-        <ExportItem
-          title="Attendance"
-          description="RSVP and attendance records for events"
-          type="attendance"
-          exporting={exporting}
-          onExport={handleExport}
-        />
-        <ExportItem
-          title="Subscriptions"
-          description="Active subscriptions with Confirmed/Assumed status"
-          type="subscriptions"
-          exporting={exporting}
-          onExport={handleExport}
-        />
-        <ExportItem
-          title="Event Fees"
-          description="One-off event fees and payment status"
-          type="event_fees"
-          exporting={exporting}
-          onExport={handleExport}
-        />
-        <ExportItem
-          title="Transactions"
-          description="All payments including cash, Stripe, bank transfers"
-          type="transactions"
-          exporting={exporting}
-          onExport={handleExport}
-        />
-        <ExportItem
-          title="Members Billing"
-          description="Member billing status and weekly usage"
-          type="members_billing"
-          exporting={exporting}
-          onExport={handleExport}
-        />
+      {/* Event-Specific Reports Section */}
+      <div className={styles.exportSection}>
+        <h3 className={styles.exportSectionTitle}>Event Reports</h3>
+        <p className={styles.exportSectionDesc}>Export payment details for a specific event</p>
+
+        <div className={styles.eventSelector}>
+          <div className={styles.formGroup}>
+            <label className={styles.formLabel}>Select Event</label>
+            {loadingEvents ? (
+              <div className={styles.loadingSmall}><Spinner /></div>
+            ) : (
+              <select
+                value={selectedEventId}
+                onChange={(e) => setSelectedEventId(e.target.value)}
+                className={styles.formSelect}
+              >
+                <option value="">Choose an event...</option>
+                {events.map(event => (
+                  <option key={event.id} value={event.id}>
+                    {event.title} ({formatDate(event.starts_at_utc)})
+                  </option>
+                ))}
+              </select>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.exportList}>
+          <div className={styles.exportItem}>
+            <div className={styles.exportInfo}>
+              <div className={styles.exportTitle}>Event Fees</div>
+              <div className={styles.exportDesc}>
+                {selectedEventId
+                  ? `Payment status for ${events.find(e => e.id === selectedEventId)?.title || 'selected event'}`
+                  : 'Select an event above to export its payment details'}
+              </div>
+            </div>
+            <div className={styles.exportButtons}>
+              <button
+                className={styles.btnSecondary}
+                onClick={() => handleEventFeesExport('csv')}
+                disabled={!selectedEventId || !!exporting}
+              >
+                {isExportingEventCSV ? 'Exporting...' : 'CSV'}
+              </button>
+              <button
+                className={styles.btnPrimary}
+                onClick={() => handleEventFeesExport('pdf')}
+                disabled={!selectedEventId || !!exporting}
+              >
+                {isExportingEventPDF ? 'Exporting...' : 'PDF'}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
