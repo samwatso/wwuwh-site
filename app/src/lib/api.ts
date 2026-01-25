@@ -5,7 +5,13 @@
 import { supabase } from './supabase'
 import type { Person, Club, ClubMembership, ClubMemberRole, EventWithRsvp, EventRsvp, RsvpResponse as RsvpResponseType } from '@/types/database'
 
-const API_BASE = '/api'
+// Use full URL for Capacitor (iOS), relative for web
+const isCapacitor = typeof window !== 'undefined' &&
+  (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
+
+const API_BASE = isCapacitor
+  ? 'https://wwuwh.com/api'  // Production API for iOS app
+  : '/api'                    // Relative path for web
 
 interface ApiResponse<T> {
   ok: boolean

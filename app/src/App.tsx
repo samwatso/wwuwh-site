@@ -1,4 +1,10 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, HashRouter, Routes, Route, Navigate } from 'react-router-dom'
+
+// Use HashRouter for Capacitor (iOS), BrowserRouter for web
+const isCapacitor = typeof window !== 'undefined' &&
+  (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
+
+const Router = isCapacitor ? HashRouter : BrowserRouter
 import { Login, Signup, Dashboard, ForgotPassword } from '@/pages'
 import { AuthGuard, GuestGuard, AdminGuard, AuthLayout } from '@/components'
 
@@ -21,7 +27,7 @@ import {
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <Router>
       <Routes>
         {/* Auth routes - only accessible when NOT logged in */}
         <Route element={<GuestGuard />}>
@@ -136,7 +142,10 @@ export default function App() {
 
         {/* Fallback - redirect unknown /app/* routes to dashboard */}
         <Route path="/app/*" element={<Navigate to="/app" replace />} />
+
+        {/* Root redirect for Capacitor (iOS app loads at /) */}
+        <Route path="/" element={<Navigate to="/app" replace />} />
       </Routes>
-    </BrowserRouter>
+    </Router>
   )
 }

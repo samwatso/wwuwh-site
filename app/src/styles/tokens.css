@@ -8,7 +8,7 @@
    ---------------------------------------- */
 @font-face {
   font-family: "Azonix";
-  src: url("/app/assets/fonts/Azonix.otf") format("opentype");
+  src: url("./fonts/Azonix.otf") format("opentype");
   font-weight: normal;
   font-style: normal;
   font-display: swap;
@@ -16,7 +16,7 @@
 
 @font-face {
   font-family: "Nexa Light";
-  src: url("/app/assets/fonts/Nexa Light.otf") format("opentype");
+  src: url("./fonts/Nexa Light.otf") format("opentype");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
