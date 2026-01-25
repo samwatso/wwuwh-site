@@ -209,10 +209,10 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     // Auto-RSVP as 'yes'
     await db
       .prepare(`
-        INSERT INTO event_rsvps (event_id, person_id, response, responded_at, updated_at)
-        VALUES (?, ?, 'yes', datetime('now'), datetime('now'))
+        INSERT INTO event_rsvps (event_id, person_id, response, responded_at)
+        VALUES (?, ?, 'yes', datetime('now'))
         ON CONFLICT (event_id, person_id)
-        DO UPDATE SET response = 'yes', updated_at = datetime('now')
+        DO UPDATE SET response = 'yes', responded_at = datetime('now')
       `)
       .bind(eventId, person.id)
       .run()
