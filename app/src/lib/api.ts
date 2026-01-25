@@ -1347,3 +1347,334 @@ export async function undoExternalEventDecision(
     body: { club_id: clubId },
   })
 }
+
+// ============================================
+// Admin - Billing
+// ============================================
+
+// Billing Overview
+export interface BillingOverviewTotals {
+  total_collected_cents: number
+  stripe_collected_cents: number
+  manual_collected_cents: number
+  refunds_cents: number
+}
+
+export interface BillingPlanBreakdown {
+  plan_id: string
+  plan_name: string
+  count: number
+  manual_count: number
+}
+
+export interface BillingDailyTotal {
+  date: string
+  total_cents: number
+  stripe_cents: number
+  manual_cents: number
+}
+
+export interface BillingOverviewResponse {
+  totals: {
+    last_30_days: BillingOverviewTotals
+    month_to_date: BillingOverviewTotals
+  }
+  subscriptions: {
+    active_count: number
+    manual_count: number
+    by_plan: BillingPlanBreakdown[]
+  }
+  chart_data: BillingDailyTotal[]
+  outstanding_one_off_cents: number
+}
+
+export async function getBillingOverview(clubId: string): Promise<BillingOverviewResponse> {
+  return api<BillingOverviewResponse>(`/admin/billing/overview?club_id=${clubId}`)
+}
+
+// Billing Members
+export interface BillingMemberSubscription {
+  id: string
+  plan_id: string
+  plan_name: string
+  cadence: string
+  weekly_sessions_allowed: number
+  status: string
+  is_manual: boolean
+  stripe_subscription_id: string | null
+  start_at: string
+  end_at: string | null
+}
+
+export interface BillingMember {
+  person_id: string
+  membership_id: string
+  name: string
+  email: string
+  subscription: BillingMemberSubscription | null
+  usage_this_week: {
+    attended_count: number
+    allowed: number
+  }
+  payment_health: {
+    past_due: boolean
+    assumed_paid: boolean
+    confirmed_paid: boolean
+  }
+}
+
+export interface BillingMembersResponse {
+  members: BillingMember[]
+  week_start: string
+  week_end: string
+}
+
+export async function getBillingMembers(clubId: string, weekStart?: string): Promise<BillingMembersResponse> {
+  const params = new URLSearchParams({ club_id: clubId })
+  if (weekStart) params.set('week_start', weekStart)
+  return api<BillingMembersResponse>(`/admin/billing/members?${params}`)
+}
+
+// Event Fees
+export interface EventFeePayer {
+  person_id: string
+  name: string
+  email: string
+  status: 'paid' | 'due' | 'waived'
+  amount_cents: number
+  paid_at: string | null
+}
+
+export interface EventFeeInfo {
+  event_id: string
+  title: string
+  starts_at_utc: string
+  location: string | null
+  payment_mode: string
+  fee_cents: number | null
+  currency: string
+  payment_request_id: string | null
+  totals: {
+    expected_count: number
+    paid_count: number
+    unpaid_count: number
+    waived_count: number
+    total_expected_cents: number
+    total_collected_cents: number
+  }
+  payers?: EventFeePayer[]
+}
+
+export interface EventFeesResponse {
+  events: EventFeeInfo[]
+  from: string
+  to: string
+}
+
+export async function getBillingEventFees(
+  clubId: string,
+  from?: string,
+  to?: string,
+  includePayers?: boolean
+): Promise<EventFeesResponse> {
+  const params = new URLSearchParams({ club_id: clubId })
+  if (from) params.set('from', from)
+  if (to) params.set('to', to)
+  if (includePayers) params.set('include_payers', 'true')
+  return api<EventFeesResponse>(`/admin/billing/event-fees?${params}`)
+}
+
+// Transactions
+export interface BillingTransaction {
+  id: string
+  person_id: string | null
+  person_name: string | null
+  person_email: string | null
+  event_id: string | null
+  event_title: string | null
+  source: string
+  type: string
+  amount_cents: number
+  currency: string
+  status: string
+  notes: string | null
+  reference: string | null
+  collected_by_name: string | null
+  created_at: string
+  effective_at: string | null
+  is_matched: boolean
+}
+
+export interface BillingTransactionsResponse {
+  transactions: BillingTransaction[]
+  from: string
+  to: string
+  total_count: number
+}
+
+export async function getBillingTransactions(
+  clubId: string,
+  options?: { from?: string; to?: string; method?: string; type?: string; limit?: number; offset?: number }
+): Promise<BillingTransactionsResponse> {
+  const params = new URLSearchParams({ club_id: clubId })
+  if (options?.from) params.set('from', options.from)
+  if (options?.to) params.set('to', options.to)
+  if (options?.method) params.set('method', options.method)
+  if (options?.type) params.set('type', options.type)
+  if (options?.limit) params.set('limit', String(options.limit))
+  if (options?.offset) params.set('offset', String(options.offset))
+  return api<BillingTransactionsResponse>(`/admin/billing/transactions?${params}`)
+}
+
+// Manual Payment
+export interface ManualPaymentRequest {
+  club_id: string
+  person_id: string
+  event_id?: string | null
+  amount_cents: number
+  currency?: string
+  method: 'cash' | 'bank_transfer' | 'comp'
+  occurred_at?: string
+  notes?: string
+  reference?: string
+}
+
+export interface ManualPaymentResponse {
+  transaction_id: string
+  message: string
+}
+
+export async function recordManualPayment(request: ManualPaymentRequest): Promise<ManualPaymentResponse> {
+  return api<ManualPaymentResponse>('/admin/billing/manual-payment', {
+    method: 'POST',
+    body: request,
+  })
+}
+
+// Bank Import
+export interface BarclaysCSVRow {
+  Number: string
+  Date: string
+  Account: string
+  Amount: string
+  Subcategory: string
+  Memo: string
+}
+
+export interface BankImportRequest {
+  club_id: string
+  filename: string
+  account?: string
+  rows: BarclaysCSVRow[]
+}
+
+export interface BankImportResponse {
+  import_id: string
+  inserted: number
+  skipped_duplicates: number
+  total_rows: number
+}
+
+export async function importBankStatement(request: BankImportRequest): Promise<BankImportResponse> {
+  return api<BankImportResponse>('/admin/billing/bank-import', {
+    method: 'POST',
+    body: request,
+  })
+}
+
+// Bank Rows
+export interface MatchSuggestion {
+  transaction_id: string
+  person_id: string
+  person_name: string
+  person_email: string
+  amount_cents: number
+  source: string
+  created_at: string
+  confidence: number
+  reason: string
+}
+
+export interface BankRow {
+  id: string
+  import_id: string
+  txn_number: string | null
+  txn_date: string
+  account: string | null
+  amount_cents: number
+  subcategory: string | null
+  memo: string | null
+  direction: 'in' | 'out'
+  created_at: string
+  match: {
+    id: string
+    transaction_id: string
+    match_type: 'auto' | 'manual'
+    confidence: number | null
+    person_name: string | null
+  } | null
+  suggestions: MatchSuggestion[]
+}
+
+export interface BankRowsResponse {
+  rows: BankRow[]
+  total_count: number
+  unmatched_in_count: number
+  unmatched_out_count: number
+}
+
+export async function getBankRows(
+  clubId: string,
+  options?: { import_id?: string; matched?: '0' | '1'; direction?: 'in' | 'out'; limit?: number; offset?: number }
+): Promise<BankRowsResponse> {
+  const params = new URLSearchParams({ club_id: clubId })
+  if (options?.import_id) params.set('import_id', options.import_id)
+  if (options?.matched) params.set('matched', options.matched)
+  if (options?.direction) params.set('direction', options.direction)
+  if (options?.limit) params.set('limit', String(options.limit))
+  if (options?.offset) params.set('offset', String(options.offset))
+  return api<BankRowsResponse>(`/admin/billing/bank-rows?${params}`)
+}
+
+// Bank Match
+export interface BankMatchRequest {
+  club_id: string
+  bank_row_id: string
+  transaction_id: string
+  match_type?: 'auto' | 'manual'
+}
+
+export interface BankMatchResponse {
+  match_id: string
+  message: string
+}
+
+export async function createBankMatch(request: BankMatchRequest): Promise<BankMatchResponse> {
+  return api<BankMatchResponse>('/admin/billing/bank-match', {
+    method: 'POST',
+    body: request,
+  })
+}
+
+export async function deleteBankMatch(clubId: string, matchIdOrBankRowId: string, isBankRowId = false): Promise<{ success: boolean }> {
+  const body: { club_id: string; match_id?: string; bank_row_id?: string } = { club_id: clubId }
+  if (isBankRowId) {
+    body.bank_row_id = matchIdOrBankRowId
+  } else {
+    body.match_id = matchIdOrBankRowId
+  }
+  return api<{ success: boolean }>('/admin/billing/bank-match', {
+    method: 'DELETE',
+    body,
+  })
+}
+
+// Exports
+export type BillingExportType = 'attendance' | 'subscriptions' | 'event_fees' | 'transactions' | 'members_billing'
+
+export function getBillingExportUrl(clubId: string, type: BillingExportType, from?: string, to?: string): string {
+  const params = new URLSearchParams({ club_id: clubId, type })
+  if (from) params.set('from', from)
+  if (to) params.set('to', to)
+  return `${API_BASE}/admin/billing/export?${params}`
+}
