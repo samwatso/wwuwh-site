@@ -464,10 +464,10 @@ export function Profile() {
         )}
       </div>
 
-      {/* Awards Card */}
+      {/* Badges Card */}
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Awards</h2>
+          <h2 className={styles.cardTitle}>Badges</h2>
           {currentStreak > 0 && (
             <span className={styles.streakBadge}>
               🔥 {currentStreak} streak
@@ -499,13 +499,13 @@ export function Profile() {
           </div>
         ) : (
           <div className={styles.placeholder}>
-            <p>No awards yet. Keep attending sessions!</p>
+            <p>No badges yet. Keep attending sessions!</p>
           </div>
         )}
 
         {lockedAwards.length > 0 && (
           <div className={styles.lockedAwardsSection}>
-            <p className={styles.lockedAwardsTitle}>Locked Awards</p>
+            <p className={styles.lockedAwardsTitle}>Locked Badges</p>
             <div className={styles.lockedAwardsList}>
               {lockedAwards.map((award) => (
                 <div key={award.id} className={styles.lockedAwardItem}>

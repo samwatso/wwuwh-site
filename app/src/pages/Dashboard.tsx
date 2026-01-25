@@ -239,7 +239,7 @@ function AwardsCard({ awardsCount, currentStreak, loading }: AwardsCardProps) {
           <>
             <span className={styles.statValue}>{awardsCount}</span>
             <span className={styles.statLabel}>
-              {awardsCount === 1 ? 'Award' : 'Awards'}
+              {awardsCount === 1 ? 'Badge' : 'Badges'}
               {currentStreak > 0 && ` · ${currentStreak} streak`}
             </span>
           </>
