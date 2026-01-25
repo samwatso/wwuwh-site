@@ -282,6 +282,12 @@ async function exportEventFees(
   return csvResponse(csv, filename)
 }
 
+function truncateEvent(title: string | null, maxLength: number): string {
+  if (!title) return ''
+  if (title.length <= maxLength) return title
+  return title.substring(0, maxLength) + '...'
+}
+
 async function exportTransactions(
   db: D1Database,
   clubId: string,
@@ -293,69 +299,81 @@ async function exportTransactions(
       SELECT
         t.id,
         p.name as person_name,
-        p.email,
         e.title as event_title,
         t.source,
         t.type,
         t.amount_cents,
-        t.currency,
         t.status,
         t.notes,
         t.reference,
-        collector.name as collected_by,
         t.created_at,
         t.effective_at,
         CASE WHEN tm.id IS NOT NULL THEN 'Yes' ELSE 'No' END as bank_matched
       FROM transactions t
       LEFT JOIN people p ON p.id = t.person_id
       LEFT JOIN events e ON e.id = t.event_id
-      LEFT JOIN people collector ON collector.id = t.collected_by_person_id
       LEFT JOIN transaction_matches tm ON tm.transaction_id = t.id
       WHERE t.club_id = ?
         AND date(COALESCE(t.effective_at, t.created_at)) >= date(?)
         AND date(COALESCE(t.effective_at, t.created_at)) <= date(?)
-      ORDER BY COALESCE(t.effective_at, t.created_at) DESC
+      ORDER BY COALESCE(t.effective_at, t.created_at) ASC
     `)
     .bind(clubId, from, to)
     .all<{
       id: string
       person_name: string | null
-      email: string | null
       event_title: string | null
       source: string
       type: string
       amount_cents: number
-      currency: string
       status: string
       notes: string | null
       reference: string | null
-      collected_by: string | null
       created_at: string
       effective_at: string | null
       bank_matched: string
     }>()
 
+  // Calculate total
+  let totalCents = 0
+  result.results.forEach(r => {
+    totalCents += r.amount_cents
+  })
+
+  // Column order: Event, Name, Amount (GBP), Source, Type, Status, Notes, Reference, Bank Matched, Date, Transaction ID
   const headers = [
-    'Transaction ID', 'Name', 'Email', 'Event', 'Source', 'Type',
-    'Amount', 'Currency', 'Status', 'Notes', 'Reference',
-    'Collected By', 'Date', 'Bank Matched'
+    'Event', 'Name', 'Amount (GBP)', 'Source', 'Type', 'Status',
+    'Notes', 'Reference', 'Bank Matched', 'Date', 'Transaction ID'
   ]
   const rows = result.results.map(r => [
-    r.id,
+    escapeCSV(truncateEvent(r.event_title, 25)),
     escapeCSV(r.person_name),
-    escapeCSV(r.email),
-    escapeCSV(r.event_title),
+    formatCurrency(r.amount_cents),
     r.source,
     r.type,
-    formatCurrency(r.amount_cents),
-    r.currency,
     r.status,
     escapeCSV(r.notes),
     escapeCSV(r.reference),
-    escapeCSV(r.collected_by),
-    formatDate(r.effective_at || r.created_at),
     r.bank_matched,
+    formatDate(r.effective_at || r.created_at),
+    r.id,
   ])
+
+  // Add total row
+  const totalRow = [
+    'TOTAL',
+    '',
+    formatCurrency(totalCents),
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+  ]
+  rows.push(totalRow)
 
   const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
   return csvResponse(csv, `transactions_${from}_to_${to}.csv`)

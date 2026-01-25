@@ -1348,23 +1348,6 @@ interface PDFExportData {
   rows: (string | number)[][]
 }
 
-// Helper to format name as "First L"
-function formatNameShort(name: string | null): string {
-  if (!name) return ''
-  const parts = name.trim().split(/\s+/)
-  if (parts.length === 1) return parts[0]
-  const firstName = parts[0]
-  const lastInitial = parts[parts.length - 1][0]
-  return `${firstName} ${lastInitial}`
-}
-
-// Helper to truncate text
-function truncateText(text: string | null, maxLength: number): string {
-  if (!text) return ''
-  if (text.length <= maxLength) return text
-  return text.substring(0, maxLength) + '...'
-}
-
 // Helper to format date as dd-mm-yyyy
 function formatDatePDF(dateStr: string | null): string {
   if (!dateStr) return ''
@@ -1376,13 +1359,36 @@ function formatDatePDF(dateStr: string | null): string {
   return `${day}-${month}-${year}`
 }
 
-// Transform transaction data for PDF - remove unnecessary columns and format values
+// Transform transaction data for PDF - format values for display
+// CSV already has correct column order and total row
 function transformTransactionsForPDF(
   headers: string[],
   rows: string[][]
 ): { headers: string[]; rows: string[][] } {
-  // Columns to keep in desired order: Date, Event, Name, Amount, Source, Notes, Reference, Bank Matched
-  const keepColumns = ['Date', 'Event', 'Name', 'Amount', 'Source', 'Notes', 'Reference', 'Bank Matched']
+  // Find the Date column index
+  const dateColIndex = headers.findIndex(h => h === 'Date')
+
+  // Transform rows - just format dates to dd-mm-yyyy
+  const newRows = rows.map(row => {
+    return row.map((value, colIndex) => {
+      // Format date column
+      if (colIndex === dateColIndex && value && value !== '') {
+        return formatDatePDF(value)
+      }
+      return value
+    })
+  })
+
+  return { headers, rows: newRows }
+}
+
+// Transform event fees data for PDF
+function transformEventFeesForPDF(
+  headers: string[],
+  rows: string[][]
+): { headers: string[]; rows: string[][] } {
+  // Columns to keep in desired order: Name, Amount (GBP), Status, Paid Date, Payment Method
+  const keepColumns = ['Name', 'Amount (GBP)', 'Status', 'Paid Date', 'Payment Method']
 
   // Find indices of columns to keep
   const indices = keepColumns.map(col => headers.findIndex(h => h === col))
@@ -1393,7 +1399,7 @@ function transformTransactionsForPDF(
 
   // Track total amount
   let totalAmount = 0
-  const amountColIndex = newHeaders.indexOf('Amount')
+  const amountColIndex = newHeaders.indexOf('Amount (GBP)')
 
   // Transform rows
   const newRows = rows.map(row => {
@@ -1401,22 +1407,15 @@ function transformTransactionsForPDF(
       const value = row[colIndex] || ''
       const colName = newHeaders[newColIndex]
 
-      // Apply transformations based on column
-      if (colName === 'Name') {
-        return formatNameShort(value)
-      }
-      if (colName === 'Event') {
-        return truncateText(value, 12)
-      }
-      if (colName === 'Date') {
-        return formatDatePDF(value)
-      }
-      if (colName === 'Amount') {
-        // Parse amount and add to total (format is like "12.50")
+      if (colName === 'Amount (GBP)') {
+        // Parse amount and add to total
         const numericValue = parseFloat(value.replace(/[^0-9.-]/g, ''))
         if (!isNaN(numericValue)) {
           totalAmount += numericValue
         }
+      }
+      if (colName === 'Paid Date') {
+        return formatDatePDF(value)
       }
       return value
     })
@@ -1426,7 +1425,7 @@ function transformTransactionsForPDF(
   if (newRows.length > 0 && amountColIndex !== -1) {
     const totalRow = newHeaders.map((col, idx) => {
       if (idx === 0) return 'TOTAL'
-      if (col === 'Amount') return totalAmount.toFixed(2)
+      if (col === 'Amount (GBP)') return totalAmount.toFixed(2)
       return ''
     })
     newRows.push(totalRow)
@@ -1435,18 +1434,26 @@ function transformTransactionsForPDF(
   return { headers: newHeaders, rows: newRows }
 }
 
+interface PDFOptions {
+  orientation?: 'portrait' | 'landscape'
+  subtitle?: string
+}
+
 async function generatePDF(
   data: PDFExportData,
   clubName: string,
-  dateRange: { from: string; to: string }
+  dateRange: { from: string; to: string },
+  options: PDFOptions = {}
 ) {
   const jsPDFModule = await import('jspdf')
   const jsPDF = jsPDFModule.default
   const autoTable = (await import('jspdf-autotable')).default
 
-  // Create landscape PDF
+  const orientation = options.orientation || 'landscape'
+
+  // Create PDF with specified orientation
   const doc = new jsPDF({
-    orientation: 'landscape',
+    orientation,
     unit: 'mm',
     format: 'a4',
   })
@@ -1485,20 +1492,33 @@ async function generatePDF(
   doc.setTextColor(107, 114, 128) // Grey
   doc.text(data.title, headerX, 25)
 
-  // Date range (right side)
+  // Subtitle if provided (for event name)
+  if (options.subtitle) {
+    doc.setFontSize(10)
+    doc.text(options.subtitle, headerX, 31)
+  }
+
+  // Date/event info (right side)
   doc.setFontSize(10)
-  doc.text(`${formatDate(dateRange.from)} - ${formatDate(dateRange.to)}`, pageWidth - 15, 18, { align: 'right' })
+  if (dateRange.from === dateRange.to) {
+    // Single date (for event exports)
+    doc.text(formatDate(dateRange.from), pageWidth - 15, 18, { align: 'right' })
+  } else {
+    doc.text(`${formatDate(dateRange.from)} - ${formatDate(dateRange.to)}`, pageWidth - 15, 18, { align: 'right' })
+  }
   doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}`, pageWidth - 15, 24, { align: 'right' })
 
-  // Divider line
+  // Divider line - position depends on whether subtitle exists
+  const dividerY = options.subtitle ? 36 : 30
+  const tableStartY = options.subtitle ? 41 : 35
   doc.setDrawColor(215, 220, 232)
-  doc.line(15, 30, pageWidth - 15, 30)
+  doc.line(15, dividerY, pageWidth - 15, dividerY)
 
   // Table
   autoTable(doc, {
     head: [data.headers],
     body: data.rows.map(row => row.map(cell => String(cell))),
-    startY: 35,
+    startY: tableStartY,
     margin: { left: 15, right: 15 },
     headStyles: {
       fillColor: [30, 43, 96], // Navy
@@ -1696,13 +1716,22 @@ function ExportsTab({ clubId }: { clubId: string }) {
         document.body.removeChild(link)
         URL.revokeObjectURL(downloadUrl)
       } else {
-        const { headers, rows } = parseCSV(csvText)
+        let { headers, rows } = parseCSV(csvText)
         const eventDate = selectedEvent?.starts_at_utc?.split('T')[0] || ''
 
+        // Transform to keep only relevant columns with total
+        const transformed = transformEventFeesForPDF(headers, rows)
+        headers = transformed.headers
+        rows = transformed.rows
+
         const doc = await generatePDF(
-          { title: `Event Fees: ${selectedEvent?.title || 'Event'}`, headers, rows },
+          { title: 'Event Fees', headers, rows },
           clubName,
-          { from: eventDate, to: eventDate }
+          { from: eventDate, to: eventDate },
+          {
+            orientation: 'portrait',
+            subtitle: selectedEvent?.title || 'Event',
+          }
         )
 
         doc.save(`event_fees_${eventName}.pdf`)
