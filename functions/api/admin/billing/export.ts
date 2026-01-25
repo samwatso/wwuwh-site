@@ -314,6 +314,7 @@ async function exportTransactions(
       LEFT JOIN events e ON e.id = t.event_id
       LEFT JOIN transaction_matches tm ON tm.transaction_id = t.id
       WHERE t.club_id = ?
+        AND t.status = 'succeeded'
         AND date(COALESCE(t.effective_at, t.created_at)) >= date(?)
         AND date(COALESCE(t.effective_at, t.created_at)) <= date(?)
       ORDER BY COALESCE(t.effective_at, t.created_at) ASC

@@ -81,6 +81,7 @@ export const onRequestGet: PagesFunction<Env> = withAdmin(async (context, admin:
       LEFT JOIN people collector ON collector.id = t.collected_by_person_id
       LEFT JOIN transaction_matches tm ON tm.transaction_id = t.id
       WHERE t.club_id = ?
+        AND t.status = 'succeeded'
         AND date(COALESCE(t.effective_at, t.created_at)) >= date(?)
         AND date(COALESCE(t.effective_at, t.created_at)) <= date(?)
     `
