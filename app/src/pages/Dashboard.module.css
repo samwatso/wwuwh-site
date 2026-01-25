@@ -285,12 +285,20 @@
 
 /* Up Next Card */
 .upNextCard {
+  display: block;
   background: linear-gradient(135deg, var(--color-navy) 0%, var(--color-water) 100%);
   border-radius: var(--radius-card);
   padding: var(--space-lg);
   box-shadow: var(--shadow-sm);
   margin-bottom: var(--space-md);
   color: var(--color-white);
+  text-decoration: none;
+  transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+}
+
+.upNextCard:hover {
+  box-shadow: var(--shadow-medium);
+  transform: translateY(-2px);
 }
 
 .upNextHeader {
@@ -351,37 +359,35 @@
   color: rgba(255, 255, 255, 0.7);
 }
 
-.upNextActions {
+/* Attendees on Up Next Card */
+.upNextAttendees {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  flex-shrink: 0;
-}
-
-.upNextAction {
-  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  font-size: var(--text-xs);
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.attendeeAvatars {
+  display: flex;
+}
+
+.attendeeAvatar {
+  margin-left: -8px;
+  border-radius: 50%;
+  border: 2px solid var(--color-navy);
+}
+
+.attendeeAvatar:first-child {
+  margin-left: 0;
+}
+
+.attendeeCount {
+  font-size: var(--text-sm);
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
-  color: var(--color-white);
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  text-decoration: none;
-  transition: background var(--transition-fast);
-  white-space: nowrap;
-}
-
-.upNextAction:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
-.upNextAction svg {
-  width: 14px;
-  height: 14px;
+  margin-left: var(--space-xs);
 }
 
 /* Stats Grid */
@@ -448,9 +454,20 @@
 }
 
 /* Profile Completion Card */
-.profileCard .statIcon {
-  background: var(--color-success-light);
-  color: var(--color-success);
+.statIconSuccess {
+  background: var(--color-success-light) !important;
+  color: var(--color-success) !important;
+}
+
+/* Awards Card */
+.statIconAwards {
+  background: #fef3c7 !important;
+  color: #b45309 !important;
+}
+
+.trophyEmoji {
+  font-size: var(--text-lg);
+  line-height: 1;
 }
 
 .progressContainer {
