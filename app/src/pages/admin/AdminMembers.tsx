@@ -100,9 +100,18 @@ function MemberRow({ member, onClick }: { member: AdminMember; onClick: () => vo
 }
 
 // Stats card component
-function StatsCard({ label, value, subtext }: { label: string; value: number | string; subtext?: string }) {
+interface StatsCardProps {
+  label: string
+  value: number | string
+  subtext?: string
+  active?: boolean
+  onClick?: () => void
+}
+
+function StatsCard({ label, value, subtext, active, onClick }: StatsCardProps) {
+  const cardClass = `${styles.statsCard} ${onClick ? styles.statsCardClickable : ''} ${active ? styles.statsCardActive : ''}`
   return (
-    <div className={styles.statsCard}>
+    <div className={cardClass} onClick={onClick}>
       <div className={styles.statsValue}>{value}</div>
       <div className={styles.statsLabel}>{label}</div>
       {subtext && <div className={styles.statsSubtext}>{subtext}</div>}
@@ -639,6 +648,8 @@ export function AdminMembers() {
 
   const [searchInput, setSearchInput] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState<'all' | 'active' | 'subscribed' | 'guests'>('all')
+  const [planFilter, setPlanFilter] = useState('')
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null)
 
   const {
@@ -665,6 +676,17 @@ export function AdminMembers() {
     setStatus(value)
   }
 
+  // Extract unique subscription plans from members
+  const subscriptionPlans = useMemo(() => {
+    const plans = new Set<string>()
+    members.forEach(m => {
+      if (m.subscription_plan) {
+        plans.add(m.subscription_plan)
+      }
+    })
+    return Array.from(plans).sort()
+  }, [members])
+
   // Filter members client-side for immediate feedback
   const filteredMembers = useMemo(() => {
     let result = members
@@ -681,8 +703,22 @@ export function AdminMembers() {
       result = result.filter(m => m.status === statusFilter)
     }
 
+    // Category filter from stats cards
+    if (categoryFilter === 'active') {
+      result = result.filter(m => m.status === 'active')
+    } else if (categoryFilter === 'subscribed') {
+      result = result.filter(m => m.subscription_status === 'active')
+    } else if (categoryFilter === 'guests') {
+      result = result.filter(m => m.member_type === 'guest')
+    }
+
+    // Subscription plan filter
+    if (planFilter) {
+      result = result.filter(m => m.subscription_plan === planFilter)
+    }
+
     return result
-  }, [members, searchInput, statusFilter])
+  }, [members, searchInput, statusFilter, categoryFilter, planFilter])
 
   // Loading state
   if (profileLoading || (loading && members.length === 0)) {
@@ -730,10 +766,39 @@ export function AdminMembers() {
       {/* Stats Cards */}
       {stats && (
         <div className={styles.statsGrid}>
-          <StatsCard label="Total Members" value={stats.total_members} />
-          <StatsCard label="Active" value={stats.active_members} />
-          <StatsCard label="With Subscription" value={stats.active_subscriptions} />
-          <StatsCard label="Guests" value={stats.guests} />
+          <StatsCard
+            label="Total Members"
+            value={stats.total_members}
+            active={categoryFilter === 'all'}
+            onClick={() => {
+              setCategoryFilter('all')
+              setPlanFilter('')
+            }}
+          />
+          <StatsCard
+            label="Active"
+            value={stats.active_members}
+            active={categoryFilter === 'active'}
+            onClick={() => {
+              setCategoryFilter('active')
+              setPlanFilter('')
+            }}
+          />
+          <StatsCard
+            label="With Subscription"
+            value={stats.active_subscriptions}
+            active={categoryFilter === 'subscribed'}
+            onClick={() => setCategoryFilter('subscribed')}
+          />
+          <StatsCard
+            label="Guests"
+            value={stats.guests}
+            active={categoryFilter === 'guests'}
+            onClick={() => {
+              setCategoryFilter('guests')
+              setPlanFilter('')
+            }}
+          />
         </div>
       )}
 
@@ -762,6 +827,23 @@ export function AdminMembers() {
           <option value="suspended">Suspended</option>
           <option value="left">Left</option>
         </select>
+        {subscriptionPlans.length > 0 && (
+          <select
+            value={planFilter}
+            onChange={(e) => {
+              setPlanFilter(e.target.value)
+              if (e.target.value) {
+                setCategoryFilter('subscribed')
+              }
+            }}
+            className={styles.statusSelect}
+          >
+            <option value="">All plans</option>
+            {subscriptionPlans.map(plan => (
+              <option key={plan} value={plan}>{plan}</option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Members List */}

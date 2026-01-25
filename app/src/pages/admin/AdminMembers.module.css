@@ -94,6 +94,22 @@
   padding: var(--space-md);
   text-align: center;
   box-shadow: var(--shadow-sm);
+  border: 2px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.statsCardClickable {
+  cursor: pointer;
+}
+
+.statsCardClickable:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.statsCardActive {
+  border-color: var(--color-water);
+  background: var(--color-ice);
 }
 
 .statsValue {
