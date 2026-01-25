@@ -1341,7 +1341,117 @@ function ReconcileModal({
 // EXPORTS TAB
 // ============================================
 
+// PDF Export Types
+interface PDFExportData {
+  title: string
+  headers: string[]
+  rows: (string | number)[][]
+}
+
+async function generatePDF(
+  data: PDFExportData,
+  clubName: string,
+  dateRange: { from: string; to: string }
+) {
+  const jsPDFModule = await import('jspdf')
+  const jsPDF = jsPDFModule.default
+  const autoTable = (await import('jspdf-autotable')).default
+
+  // Create landscape PDF
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a4',
+  })
+
+  const pageWidth = doc.internal.pageSize.getWidth()
+  const pageHeight = doc.internal.pageSize.getHeight()
+
+  // Load logo
+  let logoLoaded = false
+  try {
+    const logoImg = new Image()
+    logoImg.crossOrigin = 'anonymous'
+    await new Promise<void>((resolve, reject) => {
+      logoImg.onload = () => resolve()
+      logoImg.onerror = () => reject()
+      logoImg.src = '/app/assets/logo.png'
+    })
+
+    // Add logo (left side of header)
+    const logoHeight = 15
+    const logoWidth = logoHeight * (logoImg.width / logoImg.height)
+    doc.addImage(logoImg, 'PNG', 15, 10, logoWidth, logoHeight)
+    logoLoaded = true
+  } catch {
+    // Logo failed to load, continue without it
+    console.warn('Logo failed to load')
+  }
+
+  // Header text
+  const headerX = logoLoaded ? 50 : 15
+  doc.setFontSize(18)
+  doc.setTextColor(30, 43, 96) // Navy color
+  doc.text(clubName, headerX, 18)
+
+  doc.setFontSize(12)
+  doc.setTextColor(107, 114, 128) // Grey
+  doc.text(data.title, headerX, 25)
+
+  // Date range (right side)
+  doc.setFontSize(10)
+  doc.text(`${formatDate(dateRange.from)} - ${formatDate(dateRange.to)}`, pageWidth - 15, 18, { align: 'right' })
+  doc.text(`Generated: ${new Date().toLocaleDateString('en-GB')}`, pageWidth - 15, 24, { align: 'right' })
+
+  // Divider line
+  doc.setDrawColor(215, 220, 232)
+  doc.line(15, 30, pageWidth - 15, 30)
+
+  // Table
+  autoTable(doc, {
+    head: [data.headers],
+    body: data.rows.map(row => row.map(cell => String(cell))),
+    startY: 35,
+    margin: { left: 15, right: 15 },
+    headStyles: {
+      fillColor: [30, 43, 96], // Navy
+      textColor: 255,
+      fontStyle: 'bold',
+      fontSize: 9,
+    },
+    bodyStyles: {
+      fontSize: 8,
+      textColor: [43, 47, 58],
+    },
+    alternateRowStyles: {
+      fillColor: [245, 247, 251],
+    },
+    styles: {
+      cellPadding: 3,
+      lineColor: [215, 220, 232],
+      lineWidth: 0.1,
+    },
+    // Footer with page numbers
+    didDrawPage: (pageData) => {
+      const pageCount = (doc as unknown as { getNumberOfPages: () => number }).getNumberOfPages()
+      doc.setFontSize(8)
+      doc.setTextColor(107, 114, 128)
+      doc.text(
+        `Page ${pageData.pageNumber} of ${pageCount}`,
+        pageWidth / 2,
+        pageHeight - 10,
+        { align: 'center' }
+      )
+    },
+  })
+
+  return doc
+}
+
 function ExportsTab({ clubId }: { clubId: string }) {
+  const { memberships } = useProfile()
+  const clubName = memberships[0]?.club_name || 'Club'
+
   const [from, setFrom] = useState(() => {
     const d = new Date()
     d.setDate(d.getDate() - 90)
@@ -1350,45 +1460,92 @@ function ExportsTab({ clubId }: { clubId: string }) {
   const [to, setTo] = useState(() => new Date().toISOString().split('T')[0])
   const [exporting, setExporting] = useState<string | null>(null)
 
-  async function handleExport(type: BillingExportType) {
-    setExporting(type)
+  async function fetchExportData(type: BillingExportType): Promise<string> {
+    const url = getBillingExportUrl(clubId, type, from, to)
+
+    const { supabase } = await import('@/lib/supabase')
+    const { data: { session } } = await supabase.auth.getSession()
+
+    const headers: HeadersInit = {}
+    if (session?.access_token) {
+      headers['Authorization'] = `Bearer ${session.access_token}`
+    }
+
+    const response = await fetch(url, { headers })
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}))
+      throw new Error(errorData.error || `Export failed: ${response.status}`)
+    }
+
+    return await response.text()
+  }
+
+  function parseCSV(csvText: string): { headers: string[]; rows: string[][] } {
+    const lines = csvText.trim().split('\n')
+    if (lines.length === 0) return { headers: [], rows: [] }
+
+    const parseRow = (line: string): string[] => {
+      const result: string[] = []
+      let current = ''
+      let inQuotes = false
+
+      for (const char of line) {
+        if (char === '"') {
+          inQuotes = !inQuotes
+        } else if (char === ',' && !inQuotes) {
+          result.push(current.trim())
+          current = ''
+        } else {
+          current += char
+        }
+      }
+      result.push(current.trim())
+      return result
+    }
+
+    const headers = parseRow(lines[0])
+    const rows = lines.slice(1).map(line => parseRow(line))
+
+    return { headers, rows }
+  }
+
+  async function handleExport(type: BillingExportType, format: 'csv' | 'pdf') {
+    setExporting(`${type}-${format}`)
     try {
-      const url = getBillingExportUrl(clubId, type, from, to)
+      const csvText = await fetchExportData(type)
 
-      // Get auth token
-      const { supabase } = await import('@/lib/supabase')
-      const { data: { session } } = await supabase.auth.getSession()
+      if (format === 'csv') {
+        // Download as CSV
+        const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8' })
+        const downloadUrl = URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = downloadUrl
+        link.download = `${type}_${from}_to_${to}.csv`
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        URL.revokeObjectURL(downloadUrl)
+      } else {
+        // Generate PDF
+        const { headers, rows } = parseCSV(csvText)
 
-      const headers: HeadersInit = {}
-      if (session?.access_token) {
-        headers['Authorization'] = `Bearer ${session.access_token}`
+        const titleMap: Record<BillingExportType, string> = {
+          attendance: 'Attendance Report',
+          subscriptions: 'Subscriptions Report',
+          event_fees: 'Event Fees Report',
+          transactions: 'Transactions Report',
+          members_billing: 'Members Billing Report',
+        }
+
+        const doc = await generatePDF(
+          { title: titleMap[type], headers, rows },
+          clubName,
+          { from, to }
+        )
+
+        doc.save(`${type}_${from}_to_${to}.pdf`)
       }
-
-      const response = await fetch(url, { headers })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || `Export failed: ${response.status}`)
-      }
-
-      // Get filename from content-disposition header or generate one
-      const disposition = response.headers.get('content-disposition')
-      let filename = `${type}_export.csv`
-      if (disposition) {
-        const match = disposition.match(/filename="(.+)"/)
-        if (match) filename = match[1]
-      }
-
-      // Create blob and download
-      const blob = await response.blob()
-      const downloadUrl = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = downloadUrl
-      link.download = filename
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(downloadUrl)
     } catch (err) {
       console.error('Export failed:', err)
       alert(err instanceof Error ? err.message : 'Export failed')
@@ -1421,75 +1578,84 @@ function ExportsTab({ clubId }: { clubId: string }) {
       </div>
 
       <div className={styles.exportList}>
-        <div className={styles.exportItem}>
-          <div className={styles.exportInfo}>
-            <div className={styles.exportTitle}>Attendance</div>
-            <div className={styles.exportDesc}>RSVP and attendance records for events</div>
-          </div>
-          <button
-            className={styles.btnSecondary}
-            onClick={() => handleExport('attendance')}
-            disabled={!!exporting}
-          >
-            {exporting === 'attendance' ? 'Exporting...' : 'Export CSV'}
-          </button>
-        </div>
+        <ExportItem
+          title="Attendance"
+          description="RSVP and attendance records for events"
+          type="attendance"
+          exporting={exporting}
+          onExport={handleExport}
+        />
+        <ExportItem
+          title="Subscriptions"
+          description="Active subscriptions with Confirmed/Assumed status"
+          type="subscriptions"
+          exporting={exporting}
+          onExport={handleExport}
+        />
+        <ExportItem
+          title="Event Fees"
+          description="One-off event fees and payment status"
+          type="event_fees"
+          exporting={exporting}
+          onExport={handleExport}
+        />
+        <ExportItem
+          title="Transactions"
+          description="All payments including cash, Stripe, bank transfers"
+          type="transactions"
+          exporting={exporting}
+          onExport={handleExport}
+        />
+        <ExportItem
+          title="Members Billing"
+          description="Member billing status and weekly usage"
+          type="members_billing"
+          exporting={exporting}
+          onExport={handleExport}
+        />
+      </div>
+    </div>
+  )
+}
 
-        <div className={styles.exportItem}>
-          <div className={styles.exportInfo}>
-            <div className={styles.exportTitle}>Subscriptions</div>
-            <div className={styles.exportDesc}>Active subscriptions with Confirmed/Assumed status</div>
-          </div>
-          <button
-            className={styles.btnSecondary}
-            onClick={() => handleExport('subscriptions')}
-            disabled={!!exporting}
-          >
-            {exporting === 'subscriptions' ? 'Exporting...' : 'Export CSV'}
-          </button>
-        </div>
+function ExportItem({
+  title,
+  description,
+  type,
+  exporting,
+  onExport,
+}: {
+  title: string
+  description: string
+  type: BillingExportType
+  exporting: string | null
+  onExport: (type: BillingExportType, format: 'csv' | 'pdf') => void
+}) {
+  const isExportingCSV = exporting === `${type}-csv`
+  const isExportingPDF = exporting === `${type}-pdf`
+  const isDisabled = !!exporting
 
-        <div className={styles.exportItem}>
-          <div className={styles.exportInfo}>
-            <div className={styles.exportTitle}>Event Fees</div>
-            <div className={styles.exportDesc}>One-off event fees and payment status</div>
-          </div>
-          <button
-            className={styles.btnSecondary}
-            onClick={() => handleExport('event_fees')}
-            disabled={!!exporting}
-          >
-            {exporting === 'event_fees' ? 'Exporting...' : 'Export CSV'}
-          </button>
-        </div>
-
-        <div className={styles.exportItem}>
-          <div className={styles.exportInfo}>
-            <div className={styles.exportTitle}>Transactions</div>
-            <div className={styles.exportDesc}>All payments including cash, Stripe, bank transfers</div>
-          </div>
-          <button
-            className={styles.btnSecondary}
-            onClick={() => handleExport('transactions')}
-            disabled={!!exporting}
-          >
-            {exporting === 'transactions' ? 'Exporting...' : 'Export CSV'}
-          </button>
-        </div>
-
-        <div className={styles.exportItem}>
-          <div className={styles.exportInfo}>
-            <div className={styles.exportTitle}>Members Billing</div>
-            <div className={styles.exportDesc}>Member billing status and weekly usage</div>
-          </div>
-          <button
-            className={styles.btnSecondary}
-            onClick={() => handleExport('members_billing')}
-            disabled={!!exporting}
-          >
-            {exporting === 'members_billing' ? 'Exporting...' : 'Export CSV'}
-          </button>
-        </div>
+  return (
+    <div className={styles.exportItem}>
+      <div className={styles.exportInfo}>
+        <div className={styles.exportTitle}>{title}</div>
+        <div className={styles.exportDesc}>{description}</div>
+      </div>
+      <div className={styles.exportButtons}>
+        <button
+          className={styles.btnSecondary}
+          onClick={() => onExport(type, 'csv')}
+          disabled={isDisabled}
+        >
+          {isExportingCSV ? 'Exporting...' : 'CSV'}
+        </button>
+        <button
+          className={styles.btnPrimary}
+          onClick={() => onExport(type, 'pdf')}
+          disabled={isDisabled}
+        >
+          {isExportingPDF ? 'Exporting...' : 'PDF'}
+        </button>
       </div>
     </div>
   )

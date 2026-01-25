@@ -1097,6 +1097,12 @@
   box-shadow: var(--shadow-sm);
 }
 
+.exportButtons {
+  display: flex;
+  gap: var(--space-xs);
+  flex-shrink: 0;
+}
+
 .exportInfo {
   flex: 1;
 }
