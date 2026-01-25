@@ -256,7 +256,7 @@ export interface PaymentRequestRecipient {
   status: RecipientStatus
 }
 
-export type TransactionSource = 'stripe' | 'cash' | 'manual'
+export type TransactionSource = 'stripe' | 'cash' | 'bank_transfer' | 'manual'
 export type TransactionType = 'charge' | 'refund' | 'adjustment'
 export type TransactionStatus = 'pending' | 'succeeded' | 'failed' | 'cancelled'
 
