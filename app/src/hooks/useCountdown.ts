@@ -1,8 +1,8 @@
 /**
  * useCountdown Hook
  *
- * Returns a countdown string that updates every 60 seconds.
- * Format: "Starts in 3d 4h 12m" or "Starting soon" if less than 1 minute.
+ * Returns a countdown string that updates every second.
+ * Format: "Starts in 3d 4h 12m 30s" with live seconds.
  */
 
 import { useState, useEffect, useCallback } from 'react'
@@ -11,6 +11,7 @@ interface CountdownResult {
   days: number
   hours: number
   minutes: number
+  seconds: number
   text: string
   isStarted: boolean
 }
@@ -20,28 +21,31 @@ function calculateCountdown(targetDate: Date): CountdownResult {
   const diff = targetDate.getTime() - now.getTime()
 
   if (diff <= 0) {
-    return { days: 0, hours: 0, minutes: 0, text: 'Started', isStarted: true }
+    return { days: 0, hours: 0, minutes: 0, seconds: 0, text: 'Started', isStarted: true }
   }
 
-  const minutes = Math.floor(diff / (1000 * 60))
-  const hours = Math.floor(minutes / 60)
-  const days = Math.floor(hours / 24)
-
-  const remainingHours = hours % 24
-  const remainingMinutes = minutes % 60
+  const totalSeconds = Math.floor(diff / 1000)
+  const seconds = totalSeconds % 60
+  const totalMinutes = Math.floor(totalSeconds / 60)
+  const minutes = totalMinutes % 60
+  const totalHours = Math.floor(totalMinutes / 60)
+  const hours = totalHours % 24
+  const days = Math.floor(totalHours / 24)
 
   // Build text
   const parts: string[] = []
   if (days > 0) parts.push(`${days}d`)
-  if (remainingHours > 0 || days > 0) parts.push(`${remainingHours}h`)
-  parts.push(`${remainingMinutes}m`)
+  if (hours > 0 || days > 0) parts.push(`${hours}h`)
+  if (minutes > 0 || hours > 0 || days > 0) parts.push(`${minutes}m`)
+  parts.push(`${seconds}s`)
 
-  const text = parts.length > 0 ? `Starts in ${parts.join(' ')}` : 'Starting soon'
+  const text = `Starts in ${parts.join(' ')}`
 
   return {
     days,
-    hours: remainingHours,
-    minutes: remainingMinutes,
+    hours,
+    minutes,
+    seconds,
     text,
     isStarted: false,
   }
@@ -66,8 +70,8 @@ export function useCountdown(targetDate: Date | string | null): CountdownResult 
   useEffect(() => {
     updateCountdown()
 
-    // Update every 60 seconds
-    const interval = setInterval(updateCountdown, 60 * 1000)
+    // Update every second for live countdown
+    const interval = setInterval(updateCountdown, 1000)
 
     return () => clearInterval(interval)
   }, [updateCountdown])
