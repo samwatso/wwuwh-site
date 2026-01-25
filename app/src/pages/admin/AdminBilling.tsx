@@ -1348,10 +1348,53 @@ function ExportsTab({ clubId }: { clubId: string }) {
     return d.toISOString().split('T')[0]
   })
   const [to, setTo] = useState(() => new Date().toISOString().split('T')[0])
+  const [exporting, setExporting] = useState<string | null>(null)
 
-  function handleExport(type: BillingExportType) {
-    const url = getBillingExportUrl(clubId, type, from, to)
-    window.open(url, '_blank')
+  async function handleExport(type: BillingExportType) {
+    setExporting(type)
+    try {
+      const url = getBillingExportUrl(clubId, type, from, to)
+
+      // Get auth token
+      const { supabase } = await import('@/lib/supabase')
+      const { data: { session } } = await supabase.auth.getSession()
+
+      const headers: HeadersInit = {}
+      if (session?.access_token) {
+        headers['Authorization'] = `Bearer ${session.access_token}`
+      }
+
+      const response = await fetch(url, { headers })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `Export failed: ${response.status}`)
+      }
+
+      // Get filename from content-disposition header or generate one
+      const disposition = response.headers.get('content-disposition')
+      let filename = `${type}_export.csv`
+      if (disposition) {
+        const match = disposition.match(/filename="(.+)"/)
+        if (match) filename = match[1]
+      }
+
+      // Create blob and download
+      const blob = await response.blob()
+      const downloadUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(downloadUrl)
+    } catch (err) {
+      console.error('Export failed:', err)
+      alert(err instanceof Error ? err.message : 'Export failed')
+    } finally {
+      setExporting(null)
+    }
   }
 
   return (
@@ -1383,8 +1426,12 @@ function ExportsTab({ clubId }: { clubId: string }) {
             <div className={styles.exportTitle}>Attendance</div>
             <div className={styles.exportDesc}>RSVP and attendance records for events</div>
           </div>
-          <button className={styles.btnSecondary} onClick={() => handleExport('attendance')}>
-            Export CSV
+          <button
+            className={styles.btnSecondary}
+            onClick={() => handleExport('attendance')}
+            disabled={!!exporting}
+          >
+            {exporting === 'attendance' ? 'Exporting...' : 'Export CSV'}
           </button>
         </div>
 
@@ -1393,8 +1440,12 @@ function ExportsTab({ clubId }: { clubId: string }) {
             <div className={styles.exportTitle}>Subscriptions</div>
             <div className={styles.exportDesc}>Active subscriptions with Confirmed/Assumed status</div>
           </div>
-          <button className={styles.btnSecondary} onClick={() => handleExport('subscriptions')}>
-            Export CSV
+          <button
+            className={styles.btnSecondary}
+            onClick={() => handleExport('subscriptions')}
+            disabled={!!exporting}
+          >
+            {exporting === 'subscriptions' ? 'Exporting...' : 'Export CSV'}
           </button>
         </div>
 
@@ -1403,8 +1454,12 @@ function ExportsTab({ clubId }: { clubId: string }) {
             <div className={styles.exportTitle}>Event Fees</div>
             <div className={styles.exportDesc}>One-off event fees and payment status</div>
           </div>
-          <button className={styles.btnSecondary} onClick={() => handleExport('event_fees')}>
-            Export CSV
+          <button
+            className={styles.btnSecondary}
+            onClick={() => handleExport('event_fees')}
+            disabled={!!exporting}
+          >
+            {exporting === 'event_fees' ? 'Exporting...' : 'Export CSV'}
           </button>
         </div>
 
@@ -1413,8 +1468,12 @@ function ExportsTab({ clubId }: { clubId: string }) {
             <div className={styles.exportTitle}>Transactions</div>
             <div className={styles.exportDesc}>All payments including cash, Stripe, bank transfers</div>
           </div>
-          <button className={styles.btnSecondary} onClick={() => handleExport('transactions')}>
-            Export CSV
+          <button
+            className={styles.btnSecondary}
+            onClick={() => handleExport('transactions')}
+            disabled={!!exporting}
+          >
+            {exporting === 'transactions' ? 'Exporting...' : 'Export CSV'}
           </button>
         </div>
 
@@ -1423,8 +1482,12 @@ function ExportsTab({ clubId }: { clubId: string }) {
             <div className={styles.exportTitle}>Members Billing</div>
             <div className={styles.exportDesc}>Member billing status and weekly usage</div>
           </div>
-          <button className={styles.btnSecondary} onClick={() => handleExport('members_billing')}>
-            Export CSV
+          <button
+            className={styles.btnSecondary}
+            onClick={() => handleExport('members_billing')}
+            disabled={!!exporting}
+          >
+            {exporting === 'members_billing' ? 'Exporting...' : 'Export CSV'}
           </button>
         </div>
       </div>
