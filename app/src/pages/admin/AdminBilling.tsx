@@ -1381,8 +1381,8 @@ function transformTransactionsForPDF(
   headers: string[],
   rows: string[][]
 ): { headers: string[]; rows: string[][] } {
-  // Columns to keep and their order
-  const keepColumns = ['Name', 'Event', 'Source', 'Amount', 'Notes', 'Reference', 'Collected By', 'Date', 'Bank Matched']
+  // Columns to keep in desired order: Date, Event, Name, Amount, Source, Notes, Reference, Bank Matched
+  const keepColumns = ['Date', 'Event', 'Name', 'Amount', 'Source', 'Notes', 'Reference', 'Bank Matched']
 
   // Find indices of columns to keep
   const indices = keepColumns.map(col => headers.findIndex(h => h === col))
@@ -1391,6 +1391,10 @@ function transformTransactionsForPDF(
   const newHeaders = keepColumns.filter((_, i) => indices[i] !== -1)
   const validIndices = indices.filter(i => i !== -1)
 
+  // Track total amount
+  let totalAmount = 0
+  const amountColIndex = newHeaders.indexOf('Amount')
+
   // Transform rows
   const newRows = rows.map(row => {
     return validIndices.map((colIndex, newColIndex) => {
@@ -1398,7 +1402,7 @@ function transformTransactionsForPDF(
       const colName = newHeaders[newColIndex]
 
       // Apply transformations based on column
-      if (colName === 'Name' || colName === 'Collected By') {
+      if (colName === 'Name') {
         return formatNameShort(value)
       }
       if (colName === 'Event') {
@@ -1407,9 +1411,26 @@ function transformTransactionsForPDF(
       if (colName === 'Date') {
         return formatDatePDF(value)
       }
+      if (colName === 'Amount') {
+        // Parse amount and add to total (format is like "12.50")
+        const numericValue = parseFloat(value.replace(/[^0-9.-]/g, ''))
+        if (!isNaN(numericValue)) {
+          totalAmount += numericValue
+        }
+      }
       return value
     })
   })
+
+  // Add total row at the bottom
+  if (newRows.length > 0 && amountColIndex !== -1) {
+    const totalRow = newHeaders.map((col, idx) => {
+      if (idx === 0) return 'TOTAL'
+      if (col === 'Amount') return totalAmount.toFixed(2)
+      return ''
+    })
+    newRows.push(totalRow)
+  }
 
   return { headers: newHeaders, rows: newRows }
 }
