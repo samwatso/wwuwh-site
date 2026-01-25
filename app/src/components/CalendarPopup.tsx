@@ -60,12 +60,17 @@ export function CalendarPopup({ event, onClose }: CalendarPopupProps) {
 
   // Format date/time for display
   const startDate = new Date(event.starts_at_utc)
+  const endDate = new Date(event.ends_at_utc)
   const dateStr = startDate.toLocaleDateString('en-GB', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',
   })
-  const timeStr = startDate.toLocaleTimeString('en-GB', {
+  const startTimeStr = startDate.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+  const endTimeStr = endDate.toLocaleTimeString('en-GB', {
     hour: '2-digit',
     minute: '2-digit',
   })
@@ -89,7 +94,7 @@ export function CalendarPopup({ event, onClose }: CalendarPopupProps) {
 
         <div className={styles.details}>
           <p className={styles.datetime}>
-            {dateStr} at {timeStr}
+            {dateStr}, {startTimeStr} - {endTimeStr}
           </p>
           {event.location && (
             <p className={styles.location}>{event.location}</p>

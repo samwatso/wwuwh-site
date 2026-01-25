@@ -209,6 +209,12 @@ export function Profile() {
     )
   }
 
+  // Profile completion checks
+  const hasName = !!(person?.name && person.name.trim().length > 0)
+  const hasPhoto = !!(person?.photo_url && person.photo_url.trim().length > 0)
+  const profileCompletion = 33 + (hasName ? 33 : 0) + (hasPhoto ? 34 : 0)
+  const isProfileComplete = profileCompletion === 100
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -243,6 +249,111 @@ export function Profile() {
         {photoError && <p className={styles.photoError}>{photoError}</p>}
         <h1 className={styles.title}>{person?.name || 'Your Profile'}</h1>
         {synced && <span className={styles.syncBadge}>Synced</span>}
+      </div>
+
+      {/* Profile Completion Prompt */}
+      {!isProfileComplete && (
+        <div className={styles.completionCard}>
+          <div className={styles.completionHeader}>
+            <span className={styles.completionTitle}>Complete Your Profile</span>
+            <span className={styles.completionPercent}>{profileCompletion}%</span>
+          </div>
+          <div className={styles.completionProgress}>
+            <div
+              className={styles.completionProgressFill}
+              style={{ width: `${profileCompletion}%` }}
+            />
+          </div>
+          <div className={styles.completionTasks}>
+            <div className={`${styles.completionTask} ${styles.completionTaskDone}`}>
+              <span className={styles.completionTaskIcon}>✓</span>
+              <span>Create account</span>
+            </div>
+            <div className={`${styles.completionTask} ${hasName ? styles.completionTaskDone : ''}`}>
+              <span className={styles.completionTaskIcon}>{hasName ? '✓' : '○'}</span>
+              <span>Add display name</span>
+              {!hasName && (
+                <button
+                  type="button"
+                  className={styles.completionTaskBtn}
+                  onClick={handleEditStart}
+                >
+                  Add
+                </button>
+              )}
+            </div>
+            <div className={`${styles.completionTask} ${hasPhoto ? styles.completionTaskDone : ''}`}>
+              <span className={styles.completionTaskIcon}>{hasPhoto ? '✓' : '○'}</span>
+              <span>Upload profile photo</span>
+              {!hasPhoto && (
+                <button
+                  type="button"
+                  className={styles.completionTaskBtn}
+                  onClick={handlePhotoClick}
+                >
+                  Upload
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Badges Card - Moved to top */}
+      <div className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>Badges</h2>
+          {currentStreak > 0 && (
+            <span className={styles.streakBadge}>
+              🔥 {currentStreak} streak
+            </span>
+          )}
+        </div>
+
+        {awardsLoading ? (
+          <div className={styles.loadingState}>
+            <Spinner size="sm" />
+          </div>
+        ) : awards.length > 0 ? (
+          <div className={styles.awardsList}>
+            {awards.map((award) => (
+              <div key={award.id} className={styles.awardItem}>
+                <span className={styles.awardIcon}>{award.icon || '🏅'}</span>
+                <div className={styles.awardInfo}>
+                  <span className={styles.awardName}>{award.name}</span>
+                  <span className={styles.awardDate}>
+                    Earned {new Date(award.granted_at).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                    })}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className={styles.placeholder}>
+            <p>No badges yet. Keep attending sessions!</p>
+          </div>
+        )}
+
+        {lockedAwards.length > 0 && (
+          <div className={styles.lockedAwardsSection}>
+            <p className={styles.lockedAwardsTitle}>Locked Badges</p>
+            <div className={styles.lockedAwardsList}>
+              {lockedAwards.map((award) => (
+                <div key={award.id} className={styles.lockedAwardItem}>
+                  <span className={styles.lockedAwardIcon}>🔒</span>
+                  <div className={styles.lockedAwardInfo}>
+                    <span className={styles.lockedAwardName}>{award.name}</span>
+                    <span className={styles.lockedAwardDesc}>{award.description}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Email Update Message */}
@@ -460,63 +571,6 @@ export function Profile() {
             <Link to="/app/subscribe" className={styles.subscribeLink}>
               View membership plans
             </Link>
-          </div>
-        )}
-      </div>
-
-      {/* Badges Card */}
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Badges</h2>
-          {currentStreak > 0 && (
-            <span className={styles.streakBadge}>
-              🔥 {currentStreak} streak
-            </span>
-          )}
-        </div>
-
-        {awardsLoading ? (
-          <div className={styles.loadingState}>
-            <Spinner size="sm" />
-          </div>
-        ) : awards.length > 0 ? (
-          <div className={styles.awardsList}>
-            {awards.map((award) => (
-              <div key={award.id} className={styles.awardItem}>
-                <span className={styles.awardIcon}>{award.icon || '🏅'}</span>
-                <div className={styles.awardInfo}>
-                  <span className={styles.awardName}>{award.name}</span>
-                  <span className={styles.awardDate}>
-                    Earned {new Date(award.granted_at).toLocaleDateString('en-GB', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className={styles.placeholder}>
-            <p>No badges yet. Keep attending sessions!</p>
-          </div>
-        )}
-
-        {lockedAwards.length > 0 && (
-          <div className={styles.lockedAwardsSection}>
-            <p className={styles.lockedAwardsTitle}>Locked Badges</p>
-            <div className={styles.lockedAwardsList}>
-              {lockedAwards.map((award) => (
-                <div key={award.id} className={styles.lockedAwardItem}>
-                  <span className={styles.lockedAwardIcon}>🔒</span>
-                  <div className={styles.lockedAwardInfo}>
-                    <span className={styles.lockedAwardName}>{award.name}</span>
-                    <span className={styles.lockedAwardDesc}>{award.description}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
           </div>
         )}
       </div>

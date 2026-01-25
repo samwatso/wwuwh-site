@@ -103,6 +103,99 @@
   margin-top: var(--space-xs);
 }
 
+/* Profile Completion Card */
+.completionCard {
+  background: linear-gradient(135deg, var(--color-water-light) 0%, var(--color-ice) 100%);
+  border: 1px solid var(--color-water);
+  border-radius: var(--radius-card);
+  padding: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.completionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.completionTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-md);
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-navy);
+}
+
+.completionPercent {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-water);
+}
+
+.completionProgress {
+  height: 8px;
+  background: var(--color-white);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: var(--space-md);
+}
+
+.completionProgressFill {
+  height: 100%;
+  background: var(--color-water);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.completionTasks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.completionTask {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--grey-600);
+}
+
+.completionTaskDone {
+  color: var(--color-success);
+}
+
+.completionTaskDone .completionTaskIcon {
+  color: var(--color-success);
+}
+
+.completionTaskIcon {
+  width: 20px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--grey-400);
+}
+
+.completionTaskBtn {
+  margin-left: auto;
+  padding: 4px 12px;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-water);
+  background: var(--color-white);
+  border: 1px solid var(--color-water);
+  border-radius: var(--radius-btn-pill);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.completionTaskBtn:hover {
+  background: var(--color-water);
+  color: var(--color-white);
+}
+
 /* Messages */
 .successMessage,
 .errorMessage {
