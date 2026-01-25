@@ -1075,6 +1075,13 @@
   border-radius: var(--radius-card);
   padding: var(--space-lg);
   box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+@media (max-width: 480px) {
+  .exportSection {
+    padding: var(--space-md);
+  }
 }
 
 .exportSectionTitle {
@@ -1102,7 +1109,17 @@
 
 @media (max-width: 480px) {
   .dateRange {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-sm);
+  }
+
+  .dateRange .formGroup {
+    margin-bottom: 0;
+  }
+
+  .dateRange .formInput {
+    padding: var(--space-xs) var(--space-sm);
+    font-size: var(--text-xs);
   }
 }
 
@@ -1134,14 +1151,30 @@
   box-shadow: var(--shadow-sm);
 }
 
+@media (max-width: 480px) {
+  .exportItem {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+  }
+}
+
 .exportButtons {
   display: flex;
   gap: var(--space-xs);
   flex-shrink: 0;
 }
 
+@media (max-width: 480px) {
+  .exportButtons {
+    justify-content: flex-end;
+  }
+}
+
 .exportInfo {
   flex: 1;
+  min-width: 0;
 }
 
 .exportTitle {
@@ -1153,6 +1186,16 @@
 .exportDesc {
   font-size: var(--text-sm);
   color: var(--grey-500);
+}
+
+@media (max-width: 480px) {
+  .exportTitle {
+    font-size: var(--text-sm);
+  }
+
+  .exportDesc {
+    font-size: var(--text-xs);
+  }
 }
 
 /* Refunds Placeholder */
