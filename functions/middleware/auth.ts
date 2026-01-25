@@ -130,9 +130,26 @@ export async function verifyToken(
     // Verify signature if secret is configured
     const jwtSecret = env.SUPABASE_JWT_SECRET
     if (jwtSecret) {
-      const isValid = await verifySignature(token, jwtSecret)
+      // Try verification with the secret as-is first
+      let isValid = await verifySignature(token, jwtSecret)
+
+      // If that fails, try base64 decoding the secret (some Supabase configs use this)
       if (!isValid) {
-        console.error('JWT: Signature verification failed')
+        try {
+          const decodedSecret = atob(jwtSecret)
+          isValid = await verifySignature(token, decodedSecret)
+          if (isValid) {
+            console.log('JWT: Verified using base64-decoded secret')
+          }
+        } catch {
+          // Secret wasn't valid base64, that's fine
+        }
+      }
+
+      if (!isValid) {
+        console.error('JWT: Signature verification failed - check SUPABASE_JWT_SECRET matches your Supabase project')
+        // Log first 10 chars of secret for debugging (safe - not the full secret)
+        console.error(`JWT: Secret starts with: ${jwtSecret.substring(0, 10)}...`)
         return null
       }
     } else {
