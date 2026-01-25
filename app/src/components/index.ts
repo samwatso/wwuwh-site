@@ -23,3 +23,5 @@ export type { ImageCropperProps } from './ImageCropper'
 export { Onboarding } from './Onboarding'
 
 export { CalendarPopup } from './CalendarPopup'
+
+export { PaymentOptionsModal } from './PaymentOptionsModal'

@@ -2,7 +2,7 @@ import { useMemo, useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { useProfile } from '@/hooks/useProfile'
 import { useEvents } from '@/hooks/useEvents'
-import { Spinner, Avatar, CalendarPopup } from '@/components'
+import { Spinner, Avatar, CalendarPopup, PaymentOptionsModal } from '@/components'
 import { getEventAttendees, Attendee } from '@/lib/api'
 import type { EventWithRsvp, RsvpResponse } from '@/types/database'
 import styles from './Events.module.css'
@@ -229,29 +229,45 @@ interface EventCardProps {
   event: EventWithRsvp
   onRsvp: (eventId: string, response: RsvpResponse) => void
   rsvpLoading: boolean
-  onPay: (eventId: string) => void
-  payLoading: boolean
+  onPaymentComplete: () => void
   isPast?: boolean
 }
 
-function EventCard({ event, onRsvp, rsvpLoading, onPay, payLoading, isPast }: EventCardProps) {
+function EventCard({ event, onRsvp, rsvpLoading, onPaymentComplete, isPast }: EventCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [attendees, setAttendees] = useState<{ yes: Attendee[]; maybe: Attendee[]; no: Attendee[] } | null>(null)
   const [attendeesLoading, setAttendeesLoading] = useState(false)
   const [showCalendarPopup, setShowCalendarPopup] = useState(false)
   const [showDescriptionPopup, setShowDescriptionPopup] = useState(false)
+  const [showPaymentModal, setShowPaymentModal] = useState(false)
+  const [showRefundWarning, setShowRefundWarning] = useState(false)
+
+  // Check if user has paid via Stripe
+  const hasStripePaid = event.payment_source === 'stripe' && event.payment_status === 'succeeded'
 
   const handleRsvp = (response: RsvpResponse) => {
     if (!rsvpLoading) {
+      // If declining and user has paid via Stripe, show warning
+      if (response === 'no' && hasStripePaid) {
+        setShowRefundWarning(true)
+        return
+      }
       onRsvp(event.id, response)
     }
   }
 
-  const handlePay = (e: React.MouseEvent) => {
+  const handleConfirmDeclineWithRefundWarning = () => {
+    setShowRefundWarning(false)
+    onRsvp(event.id, 'no')
+  }
+
+  const handleOpenPaymentModal = (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (!payLoading) {
-      onPay(event.id)
-    }
+    setShowPaymentModal(true)
+  }
+
+  const handlePaymentComplete = () => {
+    onPaymentComplete()
   }
 
   const handleToggleExpand = async () => {
@@ -394,15 +410,74 @@ function EventCard({ event, onRsvp, rsvpLoading, onPay, payLoading, isPast }: Ev
             </svg>
           </button>
 
-          {event.payment_required && !isPast && (
-            <button
-              type="button"
-              className={styles.payBtn}
-              onClick={handlePay}
-              disabled={payLoading}
-            >
-              {payLoading ? <Spinner size="sm" /> : 'Pay'}
-            </button>
+          {/* Payment button - show based on payment state */}
+          {!isPast && event.fee_cents && event.fee_cents > 0 && event.payment_mode !== 'free' && (
+            (() => {
+              const isPaidStripe = event.payment_source === 'stripe' && event.payment_status === 'succeeded'
+              const hasCashPending = event.payment_source === 'cash' && event.payment_status === 'pending'
+              const hasBacsPending = event.payment_source === 'bank_transfer' && event.payment_status === 'pending'
+
+              // Stripe paid - locked green badge
+              if (isPaidStripe) {
+                return (
+                  <span className={styles.paidBtnLocked}>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Paid
+                  </span>
+                )
+              }
+
+              // Cash pending - show Cash button
+              if (hasCashPending) {
+                return (
+                  <button
+                    type="button"
+                    className={styles.payBtnCash}
+                    onClick={handleOpenPaymentModal}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                      <rect x="2" y="6" width="20" height="12" rx="2" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    Cash
+                  </button>
+                )
+              }
+
+              // BACS pending - show BACS button
+              if (hasBacsPending) {
+                return (
+                  <button
+                    type="button"
+                    className={styles.payBtnBacs}
+                    onClick={handleOpenPaymentModal}
+                  >
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
+                      <path d="M3 21h18" />
+                      <path d="M5 21V7l7-4 7 4v14" />
+                    </svg>
+                    BACS
+                  </button>
+                )
+              }
+
+              // No payment yet - show Pay button if payment required
+              if (event.payment_required) {
+                return (
+                  <button
+                    type="button"
+                    className={styles.payBtn}
+                    onClick={handleOpenPaymentModal}
+                  >
+                    Pay
+                  </button>
+                )
+              }
+
+              return null
+            })()
           )}
           {!isPast && (
             <RSVPControl
@@ -420,6 +495,44 @@ function EventCard({ event, onRsvp, rsvpLoading, onPay, payLoading, isPast }: Ev
           event={event}
           onClose={() => setShowCalendarPopup(false)}
         />
+      )}
+
+      {/* Payment Options Modal */}
+      {showPaymentModal && (
+        <PaymentOptionsModal
+          event={event}
+          onClose={() => setShowPaymentModal(false)}
+          onPaymentComplete={handlePaymentComplete}
+        />
+      )}
+
+      {/* Refund Warning Modal (for Stripe-paid users declining) */}
+      {showRefundWarning && (
+        <div className={styles.modalOverlay} onClick={() => setShowRefundWarning(false)}>
+          <div className={styles.confirmModal} onClick={(e) => e.stopPropagation()}>
+            <h3 className={styles.confirmTitle}>Decline with Payment</h3>
+            <p className={styles.confirmMessage}>
+              You have already paid for this session via card.
+            </p>
+            <p className={styles.confirmMessage}>
+              If you need a refund, please contact the club admin after declining.
+            </p>
+            <div className={styles.confirmActions}>
+              <button
+                className={styles.btnSecondary}
+                onClick={() => setShowRefundWarning(false)}
+              >
+                Keep RSVP
+              </button>
+              <button
+                className={styles.btnDanger}
+                onClick={handleConfirmDeclineWithRefundWarning}
+              >
+                Decline Anyway
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Expanded Details */}
@@ -509,8 +622,6 @@ export function Events() {
     rsvpLoading,
     rsvpConfirmation,
     clearRsvpConfirmation,
-    pay,
-    payLoading,
     refresh,
     subscription,
   } = useEvents({ clubId })
@@ -537,8 +648,6 @@ export function Events() {
     loading: pastEventsLoading,
     rsvp: pastRsvp,
     rsvpLoading: pastRsvpLoading,
-    pay: pastPay,
-    payLoading: pastPayLoading,
   } = useEvents({
     clubId: showPastEvents ? clubId : '',
     from: pastFrom,
@@ -705,8 +814,7 @@ export function Events() {
                 event={event}
                 onRsvp={rsvp}
                 rsvpLoading={rsvpLoading === event.id}
-                onPay={pay}
-                payLoading={payLoading === event.id}
+                onPaymentComplete={refresh}
               />
             ))}
           </div>
@@ -747,8 +855,7 @@ export function Events() {
                         event={event}
                         onRsvp={pastRsvp}
                         rsvpLoading={pastRsvpLoading === event.id}
-                        onPay={pastPay}
-                        payLoading={pastPayLoading === event.id}
+                        onPaymentComplete={refresh}
                         isPast
                       />
                     ))}

@@ -302,6 +302,56 @@ export async function createCheckout(eventId: string): Promise<CheckoutResponse>
   })
 }
 
+// Payment Intent (Cash/BACS)
+export type PaymentMethod = 'cash' | 'bank_transfer'
+
+export interface PaymentIntentResponse {
+  success: boolean
+  method: PaymentMethod
+  reference: string | null
+  bank_details: {
+    account_name: string
+    sort_code: string
+    account_number: string
+  } | null
+  amount_cents: number
+  currency: string
+}
+
+export interface PaymentStatusResponse {
+  paid: boolean
+  payment: {
+    id: string
+    status: string
+    source: string
+    amount_cents: number
+    currency: string
+    reference: string | null
+    created_at: string
+    effective_at: string | null
+  } | null
+}
+
+export async function getPaymentStatus(eventId: string): Promise<PaymentStatusResponse> {
+  return api<PaymentStatusResponse>(`/events/${eventId}/payment`)
+}
+
+export async function recordPaymentIntent(
+  eventId: string,
+  method: PaymentMethod
+): Promise<PaymentIntentResponse> {
+  return api<PaymentIntentResponse>(`/events/${eventId}/payment`, {
+    method: 'POST',
+    body: { method },
+  })
+}
+
+export async function cancelPaymentIntent(eventId: string): Promise<{ success: boolean }> {
+  return api<{ success: boolean }>(`/events/${eventId}/payment`, {
+    method: 'DELETE',
+  })
+}
+
 // ============================================
 // Billing Plans & Subscriptions
 // ============================================

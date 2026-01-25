@@ -98,6 +98,8 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
                (SELECT COUNT(*) FROM event_rsvps WHERE event_id = e.id AND response = 'maybe') as rsvp_maybe_count,
                (SELECT response FROM event_rsvps WHERE event_id = e.id AND person_id = ?) as my_rsvp,
                (SELECT CASE WHEN status = 'succeeded' THEN 1 ELSE 0 END FROM transactions WHERE event_id = e.id AND person_id = ? AND type = 'charge' ORDER BY created_at DESC LIMIT 1) as has_paid,
+               (SELECT source FROM transactions WHERE event_id = e.id AND person_id = ? AND type = 'charge' ORDER BY created_at DESC LIMIT 1) as payment_source,
+               (SELECT status FROM transactions WHERE event_id = e.id AND person_id = ? AND type = 'charge' ORDER BY created_at DESC LIMIT 1) as payment_status,
                (SELECT 1 FROM subscription_usages su WHERE su.event_id = e.id AND su.subscription_id = ?) as subscription_used
         FROM events e
         WHERE e.club_id = ?
@@ -108,7 +110,7 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
         ORDER BY e.starts_at_utc ASC
         LIMIT ?
       `)
-      .bind(person.id, person.id, subscription?.id || '', clubId, status, from, to, limit)
+      .bind(person.id, person.id, person.id, person.id, subscription?.id || '', clubId, status, from, to, limit)
       .all()
 
     // For each event, calculate if payment is required based on subscription
@@ -152,9 +154,17 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
           }
         }
 
-        // If already paid, no payment required
+        // If already paid (Stripe succeeded), no payment required
         if (event.has_paid === 1) {
           paymentRequired = false
+        }
+
+        // If committed to cash/BACS (pending status), no payment required
+        // Cash/BACS with pending status means user has committed to pay
+        if (event.payment_source && ['cash', 'bank_transfer'].includes(event.payment_source as string)) {
+          if (event.payment_status === 'pending' || event.payment_status === 'succeeded') {
+            paymentRequired = false
+          }
         }
 
         // Free events don't require payment

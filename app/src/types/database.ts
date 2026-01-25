@@ -158,6 +158,10 @@ export interface EventRsvp {
   note: string | null
 }
 
+// Payment source types
+export type PaymentSource = 'stripe' | 'cash' | 'bank_transfer' | 'manual'
+export type PaymentStatus = 'pending' | 'succeeded' | 'failed' | 'cancelled'
+
 // Extended Event with RSVP counts (returned by /api/events)
 export interface EventWithRsvp extends Event {
   rsvp_yes_count: number
@@ -165,6 +169,8 @@ export interface EventWithRsvp extends Event {
   rsvp_maybe_count: number
   my_rsvp: RsvpResponse | null
   has_paid: number | null // 1 if paid, 0 or null if not
+  payment_source: PaymentSource | null // stripe, cash, bank_transfer
+  payment_status: PaymentStatus | null // pending, succeeded, failed, cancelled
   // Subscription info
   subscription_status: SubscriptionStatus | null
   subscription_plan: string | null
