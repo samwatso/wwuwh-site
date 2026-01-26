@@ -177,11 +177,16 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       return errorResponse('Admin access required', 403)
     }
 
-    // Verify event exists and belongs to club
+    // Verify event exists and belongs to club, also get club name
     const event = await db
-      .prepare('SELECT id, title, starts_at_utc, timezone FROM events WHERE id = ? AND club_id = ?')
+      .prepare(`
+        SELECT e.id, e.title, e.starts_at_utc, e.timezone, c.name as club_name
+        FROM events e
+        JOIN clubs c ON c.id = e.club_id
+        WHERE e.id = ? AND e.club_id = ?
+      `)
       .bind(eventId, club_id)
-      .first<{ id: string; title: string; starts_at_utc: string; timezone: string }>()
+      .first<{ id: string; title: string; starts_at_utc: string; timezone: string; club_name: string }>()
 
     if (!event) {
       return errorResponse('Event not found', 404)
@@ -269,6 +274,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
           event.title,
           event.starts_at_utc,
           event.timezone,
+          event.club_name,
           [...new Set(allInvitedPersonIds)] // Deduplicate
         )
       )

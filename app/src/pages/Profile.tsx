@@ -618,7 +618,7 @@ export function Profile() {
             </div>
           ) : permissionStatus === 'denied' ? (
             <div className={styles.notificationInfo}>
-              <p>Notifications are disabled. To enable them, go to Settings &gt; Wickham Hub &gt; Notifications.</p>
+              <p>Notifications are disabled. To enable them, go to Settings &gt; DeepEvnts &gt; Notifications.</p>
             </div>
           ) : permissionStatus === 'prompt' ? (
             <div className={styles.notificationAction}>

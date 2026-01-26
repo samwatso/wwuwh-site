@@ -242,6 +242,7 @@ export async function sendEventInvitationNotification(
   eventTitle: string,
   startsAtUtc: string,
   timezone: string,
+  clubName: string,
   invitedPersonIds: string[]
 ): Promise<void> {
   // Get device tokens for invited people
@@ -268,7 +269,7 @@ export async function sendEventInvitationNotification(
   const payload: APNsPayload = {
     aps: {
       alert: {
-        title: 'Wickham Hub Event Invite',
+        title: clubName,
         body
       },
       sound: 'default',
