@@ -73,8 +73,10 @@ export function usePushNotifications(): UsePushNotificationsReturn {
     const registrationListener = PushNotifications.addListener('registration', async (token: Token) => {
       console.log('Push registration success, token:', token.value)
       try {
-        await registerDeviceToken(token.value, 'ios')
-        console.log('Device token registered with backend')
+        // Detect platform: 'ios' for APNs, 'android' for FCM
+        const platform = Capacitor.getPlatform()
+        await registerDeviceToken(token.value, platform)
+        console.log(`Device token registered with backend for ${platform}`)
       } catch (err) {
         console.error('Failed to register token with backend:', err)
       }

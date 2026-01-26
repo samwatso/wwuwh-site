@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "203234044834",
+    "project_id": "wwuwh-88f09",
+    "storage_bucket": "wwuwh-88f09.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:203234044834:android:848cccff45bac27e4860fb",
+        "android_client_info": {
+          "package_name": "com.wwuwh.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAc7FTaNJXA00bDsIXLjNnfKu2DACMblK8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

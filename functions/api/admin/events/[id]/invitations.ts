@@ -8,7 +8,7 @@
 import { Env, jsonResponse, errorResponse } from '../../../../types'
 import { withAuth } from '../../../../middleware/auth'
 import { isAdmin } from '../../../../middleware/admin'
-import { sendEventInvitationNotification } from '../../../../lib/apns'
+import { sendEventInvitationNotifications } from '../../../../lib/push'
 
 interface PersonInvitation {
   id: string
@@ -267,7 +267,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     if (allInvitedPersonIds.length > 0) {
       // Use waitUntil to send notifications in background
       context.waitUntil(
-        sendEventInvitationNotification(
+        sendEventInvitationNotifications(
           context.env,
           db,
           eventId,

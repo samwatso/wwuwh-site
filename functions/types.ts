@@ -22,6 +22,11 @@ export interface Env {
   APNS_TEAM_ID?: string         // Your Apple Developer Team ID
   APNS_PRIVATE_KEY?: string     // Private key content (base64 encoded)
   APNS_BUNDLE_ID?: string       // App bundle ID (e.g., com.wwuwh.app)
+
+  // Firebase Cloud Messaging (FCM) for Android
+  FCM_PROJECT_ID?: string       // Firebase project ID
+  FCM_CLIENT_EMAIL?: string     // Service account email
+  FCM_PRIVATE_KEY?: string      // Service account private key (base64 encoded)
 }
 
 /**

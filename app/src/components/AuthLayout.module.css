@@ -19,7 +19,8 @@
   align-items: center;
   justify-content: flex-end;
   padding: 4px var(--space-md);
-  padding-top: calc(4px + env(safe-area-inset-top, 0px));
+  /* Use max() to ensure minimum padding for Android when safe-area-inset isn't reported */
+  padding-top: max(36px, calc(4px + env(safe-area-inset-top, 36px)));
   background: var(--color-white);
   border-bottom: 1px solid var(--grey-300);
 }
@@ -175,7 +176,8 @@
 .main {
   flex: 1;
   padding: var(--space-md);
-  padding-bottom: calc(var(--space-md) + 72px + env(safe-area-inset-bottom, 0px)); /* Account for bottom nav + safe area */
+  /* Account for bottom nav + safe area, with fallback for Android */
+  padding-bottom: calc(var(--space-md) + 80px + max(16px, env(safe-area-inset-bottom, 16px)));
 }
 
 @media (min-width: 768px) {
@@ -196,8 +198,9 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  height: calc(64px + env(safe-area-inset-bottom, 0px));
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* Use max() to ensure minimum padding for Android gesture navigation */
+  height: calc(64px + max(16px, env(safe-area-inset-bottom, 16px)));
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
   background: var(--color-white);
   border-top: 1px solid var(--grey-300);
 }
