@@ -12,6 +12,7 @@ const ALLOWED_ORIGINS = [
   'https://www.wwuwh.com',
   'capacitor://localhost',  // iOS Capacitor
   'http://localhost',       // iOS Capacitor (alternative)
+  'https://localhost',      // Android Capacitor
   'http://localhost:5173',  // Local dev
   'http://localhost:3000',  // Local dev alternative
 ]

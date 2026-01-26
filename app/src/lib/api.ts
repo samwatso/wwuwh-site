@@ -6,18 +6,29 @@ import { supabase } from './supabase'
 import { Browser } from '@capacitor/browser'
 import type { Person, Club, ClubMembership, ClubMemberRole, EventWithRsvp, EventRsvp, RsvpResponse as RsvpResponseType } from '@/types/database'
 
-// Use full URL for Capacitor (iOS), relative for web
-const isCapacitor = typeof window !== 'undefined' &&
-  (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
+// Check if running in Capacitor native app (iOS/Android)
+function isNativePlatform(): boolean {
+  return typeof window !== 'undefined' &&
+    !!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
+}
+
+/**
+ * Get the API base URL - dynamic check for Capacitor
+ */
+function getApiBase(): string {
+  return isNativePlatform()
+    ? 'https://wwuwh.com/api'  // Production API for native apps (iOS/Android)
+    : '/api'                    // Relative path for web
+}
 
 /**
  * Open an external URL (like Stripe Checkout)
- * Uses Capacitor Browser on iOS for in-app browser experience
+ * Uses Capacitor Browser on iOS/Android for in-app browser experience
  * Falls back to window.location for web
  */
 export async function openExternalUrl(url: string): Promise<void> {
-  if (isCapacitor) {
-    // Open in in-app browser (Safari View Controller on iOS)
+  if (isNativePlatform()) {
+    // Open in in-app browser (Safari View Controller on iOS, Chrome Custom Tab on Android)
     // User can tap "Done" to return to the app
     await Browser.open({ url })
   } else {
@@ -30,15 +41,11 @@ export async function openExternalUrl(url: string): Promise<void> {
  * For Capacitor, always use production URL so redirects work in external browser
  */
 export function getReturnUrlOrigin(): string {
-  if (isCapacitor) {
+  if (isNativePlatform()) {
     return 'https://wwuwh.com'
   }
   return window.location.origin
 }
-
-const API_BASE = isCapacitor
-  ? 'https://wwuwh.com/api'  // Production API for iOS app
-  : '/api'                    // Relative path for web
 
 interface ApiResponse<T> {
   ok: boolean
@@ -71,7 +78,7 @@ export async function api<T>(endpoint: string, options: ApiOptions = {}): Promis
     headers['Authorization'] = `Bearer ${session.access_token}`
   }
 
-  const response = await fetch(`${API_BASE}${endpoint}`, {
+  const response = await fetch(`${getApiBase()}${endpoint}`, {
     method,
     headers,
     body: body ? JSON.stringify(body) : undefined,
@@ -107,7 +114,7 @@ export interface HealthResponse {
 
 export async function checkHealth(): Promise<HealthResponse> {
   // Health endpoint doesn't require auth
-  const response = await fetch(`${API_BASE}/health`)
+  const response = await fetch(`${getApiBase()}/health`)
   const json: ApiResponse<HealthResponse> = await response.json()
   return json.data as HealthResponse
 }
@@ -266,7 +273,7 @@ export async function setEventRsvp(
     headers['Authorization'] = `Bearer ${session.access_token}`
   }
 
-  const res = await fetch(`${API_BASE}/events/${eventId}/rsvp`, {
+  const res = await fetch(`${getApiBase()}/events/${eventId}/rsvp`, {
     method: 'POST',
     headers,
     body: JSON.stringify(options),
@@ -1765,5 +1772,5 @@ export function getBillingExportUrl(
   if (from) params.set('from', from)
   if (to) params.set('to', to)
   if (eventId) params.set('event_id', eventId)
-  return `${API_BASE}/admin/billing/export?${params}`
+  return `${getApiBase()}/admin/billing/export?${params}`
 }
