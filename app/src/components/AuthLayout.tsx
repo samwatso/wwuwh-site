@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import { useAdmin } from '@/hooks/useAdmin'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { Avatar } from './Avatar'
 import styles from './AuthLayout.module.css'
 
@@ -21,6 +22,9 @@ export function AuthLayout({ children }: AuthLayoutProps) {
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  // Initialize push notifications (auto-registers when user is authenticated)
+  usePushNotifications()
 
   // Close menu when clicking outside
   useEffect(() => {

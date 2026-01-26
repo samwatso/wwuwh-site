@@ -16,6 +16,12 @@ export interface Env {
   STRIPE_SECRET_KEY?: string
   STRIPE_WEBHOOK_SECRET?: string
   STRIPE_PUBLISHABLE_KEY?: string
+
+  // Apple Push Notifications (APNs)
+  APNS_KEY_ID?: string          // Key ID from Apple Developer Portal
+  APNS_TEAM_ID?: string         // Your Apple Developer Team ID
+  APNS_PRIVATE_KEY?: string     // Private key content (base64 encoded)
+  APNS_BUNDLE_ID?: string       // App bundle ID (e.g., com.wwuwh.app)
 }
 
 /**

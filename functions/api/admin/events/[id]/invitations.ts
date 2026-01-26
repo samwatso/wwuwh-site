@@ -8,6 +8,7 @@
 import { Env, jsonResponse, errorResponse } from '../../../../types'
 import { withAuth } from '../../../../middleware/auth'
 import { isAdmin } from '../../../../middleware/admin'
+import { sendEventInvitationNotification } from '../../../../lib/apns'
 
 interface PersonInvitation {
   id: string
@@ -178,9 +179,9 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
 
     // Verify event exists and belongs to club
     const event = await db
-      .prepare('SELECT id FROM events WHERE id = ? AND club_id = ?')
+      .prepare('SELECT id, title FROM events WHERE id = ? AND club_id = ?')
       .bind(eventId, club_id)
-      .first()
+      .first<{ id: string; title: string }>()
 
     if (!event) {
       return errorResponse('Event not found', 404)
@@ -231,6 +232,44 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
           }
         }
       }
+    }
+
+    // Send push notifications to newly invited people
+    const allInvitedPersonIds: string[] = []
+
+    // Add directly invited person IDs
+    if (person_ids && person_ids.length > 0) {
+      allInvitedPersonIds.push(...person_ids)
+    }
+
+    // Add person IDs from invited groups
+    if (group_ids && group_ids.length > 0) {
+      const groupPlaceholders = group_ids.map(() => '?').join(',')
+      const groupMembers = await db
+        .prepare(`
+          SELECT DISTINCT person_id FROM group_members
+          WHERE group_id IN (${groupPlaceholders})
+        `)
+        .bind(...group_ids)
+        .all<{ person_id: string }>()
+
+      if (groupMembers.results) {
+        allInvitedPersonIds.push(...groupMembers.results.map(m => m.person_id))
+      }
+    }
+
+    // Send notifications asynchronously (don't block the response)
+    if (allInvitedPersonIds.length > 0) {
+      // Use waitUntil to send notifications in background
+      context.waitUntil(
+        sendEventInvitationNotification(
+          context.env,
+          db,
+          eventId,
+          event.title,
+          [...new Set(allInvitedPersonIds)] // Deduplicate
+        )
+      )
     }
 
     return jsonResponse({

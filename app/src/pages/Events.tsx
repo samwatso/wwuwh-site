@@ -1,5 +1,6 @@
 import { useMemo, useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
+import { Browser } from '@capacitor/browser'
 import { useProfile } from '@/hooks/useProfile'
 import { useEvents } from '@/hooks/useEvents'
 import { Spinner, Avatar, CalendarPopup, PaymentOptionsModal } from '@/components'
@@ -417,16 +418,9 @@ function EventCard({ event, onRsvp, rsvpLoading, onPaymentComplete, isPast }: Ev
               const hasCashPending = event.payment_source === 'cash' && event.payment_status === 'pending'
               const hasBacsPending = event.payment_source === 'bank_transfer' && event.payment_status === 'pending'
 
-              // Stripe paid - locked green badge
+              // Stripe paid - don't show button here, badge in header is enough
               if (isPaidStripe) {
-                return (
-                  <span className={styles.paidBtnLocked}>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="14" height="14">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                    Paid
-                  </span>
-                )
+                return null
               }
 
               // Cash pending - show Cash button
@@ -665,6 +659,17 @@ export function Events() {
       setSearchParams({})
     }
   }, [searchParams, setSearchParams, refresh])
+
+  // Refresh events when returning from in-app browser (iOS Stripe payment)
+  useEffect(() => {
+    const listener = Browser.addListener('browserFinished', () => {
+      // User closed the in-app browser, refresh to check for payment updates
+      refresh()
+    })
+    return () => {
+      listener.then(l => l.remove())
+    }
+  }, [refresh])
 
   useEffect(() => {
     if (paymentMessage) {

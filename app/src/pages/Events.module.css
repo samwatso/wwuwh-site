@@ -1081,7 +1081,29 @@
 }
 
 /* ============================================================================
-   COMPACT MODE (Small Screens < 380px)
+   MOBILE MODE (< 480px) - Stack actions vertically
+   ============================================================================ */
+
+@media (max-width: 480px) {
+  /* Stack actions vertically on mobile */
+  .cardActions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-xs);
+  }
+
+  .socialProof {
+    justify-content: center;
+  }
+
+  .actionsRight {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
+
+/* ============================================================================
+   COMPACT MODE (Very Small Screens < 380px)
    ============================================================================ */
 
 @media (max-width: 380px) {
@@ -1096,22 +1118,6 @@
 
   .eventTitle {
     font-size: var(--text-sm);
-  }
-
-  /* Stack actions vertically on very small screens */
-  .cardActions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: var(--space-xs);
-  }
-
-  .socialProof {
-    justify-content: center;
-  }
-
-  .actionsRight {
-    justify-content: center;
-    flex-wrap: wrap;
   }
 
   /* Hide location text, show only icon */

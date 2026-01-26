@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { Browser } from '@capacitor/browser'
 import { useProfile } from '@/hooks/useProfile'
 import { useBillingPlans } from '@/hooks/useBillingPlans'
 import { useSubscribe } from '@/hooks/useSubscribe'
@@ -20,7 +21,7 @@ function getSessionsText(sessions: number): string {
 }
 
 export function Subscribe() {
-  const { memberships, subscriptions, loading: profileLoading } = useProfile()
+  const { memberships, subscriptions, loading: profileLoading, refresh: refreshProfile } = useProfile()
   const [searchParams, setSearchParams] = useSearchParams()
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
@@ -62,6 +63,16 @@ export function Subscribe() {
       setMessage({ type: 'error', text: subscribeError })
     }
   }, [subscribeError])
+
+  // Refresh profile when returning from in-app browser (iOS Stripe payment)
+  useEffect(() => {
+    const listener = Browser.addListener('browserFinished', () => {
+      refreshProfile()
+    })
+    return () => {
+      listener.then(l => l.remove())
+    }
+  }, [refreshProfile])
 
   // Loading state
   if (profileLoading || plansLoading) {
