@@ -114,7 +114,7 @@ export const onRequestGet: PagesFunction<Env> = withAdmin(async (context, admin:
         end_at: string | null
       }>()
 
-    // Get attendance counts for the week
+    // Get attendance counts for the week (only session events count towards allowance)
     const attendanceResult = await db
       .prepare(`
         SELECT
@@ -125,6 +125,7 @@ export const onRequestGet: PagesFunction<Env> = withAdmin(async (context, admin:
         WHERE e.club_id = ?
           AND e.starts_at_utc >= ?
           AND e.starts_at_utc <= ?
+          AND e.kind = 'session'
           AND er.response = 'yes'
         GROUP BY er.person_id
       `)

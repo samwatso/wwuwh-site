@@ -209,6 +209,30 @@ export async function sendPushNotifications(
 }
 
 /**
+ * Format event date/time for notification
+ */
+function formatEventDateTime(startsAtUtc: string, timezone: string): string {
+  try {
+    const date = new Date(startsAtUtc)
+
+    // Format: "Tue 28 Jan, 7:30pm"
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'short',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+      timeZone: timezone || 'Europe/London'
+    }
+
+    return date.toLocaleString('en-GB', options).replace(',', '')
+  } catch {
+    return ''
+  }
+}
+
+/**
  * Send event invitation notifications
  */
 export async function sendEventInvitationNotification(
@@ -216,6 +240,8 @@ export async function sendEventInvitationNotification(
   db: D1Database,
   eventId: string,
   eventTitle: string,
+  startsAtUtc: string,
+  timezone: string,
   invitedPersonIds: string[]
 ): Promise<void> {
   // Get device tokens for invited people
@@ -235,11 +261,15 @@ export async function sendEventInvitationNotification(
 
   const deviceTokens = tokens.results.map(t => t.token)
 
+  // Format: "Training Session - Tue 28 Jan, 7:30pm"
+  const dateTime = formatEventDateTime(startsAtUtc, timezone)
+  const body = dateTime ? `${eventTitle} - ${dateTime}` : eventTitle
+
   const payload: APNsPayload = {
     aps: {
       alert: {
-        title: 'New Event Invitation',
-        body: `You've been invited to: ${eventTitle}`
+        title: 'Wickham Hub Event Invite',
+        body
       },
       sound: 'default',
       badge: 1

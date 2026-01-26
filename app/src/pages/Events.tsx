@@ -411,17 +411,11 @@ function EventCard({ event, onRsvp, rsvpLoading, onPaymentComplete, isPast }: Ev
             </svg>
           </button>
 
-          {/* Payment button - show based on payment state */}
-          {!isPast && event.fee_cents && event.fee_cents > 0 && event.payment_mode !== 'free' && (
+          {/* Payment button - only show when attending and not yet paid */}
+          {!isPast && event.my_rsvp === 'yes' && event.fee_cents && event.fee_cents > 0 && event.payment_mode !== 'free' && !hasPaid && (
             (() => {
-              const isPaidStripe = event.payment_source === 'stripe' && event.payment_status === 'succeeded'
               const hasCashPending = event.payment_source === 'cash' && event.payment_status === 'pending'
               const hasBacsPending = event.payment_source === 'bank_transfer' && event.payment_status === 'pending'
-
-              // Stripe paid - don't show button here, badge in header is enough
-              if (isPaidStripe) {
-                return null
-              }
 
               // Cash pending - show Cash button
               if (hasCashPending) {

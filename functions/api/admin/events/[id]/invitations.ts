@@ -179,9 +179,9 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
 
     // Verify event exists and belongs to club
     const event = await db
-      .prepare('SELECT id, title FROM events WHERE id = ? AND club_id = ?')
+      .prepare('SELECT id, title, starts_at_utc, timezone FROM events WHERE id = ? AND club_id = ?')
       .bind(eventId, club_id)
-      .first<{ id: string; title: string }>()
+      .first<{ id: string; title: string; starts_at_utc: string; timezone: string }>()
 
     if (!event) {
       return errorResponse('Event not found', 404)
@@ -267,6 +267,8 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
           db,
           eventId,
           event.title,
+          event.starts_at_utc,
+          event.timezone,
           [...new Set(allInvitedPersonIds)] // Deduplicate
         )
       )

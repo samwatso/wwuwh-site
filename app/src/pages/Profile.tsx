@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import { useSubscribe } from '@/hooks/useSubscribe'
 import { useAwards } from '@/hooks/useAwards'
+import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { Button, Input, FormField, Spinner, Avatar, ImageCropper } from '@/components'
 import { supabase } from '@/lib/supabase'
 import { deleteAccount } from '@/lib/api'
@@ -21,7 +22,9 @@ export function Profile() {
   const { person, memberships, subscriptions, loading, error, synced, updateName, updatePhoto, updateEmail } = useProfile()
   const { openBillingPortal, openingPortal } = useSubscribe()
   const { awards, lockedAwards, currentStreak, loading: awardsLoading } = useAwards()
+  const { permissionStatus, requestPermission, isSupported: notificationsSupported } = usePushNotifications()
   const navigate = useNavigate()
+  const [requestingNotifications, setRequestingNotifications] = useState(false)
 
   const [isEditing, setIsEditing] = useState(false)
   const [editName, setEditName] = useState('')
@@ -187,6 +190,15 @@ export function Profile() {
       const message = err instanceof Error ? err.message : 'Failed to delete account'
       setDeleteError(message)
       setDeleting(false)
+    }
+  }
+
+  const handleEnableNotifications = async () => {
+    setRequestingNotifications(true)
+    try {
+      await requestPermission()
+    } finally {
+      setRequestingNotifications(false)
     }
   }
 
@@ -574,6 +586,54 @@ export function Profile() {
           </div>
         )}
       </div>
+
+      {/* Notifications Card - iOS only */}
+      {notificationsSupported && (
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Notifications</h2>
+          </div>
+          <div className={styles.details}>
+            <div className={styles.row}>
+              <span className={styles.label}>Status</span>
+              <span className={styles.value}>
+                {permissionStatus === 'granted' && (
+                  <span className={styles.notificationEnabled}>Enabled</span>
+                )}
+                {permissionStatus === 'denied' && (
+                  <span className={styles.notificationDenied}>Disabled</span>
+                )}
+                {permissionStatus === 'prompt' && (
+                  <span className={styles.notificationPrompt}>Not set</span>
+                )}
+                {permissionStatus === 'unknown' && (
+                  <span className={styles.notificationPrompt}>Checking...</span>
+                )}
+              </span>
+            </div>
+          </div>
+          {permissionStatus === 'granted' ? (
+            <div className={styles.notificationInfo}>
+              <p>You'll receive notifications when you're invited to events.</p>
+            </div>
+          ) : permissionStatus === 'denied' ? (
+            <div className={styles.notificationInfo}>
+              <p>Notifications are disabled. To enable them, go to Settings &gt; Wickham Hub &gt; Notifications.</p>
+            </div>
+          ) : permissionStatus === 'prompt' ? (
+            <div className={styles.notificationAction}>
+              <p>Get notified when you're invited to events.</p>
+              <Button
+                size="sm"
+                onClick={handleEnableNotifications}
+                loading={requestingNotifications}
+              >
+                Enable Notifications
+              </Button>
+            </div>
+          ) : null}
+        </div>
+      )}
 
       {/* Account Card */}
       <div className={styles.card}>
