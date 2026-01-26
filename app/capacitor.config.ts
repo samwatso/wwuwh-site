@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.wwuwh.app',
-  appName: 'DeepEvnts',
+  appName: 'Wickham Wave',
   webDir: 'dist',
   ios: {
     allowsLinkPreview: false,

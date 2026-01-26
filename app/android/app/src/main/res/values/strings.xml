@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">DeepEvnts</string>
-    <string name="title_activity_main">DeepEvnts</string>
+    <string name="app_name">Wickham Wave</string>
+    <string name="title_activity_main">Wickham Wave</string>
     <string name="package_name">com.wwuwh.app</string>
     <string name="custom_url_scheme">com.wwuwh.app</string>
 </resources>
