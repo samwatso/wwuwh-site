@@ -32,3 +32,4 @@ npm-debug.log*
 *.tmp
 *.temp
 app/android/app/google-services.json
+app/android/app/google-services.json
