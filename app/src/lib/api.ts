@@ -3,11 +3,38 @@
  */
 
 import { supabase } from './supabase'
+import { Browser } from '@capacitor/browser'
 import type { Person, Club, ClubMembership, ClubMemberRole, EventWithRsvp, EventRsvp, RsvpResponse as RsvpResponseType } from '@/types/database'
 
 // Use full URL for Capacitor (iOS), relative for web
 const isCapacitor = typeof window !== 'undefined' &&
   (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
+
+/**
+ * Open an external URL (like Stripe Checkout)
+ * Uses Capacitor Browser on iOS for in-app browser experience
+ * Falls back to window.location for web
+ */
+export async function openExternalUrl(url: string): Promise<void> {
+  if (isCapacitor) {
+    // Open in in-app browser (Safari View Controller on iOS)
+    // User can tap "Done" to return to the app
+    await Browser.open({ url })
+  } else {
+    window.location.href = url
+  }
+}
+
+/**
+ * Get the appropriate origin for return URLs
+ * For Capacitor, always use production URL so redirects work in external browser
+ */
+export function getReturnUrlOrigin(): string {
+  if (isCapacitor) {
+    return 'https://wwuwh.com'
+  }
+  return window.location.origin
+}
 
 const API_BASE = isCapacitor
   ? 'https://wwuwh.com/api'  // Production API for iOS app
@@ -295,15 +322,14 @@ export interface CheckoutResponse {
 }
 
 export async function createCheckout(eventId: string): Promise<CheckoutResponse> {
-  // Pass the current origin so redirects come back to the right place
-  // (Vite dev server vs production)
-  const origin = window.location.origin
+  // Use production URL for Capacitor so redirects work in external browser
+  const origin = getReturnUrlOrigin()
   return api<CheckoutResponse>('/checkout', {
     method: 'POST',
     body: {
       event_id: eventId,
-      success_url: `${origin}/app/events?payment=success&event_id=${eventId}`,
-      cancel_url: `${origin}/app/events?payment=cancelled`,
+      success_url: `${origin}/app/payment-success?event_id=${eventId}`,
+      cancel_url: `${origin}/app/payment-cancelled`,
     },
   })
 }
@@ -386,13 +412,13 @@ export interface SubscribeResponse {
 }
 
 export async function createSubscription(planId: string): Promise<SubscribeResponse> {
-  const origin = window.location.origin
+  const origin = getReturnUrlOrigin()
   return api<SubscribeResponse>('/subscribe', {
     method: 'POST',
     body: {
       plan_id: planId,
-      success_url: `${origin}/app/subscribe?success=true&plan_id=${planId}`,
-      cancel_url: `${origin}/app/subscribe?cancelled=true`,
+      success_url: `${origin}/app/payment-success?type=subscription&plan_id=${planId}`,
+      cancel_url: `${origin}/app/payment-cancelled`,
     },
   })
 }
@@ -402,7 +428,7 @@ export interface BillingPortalResponse {
 }
 
 export async function createBillingPortalSession(): Promise<BillingPortalResponse> {
-  const origin = window.location.origin
+  const origin = getReturnUrlOrigin()
   return api<BillingPortalResponse>('/billing-portal', {
     method: 'POST',
     body: {

@@ -5,7 +5,7 @@ const isCapacitor = typeof window !== 'undefined' &&
   (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
 
 const Router = isCapacitor ? HashRouter : BrowserRouter
-import { Login, Signup, Dashboard, ForgotPassword, ResetPassword } from '@/pages'
+import { Login, Signup, Dashboard, ForgotPassword, ResetPassword, PaymentSuccess, PaymentCancelled } from '@/pages'
 import { AuthGuard, GuestGuard, AdminGuard, AuthLayout } from '@/components'
 
 // Member pages
@@ -38,6 +38,10 @@ export default function App() {
 
         {/* Password reset - accessible regardless of auth state */}
         <Route path="/app/reset-password" element={<ResetPassword />} />
+
+        {/* Payment result pages - accessible without auth (shown in in-app browser) */}
+        <Route path="/app/payment-success" element={<PaymentSuccess />} />
+        <Route path="/app/payment-cancelled" element={<PaymentCancelled />} />
 
         {/* Protected routes - require authentication */}
         <Route element={<AuthGuard />}>

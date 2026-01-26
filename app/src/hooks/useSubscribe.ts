@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback } from 'react'
-import { createSubscription, createBillingPortalSession } from '@/lib/api'
+import { createSubscription, createBillingPortalSession, openExternalUrl } from '@/lib/api'
 
 export interface UseSubscribeReturn {
   subscribe: (planId: string) => Promise<void>
@@ -26,8 +26,9 @@ export function useSubscribe(): UseSubscribeReturn {
 
     try {
       const response = await createSubscription(planId)
-      // Redirect to Stripe Checkout
-      window.location.href = response.checkout_url
+      // Open Stripe Checkout (in-app browser on iOS)
+      await openExternalUrl(response.checkout_url)
+      setSubscribing(null)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to start checkout'
       setError(message)
@@ -41,8 +42,9 @@ export function useSubscribe(): UseSubscribeReturn {
 
     try {
       const response = await createBillingPortalSession()
-      // Redirect to Stripe Customer Portal
-      window.location.href = response.url
+      // Open Stripe Customer Portal (in-app browser on iOS)
+      await openExternalUrl(response.url)
+      setOpeningPortal(false)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to open billing portal'
       setError(message)

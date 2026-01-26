@@ -148,6 +148,14 @@ img {
   display: block;
 }
 
+/* Prevent iOS zoom on form inputs - requires 16px minimum */
+/* Using !important to override component-level styles */
+input,
+select,
+textarea {
+  font-size: 16px !important;
+}
+
 a {
   color: var(--color-water);
   text-decoration: none;

@@ -11,6 +11,7 @@ import {
   recordPaymentIntent,
   cancelPaymentIntent,
   createCheckout,
+  openExternalUrl,
   PaymentMethod,
   PaymentIntentResponse,
 } from '@/lib/api'
@@ -105,7 +106,10 @@ export function PaymentOptionsModal({
 
     try {
       const response = await createCheckout(event.id)
-      window.location.href = response.checkout_url
+      await openExternalUrl(response.checkout_url)
+      // On iOS, user returns by tapping "Done" - close modal
+      setLoading(false)
+      onClose()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create checkout')
       setView('error')

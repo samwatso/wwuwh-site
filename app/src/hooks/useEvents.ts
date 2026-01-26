@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { listEvents, setEventRsvp, createCheckout, EventsListParams, SubscriptionInfo, SetEventRsvpResult } from '@/lib/api'
+import { listEvents, setEventRsvp, createCheckout, openExternalUrl, EventsListParams, SubscriptionInfo, SetEventRsvpResult } from '@/lib/api'
 import type { EventWithRsvp, RsvpResponse } from '@/types/database'
 
 export interface UseEventsParams {
@@ -157,8 +157,9 @@ export function useEvents(params: UseEventsParams): UseEventsReturn {
 
     try {
       const response = await createCheckout(eventId)
-      // Redirect to Stripe Checkout
-      window.location.href = response.checkout_url
+      // Open Stripe Checkout (in-app browser on iOS)
+      await openExternalUrl(response.checkout_url)
+      setPayLoading(null)
     } catch (err) {
       setPayLoading(null)
       throw err

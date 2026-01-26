@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { User, Session, AuthError, AuthChangeEvent } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { getReturnUrlOrigin } from '@/lib/api'
 
 export interface AuthState {
   user: User | null
@@ -74,8 +75,8 @@ export function useAuth(): UseAuthReturn {
       email,
       password,
       options: {
-        // Redirect to app after email confirmation
-        emailRedirectTo: `${window.location.origin}/app`,
+        // Redirect to app after email confirmation (use web URL for Capacitor)
+        emailRedirectTo: `${getReturnUrlOrigin()}/app`,
       },
     })
     return { error }
