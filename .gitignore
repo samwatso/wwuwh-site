@@ -31,3 +31,4 @@ npm-debug.log*
 # Temporary files
 *.tmp
 *.temp
+app/android/app/google-services.json
