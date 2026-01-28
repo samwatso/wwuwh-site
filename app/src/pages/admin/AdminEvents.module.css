@@ -1228,7 +1228,13 @@
 
   .formRow {
     grid-template-columns: 1fr 1fr;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
+    overflow: hidden;
+  }
+
+  .formGroup {
+    min-width: 0;
+    overflow: hidden;
   }
 
   .actionsCompact {
@@ -1260,6 +1266,7 @@
 
   .modalBody {
     padding: var(--space-sm);
+    overflow-x: hidden;
   }
 
   .modalFooterSticky {
@@ -1285,6 +1292,8 @@
   .formInput[type="date"],
   .formInput[type="time"] {
     min-width: 0;
+    max-width: 100%;
+    width: 100%;
   }
 
   .formInput[type="number"] {
