@@ -757,7 +757,11 @@ export function AdminMembers() {
 
     // Subscription plan filter
     if (planFilter) {
-      result = result.filter(m => m.subscription_plan === planFilter)
+      if (planFilter === 'none') {
+        result = result.filter(m => !m.subscription_status || m.subscription_status !== 'active')
+      } else {
+        result = result.filter(m => m.subscription_plan === planFilter)
+      }
     }
 
     return result
@@ -871,23 +875,24 @@ export function AdminMembers() {
           <option value="suspended">Suspended</option>
           <option value="left">Left</option>
         </select>
-        {subscriptionPlans.length > 0 && (
-          <select
-            value={planFilter}
-            onChange={(e) => {
-              setPlanFilter(e.target.value)
-              if (e.target.value) {
-                setCategoryFilter('subscribed')
-              }
-            }}
-            className={styles.statusSelect}
-          >
-            <option value="">All plans</option>
-            {subscriptionPlans.map(plan => (
-              <option key={plan} value={plan}>{plan}</option>
-            ))}
-          </select>
-        )}
+        <select
+          value={planFilter}
+          onChange={(e) => {
+            setPlanFilter(e.target.value)
+            if (e.target.value && e.target.value !== 'none') {
+              setCategoryFilter('subscribed')
+            } else if (e.target.value === 'none') {
+              setCategoryFilter('all')
+            }
+          }}
+          className={styles.statusSelect}
+        >
+          <option value="">All plans</option>
+          <option value="none">No subscription</option>
+          {subscriptionPlans.map(plan => (
+            <option key={plan} value={plan}>{plan}</option>
+          ))}
+        </select>
       </div>
 
       {/* Members List */}

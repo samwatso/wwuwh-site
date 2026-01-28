@@ -438,7 +438,7 @@ function EventCard({ event, onRsvp, rsvpLoading, onPaymentComplete, isPast }: Ev
           </button>
 
           {/* Payment button - only show when attending and not yet paid */}
-          {!isPast && event.my_rsvp === 'yes' && (event.computed_price_cents ?? event.fee_cents) && (event.computed_price_cents ?? event.fee_cents)! > 0 && event.payment_mode !== 'free' && !hasPaid && (
+          {!isPast && event.my_rsvp === 'yes' && (event.computed_price_cents ?? event.fee_cents ?? 0) > 0 && event.payment_mode !== 'free' && !hasPaid && (
             (() => {
               const hasCashPending = event.payment_source === 'cash' && event.payment_status === 'pending'
               const hasBacsPending = event.payment_source === 'bank_transfer' && event.payment_status === 'pending'

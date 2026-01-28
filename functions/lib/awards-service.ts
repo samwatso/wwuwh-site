@@ -281,7 +281,8 @@ async function checkRsvpAwards(
         'manchester', 'birmingham', 'liverpool', 'newcastle', 'cardiff', 'edinburgh',
         'glasgow', 'belfast', 'nottingham', 'southampton', 'portsmouth', 'brighton',
         'oxford', 'cambridge', 'exeter', 'plymouth', 'norwich', 'coventry', 'leicester',
-        'crawley', 'bromley', 'croydon', 'kent', 'surrey', 'essex', 'hertfordshire'
+        'crawley', 'bromley', 'croydon', 'kent', 'surrey', 'essex', 'hertfordshire',
+        'egham', 'achieve lifestyle'
       ]
       const isUkLocation = ukLocations.some(loc => locationLower.includes(loc))
 
