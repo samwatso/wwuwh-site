@@ -6,7 +6,8 @@ import { useProfile } from '@/hooks/useProfile'
 import { useSubscribe } from '@/hooks/useSubscribe'
 import { useAwards, Award } from '@/hooks/useAwards'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
-import { Button, Input, FormField, Spinner, Avatar, ImageCropper, Skeleton } from '@/components'
+import { useNetworkStatus } from '@/hooks/useNetworkStatus'
+import { Button, Input, FormField, Spinner, Avatar, ImageCropper, Skeleton, OfflineNotice } from '@/components'
 import { AnimatedBadge } from '@/components/badges'
 import { supabase } from '@/lib/supabase'
 import { deleteAccount } from '@/lib/api'
@@ -32,6 +33,7 @@ export function Profile() {
   const { openBillingPortal, openingPortal } = useSubscribe()
   const { awards, lockedAwards, currentStreak, loading: awardsLoading } = useAwards()
   const { permissionStatus, requestPermission, isSupported: notificationsSupported } = usePushNotifications()
+  const { isOffline } = useNetworkStatus()
   const navigate = useNavigate()
   const [requestingNotifications, setRequestingNotifications] = useState(false)
 
@@ -241,6 +243,15 @@ export function Profile() {
     } finally {
       setRequestingNotifications(false)
     }
+  }
+
+  // Show offline notice if no connection and no cached profile
+  if (isOffline && !person) {
+    return (
+      <div className={styles.container}>
+        <OfflineNotice message="Connect to the internet to view and edit your profile." />
+      </div>
+    )
   }
 
   if (loading) {

@@ -42,6 +42,14 @@ const ADDITIONAL_TEAMS = [
 // Threshold for showing "add more teams" option
 const LARGE_GROUP_THRESHOLD = 12
 
+// Guest player (frontend-only, not persisted to database)
+export interface GuestPlayer {
+  id: string
+  name: string
+  team_id: string
+  position_code: 'F' | 'W' | 'C' | 'B' | null
+}
+
 // Helper to format date
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr)
@@ -117,17 +125,57 @@ function PlayerCard({ assignment, canAssignTeams, onEdit }: PlayerCardProps) {
   )
 }
 
+interface GuestPlayerCardProps {
+  guest: GuestPlayer
+  canAssignTeams: boolean
+  onRemove: (id: string) => void
+}
+
+function GuestPlayerCard({ guest, canAssignTeams, onRemove }: GuestPlayerCardProps) {
+  const position = POSITIONS.find((p) => p.code === guest.position_code)
+
+  return (
+    <div
+      className={`${styles.playerCard} ${canAssignTeams ? styles.playerCardEditable : ''}`}
+      onClick={canAssignTeams ? () => onRemove(guest.id) : undefined}
+    >
+      <Avatar name={guest.name} size="sm" className={styles.playerAvatar} />
+      <div className={styles.playerInfo}>
+        <div className={styles.playerName}>
+          {formatShortName(guest.name)}
+          <span className={styles.guestBadge}>Guest</span>
+        </div>
+        {position && <div className={styles.playerPosition}>{position.name}</div>}
+      </div>
+    </div>
+  )
+}
+
 interface TeamCardProps {
   name: string
   assignments: TeamAssignment[]
+  guestPlayers?: GuestPlayer[]
   color?: string
   canAssignTeams: boolean
   onEditPlayer: (assignment: TeamAssignment) => void
+  onRemoveGuest?: (id: string) => void
 }
 
-function TeamCard({ name, assignments, color, canAssignTeams, onEditPlayer }: TeamCardProps) {
+function TeamCard({ name, assignments, guestPlayers = [], color, canAssignTeams, onEditPlayer, onRemoveGuest }: TeamCardProps) {
   const grouped = useMemo(() => groupByPosition(assignments), [assignments])
-  const playingCount = assignments.filter((a) => a.activity === 'play').length
+  const guestsByPosition = useMemo(() => {
+    const map = new Map<string, GuestPlayer[]>()
+    POSITIONS.forEach((pos) => map.set(pos.code, []))
+    map.set('none', [])
+    guestPlayers.forEach((g) => {
+      const key = g.position_code || 'none'
+      const group = map.get(key) || []
+      group.push(g)
+      map.set(key, group)
+    })
+    return map
+  }, [guestPlayers])
+  const playingCount = assignments.filter((a) => a.activity === 'play').length + guestPlayers.length
 
   return (
     <div className={styles.teamCard} style={{ '--team-color': color } as React.CSSProperties}>
@@ -138,7 +186,8 @@ function TeamCard({ name, assignments, color, canAssignTeams, onEditPlayer }: Te
       <div className={styles.teamPlayers}>
         {POSITIONS.map((pos) => {
           const posPlayers = grouped.get(pos.code) || []
-          if (posPlayers.length === 0) return null
+          const posGuests = guestsByPosition.get(pos.code) || []
+          if (posPlayers.length === 0 && posGuests.length === 0) return null
           return (
             <div key={pos.code} className={styles.positionGroup}>
               <div className={styles.positionLabel}>{pos.name}</div>
@@ -151,6 +200,14 @@ function TeamCard({ name, assignments, color, canAssignTeams, onEditPlayer }: Te
                     onEdit={onEditPlayer}
                   />
                 ))}
+                {posGuests.map((g) => (
+                  <GuestPlayerCard
+                    key={g.id}
+                    guest={g}
+                    canAssignTeams={canAssignTeams}
+                    onRemove={onRemoveGuest || (() => {})}
+                  />
+                ))}
               </div>
             </div>
           )
@@ -158,7 +215,8 @@ function TeamCard({ name, assignments, color, canAssignTeams, onEditPlayer }: Te
         {/* Players without position */}
         {(() => {
           const noPos = grouped.get('none') || []
-          if (noPos.length === 0) return null
+          const noPosGuests = guestsByPosition.get('none') || []
+          if (noPos.length === 0 && noPosGuests.length === 0) return null
           return (
             <div className={styles.positionGroup}>
               <div className={styles.positionLabel}>Unassigned Position</div>
@@ -169,6 +227,14 @@ function TeamCard({ name, assignments, color, canAssignTeams, onEditPlayer }: Te
                     assignment={a}
                     canAssignTeams={canAssignTeams}
                     onEdit={onEditPlayer}
+                  />
+                ))}
+                {noPosGuests.map((g) => (
+                  <GuestPlayerCard
+                    key={g.id}
+                    guest={g}
+                    canAssignTeams={canAssignTeams}
+                    onRemove={onRemoveGuest || (() => {})}
                   />
                 ))}
               </div>
@@ -477,6 +543,11 @@ export function EventTeams() {
   const [showShareModal, setShowShareModal] = useState(false)
   const [showAddTeamsModal, setShowAddTeamsModal] = useState(false)
   const [sharing, setSharing] = useState(false)
+  const [guestPlayers, setGuestPlayers] = useState<GuestPlayer[]>([])
+  const [showAddGuest, setShowAddGuest] = useState(false)
+  const [guestName, setGuestName] = useState('')
+  const [guestTeamId, setGuestTeamId] = useState<string>('')
+  const [guestPosition, setGuestPosition] = useState<GuestPlayer['position_code']>(null)
   const teamSheetRef = useRef<HTMLDivElement>(null)
 
   // Check if we should show the add teams option
@@ -511,6 +582,29 @@ export function EventTeams() {
       cancelled_late: false,
     })
   }
+
+  // Handle adding a guest player
+  const handleAddGuest = () => {
+    if (!guestName.trim() || !guestTeamId) return
+    const guest: GuestPlayer = {
+      id: `guest-${crypto.randomUUID()}`,
+      name: guestName.trim(),
+      team_id: guestTeamId,
+      position_code: guestPosition,
+    }
+    setGuestPlayers((prev) => [...prev, guest])
+    setGuestName('')
+    setGuestPosition(null)
+    setShowAddGuest(false)
+  }
+
+  // Handle removing a guest player
+  const handleRemoveGuest = (id: string) => {
+    setGuestPlayers((prev) => prev.filter((g) => g.id !== id))
+  }
+
+  // Get guests for a specific team
+  const getGuestsForTeam = (teamId: string) => guestPlayers.filter((g) => g.team_id === teamId)
 
   // Handle creating default teams
   const handleCreateDefaultTeams = async () => {
@@ -760,9 +854,11 @@ export function EventTeams() {
             key={team.id}
             name={team.name}
             assignments={team.assignments}
+            guestPlayers={getGuestsForTeam(team.id)}
             color={index === 0 ? '#f8f8f8' : '#1a1a2e'}
             canAssignTeams={canAssignTeams}
             onEditPlayer={setEditingPlayer}
+            onRemoveGuest={handleRemoveGuest}
           />
         ))}
       </div>
@@ -790,6 +886,85 @@ export function EventTeams() {
         canAssignTeams={canAssignTeams}
         onAssign={handleAssignAvailable}
       />
+
+      {/* Add Guest Player */}
+      {canAssignTeams && teams.length > 0 && (
+        <div className={styles.guestSection}>
+          {!showAddGuest ? (
+            <button className={styles.addGuestBtn} onClick={() => {
+              setGuestTeamId(teams[0]?.id || '')
+              setShowAddGuest(true)
+            }}>
+              + Add Guest Player
+            </button>
+          ) : (
+            <div className={styles.addGuestForm}>
+              <h4 className={styles.addGuestTitle}>Add Guest Player</h4>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Name</label>
+                <input
+                  type="text"
+                  className={styles.formInput}
+                  value={guestName}
+                  onChange={(e) => setGuestName(e.target.value)}
+                  placeholder="Player name..."
+                  autoFocus
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Team</label>
+                <div className={styles.segmentedControl}>
+                  {teams.map((team) => (
+                    <button
+                      key={team.id}
+                      className={`${styles.segmentBtn} ${guestTeamId === team.id ? styles.segmentBtnActive : ''}`}
+                      onClick={() => setGuestTeamId(team.id)}
+                    >
+                      {team.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Position</label>
+                <div className={styles.segmentedControl}>
+                  <button
+                    className={`${styles.segmentBtn} ${guestPosition === null ? styles.segmentBtnActive : ''}`}
+                    onClick={() => setGuestPosition(null)}
+                  >
+                    None
+                  </button>
+                  {POSITIONS.map((pos) => (
+                    <button
+                      key={pos.code}
+                      className={`${styles.segmentBtn} ${guestPosition === pos.code ? styles.segmentBtnActive : ''}`}
+                      onClick={() => setGuestPosition(pos.code as GuestPlayer['position_code'])}
+                    >
+                      {pos.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className={styles.addGuestActions}>
+                <button className={styles.btnSecondary} onClick={() => {
+                  setShowAddGuest(false)
+                  setGuestName('')
+                  setGuestPosition(null)
+                }}>
+                  Cancel
+                </button>
+                <button
+                  className={styles.btnPrimary}
+                  onClick={handleAddGuest}
+                  disabled={!guestName.trim() || !guestTeamId}
+                >
+                  Add Guest
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Edit Player Modal */}
       {editingPlayer && (
@@ -819,6 +994,7 @@ export function EventTeams() {
                 eventTitle={event.title}
                 eventDate={formattedDate}
                 teams={teams}
+                guestPlayers={guestPlayers}
                 showScheduleNote={showScheduleNote}
               />
             </div>

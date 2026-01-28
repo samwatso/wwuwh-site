@@ -7,6 +7,7 @@
 
 import { forwardRef } from 'react'
 import type { TeamWithAssignments } from '@/lib/api'
+import type { GuestPlayer } from '@/pages/EventTeams'
 import { Avatar } from './Avatar'
 import styles from './TeamSheet.module.css'
 
@@ -31,11 +32,12 @@ interface TeamSheetProps {
   eventTitle: string
   eventDate: string
   teams: TeamWithAssignments[]
+  guestPlayers?: GuestPlayer[]
   showScheduleNote?: boolean
 }
 
 export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
-  ({ eventTitle, eventDate, teams, showScheduleNote = false }, ref) => {
+  ({ eventTitle, eventDate, teams, guestPlayers = [], showScheduleNote = false }, ref) => {
     // Determine layout class based on team count
     const teamCount = teams.length
     const layoutClass = teamCount <= 2 ? styles.twoTeams : teamCount === 3 ? styles.threeTeams : styles.fourTeams
@@ -71,11 +73,20 @@ export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
         <div className={`${styles.teamsContainer} ${layoutClass}`}>
           {teams.map((team) => {
             const playersByPosition = getPlayersByPosition(team.assignments)
+            const teamGuests = guestPlayers.filter((g) => g.team_id === team.id)
+            const guestsByPos = new Map<string, GuestPlayer[]>()
+            POSITIONS.forEach((pos) => guestsByPos.set(pos.code, []))
+            guestsByPos.set('none', [])
+            teamGuests.forEach((g) => {
+              const key = g.position_code || 'none'
+              const group = guestsByPos.get(key) || []
+              group.push(g)
+              guestsByPos.set(key, group)
+            })
             const isBlackTeam = team.name.toLowerCase() === 'black'
-            // Count only active players (exclude dropouts and no-shows)
             const playingCount = team.assignments.filter(
               (a) => a.activity === 'play' && !a.cancelled_late && a.attendance_status !== 'absent'
-            ).length
+            ).length + teamGuests.length
 
             return (
               <div
@@ -90,7 +101,8 @@ export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
                 <div className={styles.teamBody}>
                   {POSITIONS.map((pos) => {
                     const players = playersByPosition.get(pos.code) || []
-                    if (players.length === 0) return null
+                    const posGuests = guestsByPos.get(pos.code) || []
+                    if (players.length === 0 && posGuests.length === 0) return null
 
                     return (
                       <div key={pos.code} className={styles.positionGroup}>
@@ -107,6 +119,12 @@ export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
                               <span className={styles.playerName}>{formatShortName(p.person_name)}</span>
                             </div>
                           ))}
+                          {posGuests.map((g) => (
+                            <div key={g.id} className={styles.player}>
+                              <Avatar name={g.name} size="xs" className={styles.playerAvatar} />
+                              <span className={styles.playerName}>{formatShortName(g.name)}</span>
+                            </div>
+                          ))}
                         </div>
                       </div>
                     )
@@ -115,7 +133,8 @@ export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
                   {/* Players without position */}
                   {(() => {
                     const noPos = playersByPosition.get('none') || []
-                    if (noPos.length === 0) return null
+                    const noPosGuests = guestsByPos.get('none') || []
+                    if (noPos.length === 0 && noPosGuests.length === 0) return null
                     return (
                       <div className={styles.positionGroup}>
                         <div className={styles.positionHeader}>Other</div>
@@ -129,6 +148,12 @@ export const TeamSheet = forwardRef<HTMLDivElement, TeamSheetProps>(
                                 className={styles.playerAvatar}
                               />
                               <span className={styles.playerName}>{formatShortName(p.person_name)}</span>
+                            </div>
+                          ))}
+                          {noPosGuests.map((g) => (
+                            <div key={g.id} className={styles.player}>
+                              <Avatar name={g.name} size="xs" className={styles.playerAvatar} />
+                              <span className={styles.playerName}>{formatShortName(g.name)}</span>
                             </div>
                           ))}
                         </div>

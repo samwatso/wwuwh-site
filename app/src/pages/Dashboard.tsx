@@ -5,8 +5,9 @@ import { useProfile } from '@/hooks/useProfile'
 import { useEvents } from '@/hooks/useEvents'
 import { useCountdown } from '@/hooks/useCountdown'
 import { useAwards, Award, LockedAward } from '@/hooks/useAwards'
+import { useNetworkStatus } from '@/hooks/useNetworkStatus'
 import { getEventAttendees, Attendee } from '@/lib/api'
-import { Spinner, Avatar, Skeleton } from '@/components'
+import { Spinner, Avatar, Skeleton, OfflineNotice } from '@/components'
 import { AnimatedBadge } from '@/components/badges'
 import type { EventWithRsvp, RsvpResponse, EventKind } from '@/types/database'
 import styles from './Dashboard.module.css'
@@ -406,6 +407,7 @@ export function Dashboard() {
   const { user } = useAuth()
   const { person, memberships, loading: profileLoading, error: profileError } = useProfile()
   const { awards, lockedAwards, currentStreak, loading: awardsLoading } = useAwards()
+  const { isOffline } = useNetworkStatus()
 
   // Get club ID from first membership
   const clubId = memberships.length > 0 ? memberships[0].club_id : ''
@@ -441,6 +443,15 @@ export function Dashboard() {
 
   // Show skeleton loading on initial load
   const isInitialLoading = profileLoading && !person
+
+  // Show offline notice if no connection and no cached data
+  if (isOffline && !person) {
+    return (
+      <div className={styles.container}>
+        <OfflineNotice message="Connect to the internet to view your dashboard and upcoming events." />
+      </div>
+    )
+  }
 
   if (isInitialLoading) {
     return (

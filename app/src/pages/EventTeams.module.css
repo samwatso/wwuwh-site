@@ -781,3 +781,62 @@
     max-height: 85vh;
   }
 }
+
+/* Guest Player Badge */
+.guestBadge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-water);
+  background: rgba(59, 130, 246, 0.1);
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Guest Player Section */
+.guestSection {
+  margin-top: var(--space-md);
+  padding: 0 var(--space-sm);
+}
+
+.addGuestBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  color: var(--color-water);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border: 1px dashed var(--color-water);
+  border-radius: var(--radius-btn);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.addGuestBtn:hover {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.addGuestForm {
+  background: var(--color-white);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.addGuestTitle {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--color-navy);
+  margin-bottom: var(--space-sm);
+}
+
+.addGuestActions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+  margin-top: var(--space-md);
+}

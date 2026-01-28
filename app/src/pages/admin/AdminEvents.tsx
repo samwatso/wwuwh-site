@@ -1249,6 +1249,17 @@ function EventModal({
     }
     return savedDraft?.pricingTiers || {}
   })
+
+  // Sync pricing tiers when sourceEvent changes (handles async fetch on edit)
+  useEffect(() => {
+    if (sourceEvent?.pricing_tiers && sourceEvent.pricing_tiers.length > 0) {
+      const record: Partial<Record<PricingCategory, number | null>> = {}
+      for (const tier of sourceEvent.pricing_tiers) {
+        record[tier.category] = tier.price_cents
+      }
+      setPricingTiers(record)
+    }
+  }, [sourceEvent?.pricing_tiers])
   const [visibilityDays, setVisibilityDays] = useState(() => {
     // For edit/copy, calculate from existing event's visible_from
     if (sourceEvent?.visible_from && sourceEvent?.starts_at_utc) {
@@ -1643,24 +1654,26 @@ function EventModal({
                     <div className={styles.formRow}>
                       <div className={styles.formGroup} style={{ flex: 1 }}>
                         <label className={styles.formLabel}>Pricing Tiers (pence per category)</label>
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                        <div className={styles.pricingTiersGrid}>
                           {(Object.keys(PRICING_CATEGORY_LABELS) as PricingCategory[]).map(cat => (
-                            <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <label style={{ width: '60px', fontSize: '13px' }}>{PRICING_CATEGORY_LABELS[cat]}</label>
+                            <div key={cat} className={styles.pricingTierItem}>
+                              <label className={styles.pricingTierLabel}>{PRICING_CATEGORY_LABELS[cat]}</label>
                               <input
-                                type="number"
-                                className={styles.formInput}
-                                value={pricingTiers[cat] ?? ''}
+                                type="text"
+                                inputMode="numeric"
+                                pattern="[0-9]*"
+                                className={`${styles.formInput} ${styles.pricingTierInput}`}
+                                value={pricingTiers[cat] !== null && pricingTiers[cat] !== undefined ? String(pricingTiers[cat]) : ''}
                                 onChange={(e) => {
-                                  const val = e.target.value
+                                  const rawVal = e.target.value
+                                  // Strip any non-numeric characters (handles iOS quirks)
+                                  const cleanVal = rawVal.replace(/[^0-9]/g, '')
                                   setPricingTiers(prev => ({
                                     ...prev,
-                                    [cat]: val === '' ? null : parseInt(val) || 0
+                                    [cat]: cleanVal === '' ? null : Number(cleanVal)
                                   }))
                                 }}
-                                min={0}
                                 placeholder="—"
-                                style={{ flex: 1 }}
                               />
                             </div>
                           ))}

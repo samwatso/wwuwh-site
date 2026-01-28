@@ -28,3 +28,5 @@ export { Onboarding } from './Onboarding'
 export { CalendarPopup } from './CalendarPopup'
 
 export { PaymentOptionsModal } from './PaymentOptionsModal'
+
+export { OfflineNotice } from './OfflineNotice'

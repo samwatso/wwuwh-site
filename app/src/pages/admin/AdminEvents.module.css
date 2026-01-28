@@ -1201,6 +1201,30 @@
   margin-top: var(--space-xs);
 }
 
+/* Pricing Tiers Grid */
+.pricingTiersGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.pricingTierItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pricingTierLabel {
+  width: 60px;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.pricingTierInput {
+  flex: 1;
+  min-width: 0;
+}
+
 /* ============================================================================
    RESPONSIVE
    ============================================================================ */
@@ -1302,6 +1326,20 @@
 
   .formTextarea {
     font-size: 16px;
+  }
+
+  /* Pricing tiers - single column on mobile */
+  .pricingTiersGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .pricingTierItem {
+    gap: var(--space-xs);
+  }
+
+  .pricingTierLabel {
+    width: 55px;
+    font-size: 12px;
   }
 
   /* Weekday picker mobile */

@@ -3,7 +3,8 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { Browser } from '@capacitor/browser'
 import { useProfile } from '@/hooks/useProfile'
 import { useEvents } from '@/hooks/useEvents'
-import { Spinner, Avatar, CalendarPopup, PaymentOptionsModal, Skeleton } from '@/components'
+import { useNetworkStatus } from '@/hooks/useNetworkStatus'
+import { Spinner, Avatar, CalendarPopup, PaymentOptionsModal, Skeleton, OfflineNotice } from '@/components'
 import { getEventAttendees, Attendee } from '@/lib/api'
 import type { EventWithRsvp, RsvpResponse } from '@/types/database'
 import styles from './Events.module.css'
@@ -649,6 +650,7 @@ function EventCard({ event, onRsvp, rsvpLoading, onPaymentComplete, isPast }: Ev
 
 export function Events() {
   const { memberships, loading: profileLoading } = useProfile()
+  const { isOffline } = useNetworkStatus()
   const [searchParams, setSearchParams] = useSearchParams()
   const [paymentMessage, setPaymentMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [showPastEvents, setShowPastEvents] = useState(false)
@@ -726,6 +728,15 @@ export function Events() {
   }, [paymentMessage])
 
   const groupedEvents = useMemo(() => groupEventsByDate(events), [events])
+
+  // Show offline notice if no connection and no cached events
+  if (isOffline && events.length === 0) {
+    return (
+      <div className={styles.container}>
+        <OfflineNotice message="Connect to the internet to view upcoming events and RSVP." />
+      </div>
+    )
+  }
 
   if (profileLoading || (eventsLoading && events.length === 0)) {
     return (
