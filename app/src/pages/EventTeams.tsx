@@ -10,7 +10,7 @@ import { useState, useMemo, useRef, useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { toPng } from 'html-to-image'
 import { useProfile } from '@/hooks/useProfile'
-import { useAdmin } from '@/hooks/useAdmin'
+import { usePermissions, PERMISSIONS } from '@/hooks/usePermissions'
 import { useEventTeams } from '@/hooks/useEventTeams'
 import { Spinner, TeamSheet, Avatar } from '@/components'
 import type { TeamAssignment, AssignmentUpdate, AvailablePlayer } from '@/lib/api'
@@ -82,11 +82,11 @@ function groupByPosition(assignments: TeamAssignment[]): Map<string, TeamAssignm
 
 interface PlayerCardProps {
   assignment: TeamAssignment
-  isAdmin: boolean
+  canAssignTeams: boolean
   onEdit: (assignment: TeamAssignment) => void
 }
 
-function PlayerCard({ assignment, isAdmin, onEdit }: PlayerCardProps) {
+function PlayerCard({ assignment, canAssignTeams, onEdit }: PlayerCardProps) {
   const position = POSITIONS.find((p) => p.code === assignment.position_code)
   const isDropout = !!assignment.cancelled_late
   const isNoShow = assignment.attendance_status === 'absent' && !isDropout
@@ -94,8 +94,8 @@ function PlayerCard({ assignment, isAdmin, onEdit }: PlayerCardProps) {
 
   return (
     <div
-      className={`${styles.playerCard} ${isAdmin ? styles.playerCardEditable : ''} ${isDropout ? styles.playerCardDropout : ''} ${isNoShow ? styles.playerCardNoShow : ''} ${isLate ? styles.playerCardLate : ''}`}
-      onClick={isAdmin ? () => onEdit(assignment) : undefined}
+      className={`${styles.playerCard} ${canAssignTeams ? styles.playerCardEditable : ''} ${isDropout ? styles.playerCardDropout : ''} ${isNoShow ? styles.playerCardNoShow : ''} ${isLate ? styles.playerCardLate : ''}`}
+      onClick={canAssignTeams ? () => onEdit(assignment) : undefined}
     >
       <Avatar
         src={assignment.person_photo_url}
@@ -121,11 +121,11 @@ interface TeamCardProps {
   name: string
   assignments: TeamAssignment[]
   color?: string
-  isAdmin: boolean
+  canAssignTeams: boolean
   onEditPlayer: (assignment: TeamAssignment) => void
 }
 
-function TeamCard({ name, assignments, color, isAdmin, onEditPlayer }: TeamCardProps) {
+function TeamCard({ name, assignments, color, canAssignTeams, onEditPlayer }: TeamCardProps) {
   const grouped = useMemo(() => groupByPosition(assignments), [assignments])
   const playingCount = assignments.filter((a) => a.activity === 'play').length
 
@@ -147,7 +147,7 @@ function TeamCard({ name, assignments, color, isAdmin, onEditPlayer }: TeamCardP
                   <PlayerCard
                     key={a.person_id}
                     assignment={a}
-                    isAdmin={isAdmin}
+                    canAssignTeams={canAssignTeams}
                     onEdit={onEditPlayer}
                   />
                 ))}
@@ -167,7 +167,7 @@ function TeamCard({ name, assignments, color, isAdmin, onEditPlayer }: TeamCardP
                   <PlayerCard
                     key={a.person_id}
                     assignment={a}
-                    isAdmin={isAdmin}
+                    canAssignTeams={canAssignTeams}
                     onEdit={onEditPlayer}
                   />
                 ))}
@@ -418,11 +418,11 @@ function AddTeamsModal({ existingTeams, onAdd, onClose, saving }: AddTeamsModalP
 
 interface AvailablePlayersProps {
   players: AvailablePlayer[]
-  isAdmin: boolean
+  canAssignTeams: boolean
   onAssign: (player: AvailablePlayer) => void
 }
 
-function AvailablePlayers({ players, isAdmin, onAssign }: AvailablePlayersProps) {
+function AvailablePlayers({ players, canAssignTeams, onAssign }: AvailablePlayersProps) {
   if (players.length === 0) return null
 
   return (
@@ -433,8 +433,8 @@ function AvailablePlayers({ players, isAdmin, onAssign }: AvailablePlayersProps)
         {players.map((p) => (
           <div
             key={p.person_id}
-            className={`${styles.availablePlayer} ${isAdmin ? styles.availablePlayerClickable : ''}`}
-            onClick={isAdmin ? () => onAssign(p) : undefined}
+            className={`${styles.availablePlayer} ${canAssignTeams ? styles.availablePlayerClickable : ''}`}
+            onClick={canAssignTeams ? () => onAssign(p) : undefined}
           >
             <Avatar
               src={p.person_photo_url}
@@ -443,7 +443,7 @@ function AvailablePlayers({ players, isAdmin, onAssign }: AvailablePlayersProps)
               className={styles.availableAvatar}
             />
             <span>{formatShortName(p.person_name)}</span>
-            {isAdmin && <span className={styles.assignIcon}>+</span>}
+            {canAssignTeams && <span className={styles.assignIcon}>+</span>}
           </div>
         ))}
       </div>
@@ -454,7 +454,8 @@ function AvailablePlayers({ players, isAdmin, onAssign }: AvailablePlayersProps)
 export function EventTeams() {
   const { eventId } = useParams<{ eventId: string }>()
   const { memberships, loading: profileLoading } = useProfile()
-  const { isAdmin } = useAdmin()
+  const { hasPermission } = usePermissions()
+  const canAssignTeams = hasPermission(PERMISSIONS.TEAMS_ASSIGN)
 
   const clubId = memberships.length > 0 ? memberships[0].club_id : ''
 
@@ -479,7 +480,7 @@ export function EventTeams() {
   const teamSheetRef = useRef<HTMLDivElement>(null)
 
   // Check if we should show the add teams option
-  const canAddMoreTeams = isAdmin && teams.length >= 2 && teams.length < 4 && totalRsvpYes > LARGE_GROUP_THRESHOLD
+  const canAddMoreTeams = canAssignTeams && teams.length >= 2 && teams.length < 4 && totalRsvpYes > LARGE_GROUP_THRESHOLD
   const showScheduleNote = teams.length >= 3
 
   // Handle saving player assignment
@@ -636,7 +637,7 @@ export function EventTeams() {
   }
 
   // No teams yet (admin can create)
-  if (teams.length === 0 && isAdmin) {
+  if (teams.length === 0 && canAssignTeams) {
     return (
       <div className={styles.container}>
         <div className={styles.header}>
@@ -680,7 +681,7 @@ export function EventTeams() {
         {/* Available players even before teams created */}
         <AvailablePlayers
           players={availablePlayers}
-          isAdmin={false}
+          canAssignTeams={false}
           onAssign={() => { /* no-op when not admin */ }}
         />
       </div>
@@ -735,7 +736,7 @@ export function EventTeams() {
         )}
       </div>
 
-      {isAdmin && (
+      {canAssignTeams && (
         <div className={styles.adminBar}>
           <div className={styles.adminBarLeft}>
             <span className={styles.adminLabel}>Admin Mode</span>
@@ -760,7 +761,7 @@ export function EventTeams() {
             name={team.name}
             assignments={team.assignments}
             color={index === 0 ? '#f8f8f8' : '#1a1a2e'}
-            isAdmin={isAdmin}
+            canAssignTeams={canAssignTeams}
             onEditPlayer={setEditingPlayer}
           />
         ))}
@@ -775,7 +776,7 @@ export function EventTeams() {
               <PlayerCard
                 key={a.person_id}
                 assignment={a}
-                isAdmin={isAdmin}
+                canAssignTeams={canAssignTeams}
                 onEdit={setEditingPlayer}
               />
             ))}
@@ -786,7 +787,7 @@ export function EventTeams() {
       {/* Available players (RSVP'd yes, no assignment) */}
       <AvailablePlayers
         players={availablePlayers}
-        isAdmin={isAdmin}
+        canAssignTeams={canAssignTeams}
         onAssign={handleAssignAvailable}
       />
 
