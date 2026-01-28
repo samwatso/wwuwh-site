@@ -11,8 +11,11 @@ import { Env } from '../types'
 const APNS_PRODUCTION_HOST = 'https://api.push.apple.com'
 const APNS_SANDBOX_HOST = 'https://api.sandbox.push.apple.com'
 
-// Use production for now (sandbox is for development builds)
-const APNS_HOST = APNS_PRODUCTION_HOST
+// Get APNs host from environment - use sandbox for development builds
+function getAPNsHost(env: Env): string {
+  // Set APNS_USE_SANDBOX=true in Cloudflare for testing with development builds
+  return env.APNS_USE_SANDBOX === 'true' ? APNS_SANDBOX_HOST : APNS_PRODUCTION_HOST
+}
 
 interface APNsPayload {
   aps: {
@@ -140,8 +143,9 @@ export async function sendPushNotification(
   const bundleId = env.APNS_BUNDLE_ID || 'com.wwuwh.app'
 
   try {
+    const apnsHost = getAPNsHost(env)
     const response = await fetch(
-      `${APNS_HOST}/3/device/${deviceToken}`,
+      `${apnsHost}/3/device/${deviceToken}`,
       {
         method: 'POST',
         headers: {
