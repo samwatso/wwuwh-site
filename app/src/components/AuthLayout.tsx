@@ -2,7 +2,7 @@ import { ReactNode, useState, useRef, useEffect } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
-import { useAdmin } from '@/hooks/useAdmin'
+import { usePermissions } from '@/hooks/usePermissions'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { Avatar } from './Avatar'
 import styles from './AuthLayout.module.css'
@@ -18,7 +18,7 @@ interface AuthLayoutProps {
 export function AuthLayout({ children }: AuthLayoutProps) {
   const { user, signOut } = useAuth()
   const { person } = useProfile()
-  const { isAdmin } = useAdmin()
+  const { canAccessAdmin } = usePermissions()
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -139,7 +139,7 @@ export function AuthLayout({ children }: AuthLayoutProps) {
                 </svg>
                 Events
               </NavLink>
-              {isAdmin && (
+              {canAccessAdmin && (
                 <NavLink
                   to="/app/admin"
                   className={styles.dropdownItem}

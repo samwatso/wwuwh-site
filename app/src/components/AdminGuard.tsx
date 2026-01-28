@@ -1,16 +1,16 @@
 import { Navigate, Outlet } from 'react-router-dom'
-import { useAdmin } from '@/hooks/useAdmin'
+import { usePermissions } from '@/hooks/usePermissions'
 import { Spinner } from './Spinner'
 import styles from './AuthGuard.module.css'
 
 /**
- * AdminGuard - Protects routes that require admin role
- * Redirects to dashboard if user is not an admin
+ * AdminGuard - Protects routes that require admin permissions
+ * Redirects to dashboard if user has no admin-level permissions
  */
 export function AdminGuard() {
-  const { isAdmin, loading } = useAdmin()
+  const { canAccessAdmin, loading } = usePermissions()
 
-  // Show loading spinner while checking admin status
+  // Show loading spinner while checking permissions
   if (loading) {
     return (
       <div className={styles.loading}>
@@ -20,11 +20,11 @@ export function AdminGuard() {
     )
   }
 
-  // Not admin - redirect to dashboard
-  if (!isAdmin) {
+  // No admin permissions - redirect to dashboard
+  if (!canAccessAdmin) {
     return <Navigate to="/app" replace />
   }
 
-  // Admin - render child routes
+  // Has permissions - render child routes
   return <Outlet />
 }
