@@ -430,7 +430,13 @@ export function Dashboard() {
   }, [events])
 
   // Profile completion checks
-  const hasName = !!(person?.name && person.name.trim().length > 0)
+  // Name doesn't count if it exactly matches the email prefix (auto-generated)
+  const emailPrefix = user?.email?.split('@')[0]?.toLowerCase() || ''
+  const hasName = !!(
+    person?.name &&
+    person.name.trim().length > 0 &&
+    person.name.trim().toLowerCase() !== emailPrefix
+  )
   const hasPhoto = !!(person?.photo_url && person.photo_url.trim().length > 0)
 
   return (

@@ -832,6 +832,35 @@
 }
 
 /* Responsive */
+@media (max-width: 480px) {
+  /* When badge showcase is sharing space with profile card, make it more compact */
+  .badgeShowcase:not(.badgeShowcaseWide) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    padding: var(--space-sm);
+  }
+
+  .badgeShowcase:not(.badgeShowcaseWide) .badgeHivePreview {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .badgeShowcase:not(.badgeShowcaseWide) .badgePreviewItem:nth-child(n+4) {
+    display: none;
+  }
+
+  .badgeShowcase:not(.badgeShowcaseWide) .badgeShowcaseInfo {
+    width: 100%;
+    text-align: center;
+    align-items: center;
+  }
+
+  .badgeShowcase:not(.badgeShowcaseWide) .badgeShowcaseHint {
+    display: none;
+  }
+}
+
 @media (max-width: 400px) {
   .statsGrid {
     grid-template-columns: 1fr;
