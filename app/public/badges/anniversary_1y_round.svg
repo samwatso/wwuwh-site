@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  
+    <defs>
+      <!-- Metallic gold rim gradient -->
+      <linearGradient id="goldRim" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f0d875"/>
+        <stop offset="30%" stop-color="#d4af37"/>
+        <stop offset="70%" stop-color="#9c7c1c"/>
+        <stop offset="100%" stop-color="#d4af37"/>
+      </linearGradient>
+
+      <!-- Enamel navy gradient (vignette) -->
+      <radialGradient id="navyEnamel" cx="40%" cy="35%" r="70%">
+        <stop offset="0%" stop-color="#2d5a8a"/>
+        <stop offset="80%" stop-color="#1e3a5f"/>
+        <stop offset="100%" stop-color="#0f1d2f"/>
+      </radialGradient>
+
+      <!-- Specular highlight -->
+      <linearGradient id="specular" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+        <stop offset="40%" stop-color="rgba(255,255,255,0.25)"/>
+        <stop offset="60%" stop-color="rgba(255,255,255,0.25)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      </linearGradient>
+
+      <!-- Drop shadow filter -->
+      <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+        <feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity="0.3"/>
+      </filter>
+    </defs>
+  
+  <g>
+    
+        <!-- Outer rim -->
+        <circle cx="256" cy="256" r="230" fill="url(#goldRim)" filter="url(#shadow)"/>
+        <!-- Inner rim line -->
+        <circle cx="256" cy="256" r="210" fill="none" stroke="#f0d875" stroke-width="2" opacity="0.6"/>
+        <!-- Navy enamel face -->
+        <circle cx="256" cy="256" r="200" fill="url(#navyEnamel)"/>
+        <!-- Specular highlight band -->
+        <ellipse cx="200" cy="180" rx="120" ry="60" fill="url(#specular)" transform="rotate(-25 256 256)"/>
+      
+    <!-- Pictogram -->
+    <g class="pictogram">
+      
+    <rect x="220" y="220" width="72" height="140" rx="8" fill="none" stroke="#f0d875" stroke-width="10"/>
+    <rect x="246" y="180" width="20" height="50" fill="#f0d875"/>
+    <ellipse cx="256" cy="160" rx="20" ry="30" fill="#f0d875"/>
+    <text x="256" y="310" font-family="Georgia, serif" font-size="60" font-weight="bold" fill="#f0d875" text-anchor="middle">1</text>
+  
+    </g>
+  </g>
+</svg>

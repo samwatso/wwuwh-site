@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  
+    <defs>
+      <!-- Metallic gold rim gradient -->
+      <linearGradient id="goldRim" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#f0d875"/>
+        <stop offset="30%" stop-color="#d4af37"/>
+        <stop offset="70%" stop-color="#9c7c1c"/>
+        <stop offset="100%" stop-color="#d4af37"/>
+      </linearGradient>
+
+      <!-- Enamel navy gradient (vignette) -->
+      <radialGradient id="navyEnamel" cx="40%" cy="35%" r="70%">
+        <stop offset="0%" stop-color="#2d5a8a"/>
+        <stop offset="80%" stop-color="#1e3a5f"/>
+        <stop offset="100%" stop-color="#0f1d2f"/>
+      </radialGradient>
+
+      <!-- Specular highlight -->
+      <linearGradient id="specular" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="rgba(255,255,255,0)"/>
+        <stop offset="40%" stop-color="rgba(255,255,255,0.25)"/>
+        <stop offset="60%" stop-color="rgba(255,255,255,0.25)"/>
+        <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+      </linearGradient>
+
+      <!-- Drop shadow filter -->
+      <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+        <feDropShadow dx="0" dy="8" stdDeviation="8" flood-opacity="0.3"/>
+      </filter>
+    </defs>
+  
+  <g>
+    
+        <!-- Outer rim -->
+        <polygon points="256,26 455.18584287042086,141 455.1858428704209,370.99999999999994 256,486 56.814157129579144,371.00000000000006 56.81415712957903,141.00000000000014" fill="url(#goldRim)" filter="url(#shadow)"/>
+        <!-- Inner rim line -->
+        <polygon points="256,56 429.2050807568877,156 429.20508075688775,356 256,456 82.7949192431123,356.00000000000006 82.79491924311219,156.0000000000001" fill="none" stroke="#f0d875" stroke-width="2" opacity="0.6"/>
+        <!-- Navy enamel face -->
+        <polygon points="256,56 429.2050807568877,156 429.20508075688775,356 256,456 82.7949192431123,356.00000000000006 82.79491924311219,156.0000000000001" fill="url(#navyEnamel)"/>
+        <!-- Specular highlight band -->
+        <ellipse cx="200" cy="180" rx="100" ry="50" fill="url(#specular)" transform="rotate(-25 256 256)"/>
+      
+    <!-- Pictogram -->
+    <g class="pictogram">
+      
+    <path d="M200 180 L200 280 C200 330 220 360 256 360 C292 360 312 330 312 280 L312 180" fill="none" stroke="#f0d875" stroke-width="12" stroke-linecap="round"/>
+    <path d="M200 200 C160 200 140 240 160 280 C170 300 190 300 200 280" fill="none" stroke="#f0d875" stroke-width="10"/>
+    <path d="M312 200 C352 200 372 240 352 280 C342 300 322 300 312 280" fill="none" stroke="#f0d875" stroke-width="10"/>
+    <rect x="230" y="360" width="52" height="20" fill="#f0d875"/>
+    <rect x="210" y="380" width="92" height="12" rx="4" fill="#f0d875"/>
+  
+    </g>
+  </g>
+</svg>

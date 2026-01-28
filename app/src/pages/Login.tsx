@@ -2,6 +2,7 @@ import { useState, useEffect, FormEvent } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Button, Input, FormField, Onboarding } from '@/components'
 import { useAuth } from '@/hooks/useAuth'
+import { openExternalUrl } from '@/lib/api'
 
 const ONBOARDING_SEEN_KEY = 'wwuwh_onboarding_seen'
 
@@ -168,7 +169,15 @@ export function Login() {
 
         <div className="auth-footer">
           Don't have an account?{' '}
-          <a href="/connect/">Contact us</a>
+          <a
+            href="https://wwuwh.com/connect/"
+            onClick={(e) => {
+              e.preventDefault()
+              openExternalUrl('https://wwuwh.com/connect/')
+            }}
+          >
+            Contact us
+          </a>
         </div>
       </div>
     </div>

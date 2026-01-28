@@ -6,6 +6,7 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   ios: {
     allowsLinkPreview: false,
+    path: 'ios',
   },
 };
 

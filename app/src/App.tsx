@@ -7,6 +7,7 @@ const isCapacitor = typeof window !== 'undefined' &&
 const Router = isCapacitor ? HashRouter : BrowserRouter
 import { Login, Signup, Dashboard, ForgotPassword, ResetPassword, PaymentSuccess, PaymentCancelled } from '@/pages'
 import { AuthGuard, GuestGuard, AdminGuard, AuthLayout } from '@/components'
+import { ProfileProvider } from '@/hooks/useProfile'
 
 // Member pages
 import { Events } from '@/pages/Events'
@@ -28,6 +29,7 @@ import {
 export default function App() {
   return (
     <Router>
+      <ProfileProvider>
       <Routes>
         {/* Auth routes - only accessible when NOT logged in */}
         <Route element={<GuestGuard />}>
@@ -153,6 +155,7 @@ export default function App() {
         {/* Root redirect for Capacitor (iOS app loads at /) */}
         <Route path="/" element={<Navigate to="/app" replace />} />
       </Routes>
+      </ProfileProvider>
     </Router>
   )
 }

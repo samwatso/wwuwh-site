@@ -1,14 +1,22 @@
 import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import { useSubscribe } from '@/hooks/useSubscribe'
 import { useAwards } from '@/hooks/useAwards'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { Button, Input, FormField, Spinner, Avatar, ImageCropper } from '@/components'
+import { AnimatedBadge } from '@/components/badges'
 import { supabase } from '@/lib/supabase'
 import { deleteAccount } from '@/lib/api'
 import styles from './Profile.module.css'
+
+// Check if running in Capacitor native app
+function isNativePlatform(): boolean {
+  return typeof window !== 'undefined' &&
+    !!(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()
+}
 
 // Helper to format price
 function formatPrice(cents: number, currency: string, cadence: string): string {
@@ -42,6 +50,7 @@ export function Profile() {
   const [deleting, setDeleting] = useState(false)
   const [deleteError, setDeleteError] = useState<string | null>(null)
   const [signingOut, setSigningOut] = useState(false)
+  const [showBadgeCollection, setShowBadgeCollection] = useState(false)
 
   const handleEditStart = () => {
     setEditName(person?.name || '')
@@ -83,8 +92,36 @@ export function Profile() {
     setIsEditing(false)
   }
 
-  const handlePhotoClick = () => {
-    fileInputRef.current?.click()
+  const handlePhotoClick = async () => {
+    if (isNativePlatform()) {
+      // Use Capacitor Camera plugin on native platforms
+      try {
+        const image = await Camera.getPhoto({
+          quality: 90,
+          allowEditing: false, // Get raw image, use our custom cropper
+          resultType: CameraResultType.DataUrl,
+          source: CameraSource.Prompt,
+          promptLabelHeader: 'Profile Photo',
+          promptLabelPhoto: 'Choose from Library',
+          promptLabelPicture: 'Take Photo',
+          correctOrientation: true,
+        })
+
+        if (image.dataUrl) {
+          // Show our custom cropper with round circle and zoom
+          setCropperImage(image.dataUrl)
+        }
+      } catch (err) {
+        // User cancelled or permission denied - don't show error for cancel
+        const error = err as Error
+        if (!error.message?.includes('cancelled') && !error.message?.includes('canceled')) {
+          setPhotoError('Unable to access camera or photos. Please check app permissions.')
+        }
+      }
+    } else {
+      // Use file input on web
+      fileInputRef.current?.click()
+    }
   }
 
   const handlePhotoChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,6 +148,9 @@ export function Profile() {
     const reader = new FileReader()
     reader.onload = () => {
       setCropperImage(reader.result as string)
+    }
+    reader.onerror = () => {
+      setPhotoError('Failed to read image file')
     }
     reader.readAsDataURL(file)
 
@@ -311,62 +351,144 @@ export function Profile() {
         </div>
       )}
 
-      {/* Badges Card - Moved to top */}
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Badges</h2>
-          {currentStreak > 0 && (
-            <span className={styles.streakBadge}>
-              🔥 {currentStreak} streak
-            </span>
-          )}
-        </div>
+      {/* Badge Collection Card - Hive Style */}
+      {(() => {
+        // Combine earned and locked for preview
+        const earnedSet = new Set(awards.map(a => a.icon))
 
-        {awardsLoading ? (
-          <div className={styles.loadingState}>
-            <Spinner size="sm" />
-          </div>
-        ) : awards.length > 0 ? (
-          <div className={styles.awardsList}>
-            {awards.map((award) => (
-              <div key={award.id} className={styles.awardItem}>
-                <span className={styles.awardIcon}>{award.icon || '🏅'}</span>
-                <div className={styles.awardInfo}>
-                  <span className={styles.awardName}>{award.name}</span>
-                  <span className={styles.awardDate}>
-                    Earned {new Date(award.granted_at).toLocaleDateString('en-GB', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </span>
-                </div>
+        // Get up to 4 badges for hive preview - prioritize earned, then locked
+        const previewBadges = [
+          ...awards.slice(0, 4).map(a => ({ icon: a.icon, earned: true })),
+          ...lockedAwards
+            .filter(a => !earnedSet.has(a.icon))
+            .slice(0, Math.max(0, 4 - awards.length))
+            .map(a => ({ icon: a.icon, earned: false })),
+        ].slice(0, 4)
+
+        return (
+          <>
+            <div
+              className={styles.badgeShowcase}
+              onClick={() => !awardsLoading && setShowBadgeCollection(true)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowBadgeCollection(true) }}
+            >
+              {/* Badge Hive Preview */}
+              <div className={styles.badgeHivePreview}>
+                {previewBadges.map((badge, i) => (
+                  <div key={badge.icon || i} className={styles.badgePreviewItem}>
+                    {badge.icon ? (
+                      <AnimatedBadge
+                        icon={badge.icon}
+                        size={36}
+                        earned={badge.earned}
+                        animate={false}
+                      />
+                    ) : (
+                      <div className={styles.badgePlaceholder}>?</div>
+                    )}
+                  </div>
+                ))}
+                {previewBadges.length === 0 && (
+                  <div className={styles.badgePlaceholder}>?</div>
+                )}
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className={styles.placeholder}>
-            <p>No badges yet. Keep attending sessions!</p>
-          </div>
-        )}
 
-        {lockedAwards.length > 0 && (
-          <div className={styles.lockedAwardsSection}>
-            <p className={styles.lockedAwardsTitle}>Locked Badges</p>
-            <div className={styles.lockedAwardsList}>
-              {lockedAwards.map((award) => (
-                <div key={award.id} className={styles.lockedAwardItem}>
-                  <span className={styles.lockedAwardIcon}>🔒</span>
-                  <div className={styles.lockedAwardInfo}>
-                    <span className={styles.lockedAwardName}>{award.name}</span>
-                    <span className={styles.lockedAwardDesc}>{award.description}</span>
+              {/* Info */}
+              <div className={styles.badgeShowcaseInfo}>
+                {awardsLoading ? (
+                  <Spinner size="sm" />
+                ) : (
+                  <>
+                    <span className={styles.badgeShowcaseTitle}>Badge Collection</span>
+                    <span className={styles.badgeShowcaseCount}>
+                      {awards.length} {awards.length === 1 ? 'badge' : 'badges'} earned
+                      {currentStreak > 0 && ` · 🔥 ${currentStreak} streak`}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Chevron */}
+              <span className={styles.badgeShowcaseChevron}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </span>
+            </div>
+
+            {/* Badge Collection Modal */}
+            {showBadgeCollection && (
+              <div className={styles.badgeModalOverlay} onClick={() => setShowBadgeCollection(false)}>
+                <div className={styles.badgeModal} onClick={(e) => e.stopPropagation()}>
+                  <div className={styles.badgeModalHeader}>
+                    <h3 className={styles.badgeModalTitle}>Badge Collection</h3>
+                    <button
+                      className={styles.badgeModalClose}
+                      onClick={() => setShowBadgeCollection(false)}
+                    >
+                      &times;
+                    </button>
+                  </div>
+
+                  <div className={styles.badgeModalContent}>
+                    {/* Earned Badges */}
+                    {awards.map(award => (
+                      <div key={award.id} className={styles.badgeModalItem}>
+                        <div className={styles.badgeModalIconWrapper}>
+                          <AnimatedBadge
+                            icon={award.icon || 'first_dip_round'}
+                            size={56}
+                            earned={true}
+                            animate={true}
+                          />
+                        </div>
+                        <div className={styles.badgeModalDetails}>
+                          <span className={styles.badgeModalName}>{award.name}</span>
+                          <span className={styles.badgeModalDesc}>{award.description}</span>
+                          <span className={styles.badgeModalEarnedDate}>
+                            ✓ Earned {new Date(award.granted_at).toLocaleDateString('en-GB', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Locked Badges */}
+                    {lockedAwards.map(award => (
+                      <div key={award.id} className={styles.badgeModalItem}>
+                        <div className={styles.badgeModalIconWrapper}>
+                          <AnimatedBadge
+                            icon={award.icon || 'first_dip_round'}
+                            size={56}
+                            earned={false}
+                            animate={false}
+                          />
+                        </div>
+                        <div className={styles.badgeModalDetails}>
+                          <span className={styles.badgeModalName}>{award.name}</span>
+                          <span className={styles.badgeModalDesc}>{award.description}</span>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Fallback if no badges */}
+                    {awards.length === 0 && lockedAwards.length === 0 && (
+                      <div className={styles.badgeModalEmpty}>
+                        <p>No badges available yet. Keep attending sessions to earn badges!</p>
+                      </div>
+                    )}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+              </div>
+            )}
+          </>
+        )
+      })()}
 
       {/* Email Update Message */}
       {emailMessage && (

@@ -3,9 +3,10 @@
  *
  * Manages the user's D1 profile (people table).
  * On first load, ensures a profile exists by calling POST /api/me.
+ * Uses React Context to share profile state across all components.
  */
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react'
 import { useAuth } from './useAuth'
 import { getMyProfile, ensureProfile, updateProfile, ClubMembershipWithName, ClubMemberRoleWithName, MemberSubscriptionWithPlan } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
@@ -28,7 +29,30 @@ export interface UseProfileReturn extends ProfileState {
   updateEmail: (email: string) => Promise<{ success: boolean; message?: string }>
 }
 
+// Create context with undefined default
+const ProfileContext = createContext<UseProfileReturn | undefined>(undefined)
+
+// Provider component
+export function ProfileProvider({ children }: { children: ReactNode }) {
+  const profileValue = useProfileInternal()
+  return (
+    <ProfileContext.Provider value={profileValue}>
+      {children}
+    </ProfileContext.Provider>
+  )
+}
+
+// Hook to use the profile context
 export function useProfile(): UseProfileReturn {
+  const context = useContext(ProfileContext)
+  if (context === undefined) {
+    throw new Error('useProfile must be used within a ProfileProvider')
+  }
+  return context
+}
+
+// Internal hook implementation
+function useProfileInternal(): UseProfileReturn {
   const { user, loading: authLoading } = useAuth()
 
   const [state, setState] = useState<ProfileState>({
@@ -141,15 +165,16 @@ export function useProfile(): UseProfileReturn {
 
       try {
         const response = await ensureProfile(name)
-        setState({
+        // Preserve existing memberships/roles/subscriptions if API doesn't return them
+        setState((prev) => ({
           person: response.person,
-          memberships: response.memberships || [],
-          roles: response.roles || [],
-          subscriptions: response.subscriptions || [],
+          memberships: response.memberships || prev.memberships,
+          roles: response.roles || prev.roles,
+          subscriptions: response.subscriptions || prev.subscriptions,
           loading: false,
           error: null,
           synced: true,
-        })
+        }))
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Failed to update profile'
@@ -172,15 +197,16 @@ export function useProfile(): UseProfileReturn {
 
       try {
         const response = await updateProfile({ photo_url: photoUrl })
-        setState({
+        // Preserve existing memberships/roles/subscriptions if API doesn't return them
+        setState((prev) => ({
           person: response.person,
-          memberships: response.memberships || [],
-          roles: response.roles || [],
-          subscriptions: response.subscriptions || [],
+          memberships: response.memberships || prev.memberships,
+          roles: response.roles || prev.roles,
+          subscriptions: response.subscriptions || prev.subscriptions,
           loading: false,
           error: null,
           synced: true,
-        })
+        }))
       } catch (error) {
         const message =
           error instanceof Error ? error.message : 'Failed to update photo'
@@ -211,15 +237,16 @@ export function useProfile(): UseProfileReturn {
 
         // Then update D1 database
         const response = await updateProfile({ email })
-        setState({
+        // Preserve existing memberships/roles/subscriptions if API doesn't return them
+        setState((prev) => ({
           person: response.person,
-          memberships: response.memberships || [],
-          roles: response.roles || [],
-          subscriptions: response.subscriptions || [],
+          memberships: response.memberships || prev.memberships,
+          roles: response.roles || prev.roles,
+          subscriptions: response.subscriptions || prev.subscriptions,
           loading: false,
           error: null,
           synced: true,
-        })
+        }))
 
         return {
           success: true,

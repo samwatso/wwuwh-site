@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Button } from './Button'
+import { openExternalUrl } from '@/lib/api'
 import styles from './Onboarding.module.css'
 
 interface OnboardingProps {
@@ -60,7 +61,7 @@ const slides: Slide[] = [
     detail: 'Regularly checking WhatsApp and Instagram to make your first session better.',
     action: {
       label: 'Message us',
-      href: '/connect/',
+      href: 'https://wwuwh.com/connect/',
     },
   },
   {
@@ -70,7 +71,7 @@ const slides: Slide[] = [
     detail: '',
     action: {
       label: 'View Kit Guide',
-      href: '/kit/',
+      href: 'https://wwuwh.com/kit/',
     },
   },
   {
@@ -135,8 +136,10 @@ export function Onboarding({ onComplete }: OnboardingProps) {
             <a
               href={slide.action.href}
               className={styles.actionLink}
-              target="_blank"
-              rel="noopener noreferrer"
+              onClick={(e) => {
+                e.preventDefault()
+                openExternalUrl(slide.action!.href)
+              }}
             >
               {slide.action.label}
               <svg

@@ -113,10 +113,10 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
         INSERT INTO events (
           id, club_id, title, description, location, kind,
           starts_at_utc, ends_at_utc, timezone, capacity,
-          payment_mode, visible_from,
+          payment_mode, visible_from, external_source,
           created_by_person_id, created_at, updated_at
         )
-        VALUES (?, ?, ?, ?, ?, 'tournament', ?, ?, 'Europe/London', ?, 'free', ?, ?, datetime('now'), datetime('now'))
+        VALUES (?, ?, ?, ?, ?, 'tournament', ?, ?, 'Europe/London', ?, 'free', ?, 'boa', ?, datetime('now'), datetime('now'))
       `)
       .bind(
         eventId,

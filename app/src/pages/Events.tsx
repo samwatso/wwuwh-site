@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo, useEffect, useState, useCallback } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { Browser } from '@capacitor/browser'
 import { useProfile } from '@/hooks/useProfile'
@@ -242,6 +242,26 @@ function EventCard({ event, onRsvp, rsvpLoading, onPaymentComplete, isPast }: Ev
   const [showDescriptionPopup, setShowDescriptionPopup] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [showRefundWarning, setShowRefundWarning] = useState(false)
+  const [showBoaInfo, setShowBoaInfo] = useState(false)
+
+  // Fetch attendees on mount for avatar preview
+  const fetchAttendees = useCallback(async () => {
+    if (attendees) return // Already loaded
+    setAttendeesLoading(true)
+    try {
+      const response = await getEventAttendees(event.id)
+      setAttendees(response.attendees)
+    } catch (err) {
+      console.error('Failed to load attendees:', err)
+    } finally {
+      setAttendeesLoading(false)
+    }
+  }, [event.id, attendees])
+
+  // Load attendees on mount
+  useEffect(() => {
+    fetchAttendees()
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Check if user has paid via Stripe
   const hasStripePaid = event.payment_source === 'stripe' && event.payment_status === 'succeeded'
@@ -271,18 +291,7 @@ function EventCard({ event, onRsvp, rsvpLoading, onPaymentComplete, isPast }: Ev
     onPaymentComplete()
   }
 
-  const handleToggleExpand = async () => {
-    if (!expanded && !attendees) {
-      setAttendeesLoading(true)
-      try {
-        const response = await getEventAttendees(event.id)
-        setAttendees(response.attendees)
-      } catch (err) {
-        console.error('Failed to load attendees:', err)
-      } finally {
-        setAttendeesLoading(false)
-      }
-    }
+  const handleToggleExpand = () => {
     setExpanded(!expanded)
   }
 
@@ -343,6 +352,16 @@ function EventCard({ event, onRsvp, rsvpLoading, onPaymentComplete, isPast }: Ev
         <div className={styles.cardRow1}>
           <h3 className={styles.eventTitle}>{event.title}</h3>
           <div className={styles.cardRow1Right}>
+            {event.external_source === 'boa' && (
+              <button
+                type="button"
+                className={styles.boaBadge}
+                onClick={(e) => { e.stopPropagation(); setShowBoaInfo(true); }}
+                aria-label="Event sourced from British Octopush Association"
+              >
+                <span className={styles.boaBadgeIcon}>i</span>
+              </button>
+            )}
             {getBadge()}
             <span className={`${styles.chevron} ${expanded ? styles.chevronOpen : ''}`}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -352,7 +371,7 @@ function EventCard({ event, onRsvp, rsvpLoading, onPaymentComplete, isPast }: Ev
           </div>
         </div>
 
-        {/* Row 2: Time • Location */}
+        {/* Row 2: Time • Location • Source */}
         <div className={styles.cardRow2}>
           <span className={styles.metaTime}>
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -583,6 +602,33 @@ function EventCard({ event, onRsvp, rsvpLoading, onPaymentComplete, isPast }: Ev
               </button>
             </div>
             <p className={styles.descriptionPopupText}>{event.description}</p>
+          </div>
+        </div>
+      )}
+
+      {/* BOA Info Popup */}
+      {showBoaInfo && (
+        <div className={styles.boaInfoOverlay} onClick={() => setShowBoaInfo(false)}>
+          <div className={styles.boaInfoPopup} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.boaInfoHeader}>
+              <h4 className={styles.boaInfoTitle}>Event Source</h4>
+              <button
+                type="button"
+                className={styles.boaInfoClose}
+                onClick={() => setShowBoaInfo(false)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <div className={styles.boaInfoContent}>
+              <p>
+                This event has been published by the <strong>British Octopush Association</strong> (BOA).
+              </p>
+              <p>
+                <strong>West Wickham Underwater Hockey Club</strong> is affiliated with the BOA, and national events are synced to your club calendar.
+              </p>
+            </div>
           </div>
         </div>
       )}

@@ -4,9 +4,10 @@ import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import { useEvents } from '@/hooks/useEvents'
 import { useCountdown } from '@/hooks/useCountdown'
-import { useAwards } from '@/hooks/useAwards'
+import { useAwards, Award, LockedAward } from '@/hooks/useAwards'
 import { getEventAttendees, Attendee } from '@/lib/api'
 import { Spinner, Avatar } from '@/components'
+import { AnimatedBadge } from '@/components/badges'
 import type { EventWithRsvp, RsvpResponse, EventKind } from '@/types/database'
 import styles from './Dashboard.module.css'
 
@@ -60,7 +61,7 @@ interface EventItemProps {
 
 function EventItem({ event, onRsvp, rsvpLoading }: EventItemProps) {
   return (
-    <div className={styles.eventItem}>
+    <Link to="/app/events" className={styles.eventItem}>
       <div className={styles.eventInfo}>
         <div className={styles.eventHeader}>
           <span className={styles.eventTitle}>{event.title}</span>
@@ -89,7 +90,7 @@ function EventItem({ event, onRsvp, rsvpLoading }: EventItemProps) {
       <div className={styles.eventActions}>
         <button
           className={`${styles.rsvpBtn} ${styles.rsvpYes}`}
-          onClick={() => onRsvp(event.id, 'yes')}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRsvp(event.id, 'yes'); }}
           disabled={rsvpLoading}
           title="Going"
         >
@@ -97,14 +98,14 @@ function EventItem({ event, onRsvp, rsvpLoading }: EventItemProps) {
         </button>
         <button
           className={`${styles.rsvpBtn} ${styles.rsvpNo}`}
-          onClick={() => onRsvp(event.id, 'no')}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onRsvp(event.id, 'no'); }}
           disabled={rsvpLoading}
           title="Not going"
         >
           ✗
         </button>
       </div>
-    </div>
+    </Link>
   )
 }
 
@@ -220,46 +221,160 @@ function ProfileCompletionCard({ hasName, hasPhoto }: ProfileCompletionProps) {
   )
 }
 
-interface AwardsCardProps {
+interface BadgeDisplayProps {
   awardsCount: number
   currentStreak: number
   loading: boolean
+  earnedAwards: Award[]
+  lockedAwards: LockedAward[]
+  isWide?: boolean
 }
 
-function AwardsCard({ awardsCount, currentStreak, loading }: AwardsCardProps) {
+function BadgeShowcase({ awardsCount, currentStreak, loading, earnedAwards, lockedAwards, isWide }: BadgeDisplayProps) {
+  const [showTrophyCase, setShowTrophyCase] = useState(false)
+
+  // Combine earned and locked, prioritizing earned badges for display
+  const earnedSet = new Set(earnedAwards.map(a => a.icon))
+
+  // Get up to 4 badges for hive preview - prioritize earned, then locked
+  const previewBadges = [
+    ...earnedAwards.slice(0, 4).map(a => ({ icon: a.icon, earned: true })),
+    ...lockedAwards
+      .filter(a => !earnedSet.has(a.icon))
+      .slice(0, Math.max(0, 4 - earnedAwards.length))
+      .map(a => ({ icon: a.icon, earned: false })),
+  ].slice(0, 4)
+
   return (
-    <Link to="/app/profile" className={styles.statCard}>
-      <div className={`${styles.statIcon} ${styles.statIconAwards}`}>
-        <span className={styles.trophyEmoji}>🏆</span>
+    <>
+      <div
+        className={`${styles.badgeShowcase} ${isWide ? styles.badgeShowcaseWide : ''}`}
+        onClick={() => !loading && setShowTrophyCase(true)}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setShowTrophyCase(true) }}
+      >
+        {/* Badge Hive Preview */}
+        <div className={styles.badgeHivePreview}>
+          {previewBadges.map((badge, i) => (
+            <div key={badge.icon || i} className={styles.badgePreviewItem}>
+              {badge.icon ? (
+                <AnimatedBadge
+                  icon={badge.icon}
+                  size={40}
+                  earned={badge.earned}
+                  animate={false}
+                />
+              ) : (
+                <div className={styles.badgePlaceholder}>?</div>
+              )}
+            </div>
+          ))}
+          {previewBadges.length === 0 && (
+            <div className={styles.badgePlaceholder}>?</div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div className={styles.badgeShowcaseInfo}>
+          {loading ? (
+            <Spinner size="sm" />
+          ) : (
+            <>
+              <span className={styles.badgeShowcaseCount}>
+                {awardsCount} {awardsCount === 1 ? 'Badge' : 'Badges'}
+              </span>
+              <span className={styles.badgeShowcaseHint}>
+                {currentStreak > 0 && `🔥 ${currentStreak} streak · `}
+                Tap to view collection
+              </span>
+            </>
+          )}
+        </div>
       </div>
-      <div className={styles.statContent}>
-        {loading ? (
-          <Spinner size="sm" />
-        ) : (
-          <>
-            <span className={styles.statValue}>{awardsCount}</span>
-            <span className={styles.statLabel}>
-              {awardsCount === 1 ? 'Badge' : 'Badges'}
-              {currentStreak > 0 && ` · ${currentStreak} streak`}
-            </span>
-          </>
-        )}
-      </div>
-    </Link>
+
+      {/* Badge Collection Modal */}
+      {showTrophyCase && (
+        <div className={styles.trophyCaseOverlay} onClick={() => setShowTrophyCase(false)}>
+          <div className={styles.trophyCaseModal} onClick={(e) => e.stopPropagation()}>
+            <div className={styles.trophyCaseHeader}>
+              <h3 className={styles.trophyCaseTitle}>Badge Collection</h3>
+              <button
+                className={styles.trophyCaseClose}
+                onClick={() => setShowTrophyCase(false)}
+              >
+                &times;
+              </button>
+            </div>
+
+            <div className={styles.trophyCaseContent}>
+              {/* Earned Badges */}
+              {earnedAwards.map(award => (
+                <div key={award.id} className={styles.trophyItem}>
+                  <div className={styles.trophyBadgeWrapper}>
+                    <AnimatedBadge
+                      icon={award.icon || 'first_dip_round'}
+                      size={64}
+                      earned={true}
+                      animate={true}
+                    />
+                  </div>
+                  <div className={styles.trophyInfo}>
+                    <span className={styles.trophyName}>{award.name}</span>
+                    <span className={styles.trophyDesc}>{award.description}</span>
+                    <span className={styles.trophyEarnedDate}>
+                      ✓ Earned {new Date(award.granted_at).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+              {/* Locked Badges */}
+              {lockedAwards.map(award => (
+                <div key={award.id} className={styles.trophyItem}>
+                  <div className={styles.trophyBadgeWrapper}>
+                    <AnimatedBadge
+                      icon={award.icon || 'first_dip_round'}
+                      size={64}
+                      earned={false}
+                      animate={false}
+                    />
+                  </div>
+                  <div className={styles.trophyInfo}>
+                    <span className={styles.trophyName}>{award.name}</span>
+                    <span className={styles.trophyDesc}>{award.description}</span>
+                  </div>
+                </div>
+              ))}
+
+              {/* Fallback if no badges */}
+              {earnedAwards.length === 0 && lockedAwards.length === 0 && (
+                <div className={styles.trophyEmpty}>
+                  <p>No badges available yet. Keep attending sessions to earn badges!</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
 export function Dashboard() {
   const { user } = useAuth()
   const { person, memberships, loading: profileLoading, error: profileError } = useProfile()
-  const { awards, currentStreak, loading: awardsLoading } = useAwards()
+  const { awards, lockedAwards, currentStreak, loading: awardsLoading } = useAwards()
 
   // Get club ID from first membership
   const clubId = memberships.length > 0 ? memberships[0].club_id : ''
 
   const {
     events,
-    loading: eventsLoading,
     rsvp,
     rsvpLoading,
   } = useEvents({ clubId })
@@ -318,21 +433,13 @@ export function Dashboard() {
       {/* Up Next Card - Only shown if user is attending an upcoming event */}
       {upNextEvent && <UpNextCard event={upNextEvent} />}
 
-      {/* Events Needing Response */}
-      <div className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>Needs Your Response</h2>
-          <Link to="/app/events" className={styles.viewAllLink}>
-            View all
-          </Link>
-        </div>
-
-        {eventsLoading && !events.length ? (
-          <div className={styles.loadingState}>
-            <Spinner size="sm" />
-            <span>Loading events...</span>
+      {/* Events Needing Response - only show if there are events needing response */}
+      {eventsNeedingResponse.length > 0 && (
+        <div className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h2 className={styles.cardTitle}>Needs Your Response</h2>
           </div>
-        ) : eventsNeedingResponse.length > 0 ? (
+
           <div className={styles.eventsList}>
             {eventsNeedingResponse.map(event => (
               <EventItem
@@ -343,22 +450,23 @@ export function Dashboard() {
               />
             ))}
           </div>
-        ) : (
-          <div className={styles.emptyState}>
-            <span className={styles.emptyIcon}>✓</span>
-            <span>You're all caught up!</span>
-          </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Quick Stats */}
       <div className={styles.statsGrid}>
-        <AwardsCard
+        <BadgeShowcase
           awardsCount={awards.length}
           currentStreak={currentStreak}
           loading={awardsLoading}
+          earnedAwards={awards}
+          lockedAwards={lockedAwards}
+          isWide={hasName && hasPhoto}
         />
-        <ProfileCompletionCard hasName={hasName} hasPhoto={hasPhoto} />
+        {/* Only show profile completion card if profile is not 100% complete */}
+        {!(hasName && hasPhoto) && (
+          <ProfileCompletionCard hasName={hasName} hasPhoto={hasPhoto} />
+        )}
       </div>
     </div>
   )

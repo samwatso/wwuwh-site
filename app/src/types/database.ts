@@ -178,6 +178,8 @@ export interface EventWithRsvp extends Event {
   sessions_used_this_week: number
   payment_required: boolean
   subscription_used: number | null // 1 if subscription used for this event
+  // External source tracking (for events promoted from BOA etc)
+  external_source: string | null // e.g. 'boa' for British Octopush Association events
 }
 
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused'

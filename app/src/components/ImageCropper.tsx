@@ -28,11 +28,15 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
     throw new Error('No 2d context')
   }
 
-  // Set canvas size to the cropped area
-  canvas.width = pixelCrop.width
-  canvas.height = pixelCrop.height
+  // Limit output size to 512x512 for profile photos
+  const maxSize = 512
+  const outputSize = Math.min(pixelCrop.width, pixelCrop.height, maxSize)
 
-  // Draw the cropped image
+  // Set canvas size
+  canvas.width = outputSize
+  canvas.height = outputSize
+
+  // Draw the cropped image, scaling to output size
   ctx.drawImage(
     image,
     pixelCrop.x,
@@ -41,32 +45,56 @@ async function getCroppedImg(imageSrc: string, pixelCrop: Area): Promise<Blob> {
     pixelCrop.height,
     0,
     0,
-    pixelCrop.width,
-    pixelCrop.height
+    outputSize,
+    outputSize
   )
 
-  // Convert to blob
+  // Convert to blob with timeout for iOS
   return new Promise((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (blob) {
-          resolve(blob)
-        } else {
-          reject(new Error('Canvas toBlob failed'))
-        }
-      },
-      'image/jpeg',
-      0.9
-    )
+    const timeout = setTimeout(() => {
+      reject(new Error('Image processing timed out'))
+    }, 10000)
+
+    try {
+      canvas.toBlob(
+        (blob) => {
+          clearTimeout(timeout)
+          if (blob) {
+            resolve(blob)
+          } else {
+            reject(new Error('Canvas toBlob failed'))
+          }
+        },
+        'image/jpeg',
+        0.85
+      )
+    } catch (err) {
+      clearTimeout(timeout)
+      reject(err)
+    }
   })
 }
 
 // Helper to load image
 function createImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error('Image load timed out'))
+    }, 10000)
+
     const image = new Image()
-    image.addEventListener('load', () => resolve(image))
-    image.addEventListener('error', (error) => reject(error))
+    // Don't set crossOrigin for data URLs - it can cause issues on iOS
+    if (!url.startsWith('data:')) {
+      image.crossOrigin = 'anonymous'
+    }
+    image.onload = () => {
+      clearTimeout(timeout)
+      resolve(image)
+    }
+    image.onerror = (error) => {
+      clearTimeout(timeout)
+      reject(error)
+    }
     image.src = url
   })
 }
@@ -75,6 +103,8 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel, saving }: Ima
   const [crop, setCrop] = useState<Point>({ x: 0, y: 0 })
   const [zoom, setZoom] = useState(1)
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   const onCropChange = useCallback((location: Point) => {
     setCrop(location)
@@ -88,14 +118,23 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel, saving }: Ima
     setCroppedAreaPixels(croppedAreaPixels)
   }, [])
 
-  const handleSave = useCallback(async () => {
-    if (!croppedAreaPixels) return
+  const onMediaLoaded = useCallback(() => {
+    setImageLoaded(true)
+  }, [])
 
+  const handleSave = useCallback(async () => {
+    if (!croppedAreaPixels) {
+      setError('Please adjust the crop area first')
+      return
+    }
+
+    setError(null)
     try {
       const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels)
       onCropComplete(croppedBlob)
     } catch (err) {
       console.error('Error cropping image:', err)
+      setError('Failed to process image. Please try again.')
     }
   }, [imageSrc, croppedAreaPixels, onCropComplete])
 
@@ -120,6 +159,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel, saving }: Ima
             onCropChange={onCropChange}
             onZoomChange={onZoomChange}
             onCropComplete={onCropAreaComplete}
+            onMediaLoaded={onMediaLoaded}
           />
         </div>
 
@@ -136,11 +176,19 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel, saving }: Ima
           />
         </div>
 
+        {error && (
+          <div className={styles.error}>{error}</div>
+        )}
+
         <div className={styles.footer}>
           <Button variant="secondary" onClick={onCancel} disabled={saving}>
             Cancel
           </Button>
-          <Button onClick={handleSave} loading={saving} disabled={saving}>
+          <Button
+            onClick={handleSave}
+            loading={saving}
+            disabled={saving || !imageLoaded || !croppedAreaPixels}
+          >
             Save Photo
           </Button>
         </div>

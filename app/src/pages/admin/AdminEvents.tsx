@@ -3000,6 +3000,10 @@ export function AdminEvents() {
       {/* UK Events Tab Content */}
       {activeTab === 'uk' && (
         <div className={styles.ukEventsSection}>
+          <div className={styles.boaNotice}>
+            <span className={styles.boaNoticeIcon}>i</span>
+            <span>UK events are synced monthly from the <strong>British Octopush Association</strong>, with whom West Wickham Underwater Hockey Club is affiliated. Promote events to add them to your club calendar.</span>
+          </div>
           {externalEventsLoading ? (
             <div className={styles.loading}>
               <Spinner />

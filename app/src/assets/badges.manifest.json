@@ -1,0 +1,282 @@
+{
+  "version": "1.0.0",
+  "generated": "2026-01-28T01:01:11.552Z",
+  "badges": [
+    {
+      "icon": "first_dip_round",
+      "name": "First Dip",
+      "path": "/badges/first_dip_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "back_to_back_hex",
+      "name": "Back-to-Back",
+      "path": "/badges/back_to_back_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "triple_threat_shield",
+      "name": "Triple Threat",
+      "path": "/badges/triple_threat_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "perfect_week_round",
+      "name": "Perfect Week",
+      "path": "/badges/perfect_week_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "four_week_flow_hex",
+      "name": "Four-Week Flow",
+      "path": "/badges/four_week_flow_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "twelve_week_habit_shield",
+      "name": "12-Week Habit",
+      "path": "/badges/twelve_week_habit_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "unbroken_month_round",
+      "name": "Unbroken Month",
+      "path": "/badges/unbroken_month_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "streak_saver_hex",
+      "name": "Streak Saver",
+      "path": "/badges/streak_saver_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "sessions_5_round",
+      "name": "5 Sessions",
+      "path": "/badges/sessions_5_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "sessions_10_hex",
+      "name": "10 Sessions",
+      "path": "/badges/sessions_10_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "sessions_25_shield",
+      "name": "25 Sessions",
+      "path": "/badges/sessions_25_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "sessions_50_round",
+      "name": "50 Sessions",
+      "path": "/badges/sessions_50_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "sessions_100_hex",
+      "name": "100 Sessions",
+      "path": "/badges/sessions_100_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "club_200_shield",
+      "name": "200 Club",
+      "path": "/badges/club_200_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "season_centurion_round",
+      "name": "Season Centurion",
+      "path": "/badges/season_centurion_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "on_time_hex",
+      "name": "On Time",
+      "path": "/badges/on_time_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "dependable_shield",
+      "name": "Dependable",
+      "path": "/badges/dependable_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "ironclad_round",
+      "name": "Ironclad",
+      "path": "/badges/ironclad_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "always_ready_hex",
+      "name": "Always Ready",
+      "path": "/badges/always_ready_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "thursday_regular_shield",
+      "name": "Thursday Regular",
+      "path": "/badges/thursday_regular_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "sunday_specialist_round",
+      "name": "Sunday Specialist",
+      "path": "/badges/sunday_specialist_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "early_bird_hex",
+      "name": "Early Bird",
+      "path": "/badges/early_bird_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "last_minute_hero_shield",
+      "name": "Last Minute Hero",
+      "path": "/badges/last_minute_hero_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "squad_builder_round",
+      "name": "Squad Builder",
+      "path": "/badges/squad_builder_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "full_bench_hex",
+      "name": "Full Bench",
+      "path": "/badges/full_bench_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "captains_pick_shield",
+      "name": "Captain's Pick",
+      "path": "/badges/captains_pick_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "white_cap_round",
+      "name": "White Cap",
+      "path": "/badges/white_cap_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "black_cap_hex",
+      "name": "Black Cap",
+      "path": "/badges/black_cap_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "forward_line_shield",
+      "name": "Forward Line",
+      "path": "/badges/forward_line_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "wing_runner_round",
+      "name": "Wing Runner",
+      "path": "/badges/wing_runner_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "centre_control_hex",
+      "name": "Centre Control",
+      "path": "/badges/centre_control_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "backline_anchor_shield",
+      "name": "Backline Anchor",
+      "path": "/badges/backline_anchor_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "utility_player_round",
+      "name": "Utility Player",
+      "path": "/badges/utility_player_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "third_team_hex",
+      "name": "Third Team",
+      "path": "/badges/third_team_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "first_friendly_round",
+      "name": "First Friendly",
+      "path": "/badges/first_friendly_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "tournament_debut_hex",
+      "name": "Tournament Debut",
+      "path": "/badges/tournament_debut_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "road_trip_shield",
+      "name": "Road Trip",
+      "path": "/badges/road_trip_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "international_waters_round",
+      "name": "International Waters",
+      "path": "/badges/international_waters_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "camp_week_hex",
+      "name": "Camp Week",
+      "path": "/badges/camp_week_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "finals_ready_shield",
+      "name": "Finals Ready",
+      "path": "/badges/finals_ready_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "anniversary_1y_round",
+      "name": "Anniversary - 1 Year",
+      "path": "/badges/anniversary_1y_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "anniversary_5y_hex",
+      "name": "Anniversary - 5 Years",
+      "path": "/badges/anniversary_5y_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "anniversary_10y_shield",
+      "name": "Anniversary - 10 Years",
+      "path": "/badges/anniversary_10y_shield.svg",
+      "shape": "shield"
+    },
+    {
+      "icon": "new_year_splash_round",
+      "name": "New Year Splash",
+      "path": "/badges/new_year_splash_round.svg",
+      "shape": "round"
+    },
+    {
+      "icon": "spring_surge_hex",
+      "name": "Spring Surge",
+      "path": "/badges/spring_surge_hex.svg",
+      "shape": "hex"
+    },
+    {
+      "icon": "summer_series_shield",
+      "name": "Summer Series",
+      "path": "/badges/summer_series_shield.svg",
+      "shape": "shield"
+    }
+  ]
+}
