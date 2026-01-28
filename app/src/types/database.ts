@@ -17,6 +17,16 @@ export interface Club {
   archived_at: string | null
 }
 
+export type PricingCategory = 'adult' | 'student' | 'junior' | 'senior' | 'guest'
+
+export const PRICING_CATEGORY_LABELS: Record<PricingCategory, string> = {
+  adult: 'Adult',
+  student: 'Student',
+  junior: 'Junior',
+  senior: 'Senior',
+  guest: 'Guest',
+}
+
 export interface Person {
   id: string
   auth_user_id: string | null // Links to Supabase auth.users.id
@@ -26,6 +36,7 @@ export interface Person {
   medical_flag: number // 0 | 1
   rating: number | null
   notes_private: string | null
+  pricing_category: PricingCategory // Pricing tier for event payments
   created_at: string
   updated_at: string
 }
@@ -180,6 +191,10 @@ export interface EventWithRsvp extends Event {
   subscription_used: number | null // 1 if subscription used for this event
   // External source tracking (for events promoted from BOA etc)
   external_source: string | null // e.g. 'boa' for British Octopush Association events
+  // Computed pricing based on person's pricing category
+  computed_price_cents: number | null // Effective price for this person
+  computed_category: PricingCategory | null // Category used for pricing
+  pricing_source: 'tier' | 'event_fee_fallback' | null // Where the price came from
 }
 
 export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused'
@@ -189,6 +204,27 @@ export interface EventAttendance {
   person_id: string
   status: AttendanceStatus
   checked_in_at: string | null
+}
+
+// ============================================
+// EVENT PRICING TIERS
+// ============================================
+
+export interface EventPricingTier {
+  id: string
+  event_id: string
+  category: PricingCategory
+  price_cents: number
+  currency: string
+  created_at: string
+}
+
+export interface ComputedPricing {
+  charged_category: PricingCategory
+  amount_cents: number
+  currency: string
+  source: 'tier' | 'event_fee_fallback'
+  original_category: PricingCategory
 }
 
 // ============================================
@@ -273,6 +309,7 @@ export interface Transaction {
   amount_cents: number
   currency: string
   status: TransactionStatus
+  charged_category: PricingCategory | null // The effective category used for pricing
   stripe_payment_intent_id: string | null
   stripe_charge_id: string | null
   stripe_refund_id: string | null

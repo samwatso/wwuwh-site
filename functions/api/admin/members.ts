@@ -7,6 +7,8 @@ import { Env, jsonResponse, errorResponse } from '../../types'
 import { withAuth } from '../../middleware/auth'
 import { isAdmin } from '../../middleware/admin'
 
+type PricingCategory = 'adult' | 'student' | 'junior' | 'senior' | 'guest'
+
 interface MemberWithStats {
   id: string
   person_id: string
@@ -15,6 +17,7 @@ interface MemberWithStats {
   member_type: 'member' | 'guest'
   status: string
   joined_at: string | null
+  pricing_category: PricingCategory
   subscription_status: string | null
   subscription_plan: string | null
   sessions_attended: number
@@ -71,6 +74,7 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
         cm.person_id,
         p.name,
         p.email,
+        p.pricing_category,
         cm.member_type,
         cm.status,
         cm.joined_at,

@@ -7,6 +7,7 @@
 import { Env, jsonResponse, errorResponse } from '../../../types'
 import { withAuth } from '../../../middleware/auth'
 import { isAdmin } from '../../../middleware/admin'
+import { getEventPricingTiers, upsertEventPricingTiers, type PricingCategory } from '../../../lib/pricing'
 
 /**
  * GET /api/admin/events
@@ -97,6 +98,8 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       payment_mode?: 'included' | 'one_off' | 'free'
       fee_cents?: number
       visible_from?: string
+      // Pricing tiers for different member categories
+      pricing_tiers?: Partial<Record<PricingCategory, number | null>>
     }
 
     const { club_id, title, starts_at_utc, ends_at_utc } = body
@@ -158,13 +161,22 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       )
       .run()
 
+    // Save pricing tiers if provided
+    if (body.pricing_tiers) {
+      const currency = 'GBP' // Default currency
+      await upsertEventPricingTiers(db, eventId, body.pricing_tiers, currency)
+    }
+
     // Fetch the created event
     const event = await db
       .prepare('SELECT * FROM events WHERE id = ?')
       .bind(eventId)
       .first()
 
-    return jsonResponse({ event })
+    // Fetch pricing tiers
+    const pricingTiers = await getEventPricingTiers(db, eventId)
+
+    return jsonResponse({ event, pricing_tiers: pricingTiers })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Database error'
     return errorResponse(message, 500)

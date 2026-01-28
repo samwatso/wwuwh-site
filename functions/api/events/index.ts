@@ -15,6 +15,7 @@
 
 import { Env, jsonResponse, errorResponse } from '../../types'
 import { withAuth } from '../../middleware/auth'
+import { getEventPricingTiers, computeEffectiveCategoryAndPriceSync, type PricingCategory, type PricingTier } from '../../lib/pricing'
 
 export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) => {
   const db = context.env.WWUWH_DB
@@ -26,11 +27,11 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
   }
 
   try {
-    // Get user's person record
+    // Get user's person record with pricing category
     const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
+      .prepare('SELECT id, pricing_category FROM people WHERE auth_user_id = ?')
       .bind(user.id)
-      .first<{ id: string }>()
+      .first<{ id: string; pricing_category: PricingCategory }>()
 
     if (!person) {
       return errorResponse('Profile not found', 404)
@@ -113,9 +114,23 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
       .bind(person.id, person.id, person.id, person.id, subscription?.id || '', clubId, status, from, to, limit)
       .all()
 
+    // Get person's pricing category with fallback
+    const personCategory = person.pricing_category || 'adult'
+
     // For each event, calculate if payment is required based on subscription
+    // and compute effective pricing based on category
     const eventsWithPaymentInfo = await Promise.all(
       (events.results as Record<string, unknown>[]).map(async (event) => {
+        // Get pricing tiers for this event
+        const eventPricingTiers = await getEventPricingTiers(db, event.id as string)
+
+        // Compute effective price based on person's category
+        const pricing = computeEffectiveCategoryAndPriceSync(
+          personCategory,
+          eventPricingTiers,
+          event.fee_cents as number | null,
+          event.currency as string || 'GBP'
+        )
         // Get the week boundaries for this event (Monday to Sunday)
         const eventDate = new Date(event.starts_at_utc as string)
         const weekStart = getWeekStart(eventDate)
@@ -168,7 +183,7 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
         }
 
         // Free events don't require payment
-        if (event.payment_mode === 'free' || !event.fee_cents) {
+        if (event.payment_mode === 'free' || pricing.amount_cents === 0) {
           paymentRequired = false
         }
 
@@ -179,6 +194,10 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
           sessions_allowed: subscription?.weekly_sessions_allowed || 0,
           sessions_used_this_week: sessionsUsedThisWeek,
           payment_required: paymentRequired,
+          // Computed pricing for this user
+          computed_price_cents: pricing.amount_cents,
+          computed_category: pricing.charged_category,
+          pricing_source: pricing.source,
         }
       })
     )
@@ -191,6 +210,7 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
         weekly_sessions_allowed: subscription.weekly_sessions_allowed,
       } : null,
       member_type: membership.member_type,
+      pricing_category: personCategory,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Database error'

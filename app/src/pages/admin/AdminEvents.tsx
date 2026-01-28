@@ -11,8 +11,9 @@ import { useAdminEvents } from '@/hooks/useAdminEvents'
 import { useAdminGroups } from '@/hooks/useAdminGroups'
 import { useAdminMembers } from '@/hooks/useAdminMembers'
 import { Spinner } from '@/components'
-import type { AdminEvent, EventSeries, AdminGroup, AdminMember, ExternalEvent } from '@/lib/api'
+import type { AdminEvent, EventSeries, AdminGroup, AdminMember, ExternalEvent, PricingCategory } from '@/lib/api'
 import type { EventKind } from '@/types/database'
+import { PRICING_CATEGORY_LABELS } from '@/types/database'
 import {
   getEventInvitations,
   addEventInvitations,
@@ -77,6 +78,7 @@ interface EventDraft {
   paymentMode: 'included' | 'one_off' | 'free'
   feeCents: number
   visibilityDays: number
+  pricingTiers?: Partial<Record<PricingCategory, number | null>>
 }
 
 interface SeriesDraft {
@@ -1140,6 +1142,7 @@ function EventModal({
     payment_mode?: 'included' | 'one_off' | 'free'
     fee_cents?: number
     visible_from?: string
+    pricing_tiers?: Partial<Record<PricingCategory, number | null>>
   }) => void
   onClose: () => void
   saving: boolean
@@ -1234,6 +1237,9 @@ function EventModal({
     sourceEvent?.payment_mode || savedDraft?.paymentMode || 'included'
   )
   const [feeCents, setFeeCents] = useState(sourceEvent?.fee_cents || savedDraft?.feeCents || 0)
+  const [pricingTiers, setPricingTiers] = useState<Partial<Record<PricingCategory, number | null>>>(
+    savedDraft?.pricingTiers || {}
+  )
   const [visibilityDays, setVisibilityDays] = useState(() => {
     // For edit/copy, calculate from existing event's visible_from
     if (sourceEvent?.visible_from && sourceEvent?.starts_at_utc) {
@@ -1313,14 +1319,15 @@ function EventModal({
       paymentMode,
       feeCents,
       visibilityDays,
+      pricingTiers,
     }
-  }, [title, description, location, kind, startDate, startTime, endTime, isAllDay, endDate, paymentMode, feeCents, visibilityDays])
+  }, [title, description, location, kind, startDate, startTime, endTime, isAllDay, endDate, paymentMode, feeCents, visibilityDays, pricingTiers])
 
   // Save draft to localStorage when values change (only for new events)
   useEffect(() => {
     if (isEdit || isCopy) return
     localStorage.setItem(EVENT_DRAFT_KEY, JSON.stringify(draftRef.current))
-  }, [isEdit, isCopy, title, description, location, kind, startDate, startTime, endTime, isAllDay, endDate, paymentMode, feeCents, visibilityDays])
+  }, [isEdit, isCopy, title, description, location, kind, startDate, startTime, endTime, isAllDay, endDate, paymentMode, feeCents, visibilityDays, pricingTiers])
 
   // Save draft on unmount (catches navigation away)
   useEffect(() => {
@@ -1378,6 +1385,7 @@ function EventModal({
       payment_mode: paymentMode,
       fee_cents: paymentMode === 'one_off' ? feeCents : undefined,
       visible_from: visibleFrom.toISOString(),
+      pricing_tiers: paymentMode === 'one_off' ? pricingTiers : undefined,
     })
   }
 
@@ -1610,7 +1618,7 @@ function EventModal({
                     </div>
                     {paymentMode === 'one_off' && (
                       <div className={styles.formGroup}>
-                        <label className={styles.formLabel}>Fee (pence)</label>
+                        <label className={styles.formLabel}>Default Fee (pence)</label>
                         <input
                           type="number"
                           className={styles.formInput}
@@ -1618,9 +1626,40 @@ function EventModal({
                           onChange={(e) => setFeeCents(parseInt(e.target.value) || 0)}
                           min={0}
                         />
+                        <p className={styles.formHint}>Fallback price if no category tier is set</p>
                       </div>
                     )}
                   </div>
+                  {paymentMode === 'one_off' && (
+                    <div className={styles.formRow}>
+                      <div className={styles.formGroup} style={{ flex: 1 }}>
+                        <label className={styles.formLabel}>Pricing Tiers (pence per category)</label>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                          {(Object.keys(PRICING_CATEGORY_LABELS) as PricingCategory[]).map(cat => (
+                            <div key={cat} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <label style={{ width: '60px', fontSize: '13px' }}>{PRICING_CATEGORY_LABELS[cat]}</label>
+                              <input
+                                type="number"
+                                className={styles.formInput}
+                                value={pricingTiers[cat] ?? ''}
+                                onChange={(e) => {
+                                  const val = e.target.value
+                                  setPricingTiers(prev => ({
+                                    ...prev,
+                                    [cat]: val === '' ? null : parseInt(val) || 0
+                                  }))
+                                }}
+                                min={0}
+                                placeholder="—"
+                                style={{ flex: 1 }}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                        <p className={styles.formHint}>Leave blank to use fallback rules (e.g., senior → adult)</p>
+                      </div>
+                    </div>
+                  )}
                   <div className={styles.formRow}>
                     <div className={styles.formGroup}>
                       <label className={styles.formLabel}>Visibility (days before event)</label>

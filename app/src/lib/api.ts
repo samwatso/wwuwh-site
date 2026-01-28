@@ -47,6 +47,9 @@ export function getReturnUrlOrigin(): string {
   return window.location.origin
 }
 
+// Pricing categories for tiered pricing
+export type PricingCategory = 'adult' | 'student' | 'junior' | 'senior' | 'guest'
+
 interface ApiResponse<T> {
   ok: boolean
   data?: T
@@ -55,7 +58,7 @@ interface ApiResponse<T> {
 }
 
 interface ApiOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   body?: unknown
 }
 
@@ -575,6 +578,7 @@ export interface AdminMember {
   member_type: 'member' | 'guest'
   status: string
   joined_at: string | null
+  pricing_category: PricingCategory
   subscription_status: string | null
   subscription_plan: string | null
   sessions_attended: number
@@ -766,6 +770,7 @@ export interface CreateEventRequest {
   payment_mode?: 'included' | 'one_off' | 'free'
   fee_cents?: number
   visible_from?: string
+  pricing_tiers?: Partial<Record<PricingCategory, number | null>>
 }
 
 export async function createAdminEvent(request: CreateEventRequest): Promise<{ event: AdminEvent }> {
@@ -789,6 +794,7 @@ export interface UpdateEventRequest {
   payment_mode?: 'included' | 'one_off' | 'free'
   fee_cents?: number
   visible_from?: string
+  pricing_tiers?: Partial<Record<PricingCategory, number | null>>
 }
 
 export async function updateAdminEvent(eventId: string, request: UpdateEventRequest): Promise<{ event: AdminEvent }> {
@@ -1178,12 +1184,38 @@ export interface MemberDetailResponse {
   member_type: 'member' | 'guest'
   status: string
   joined_at: string | null
+  pricing_category: PricingCategory
   subscription: MemberDetailSubscription | null
   recent_payments: MemberPayment[]
 }
 
 export async function getMemberDetail(memberId: string, clubId: string): Promise<MemberDetailResponse> {
   return api<MemberDetailResponse>(`/admin/members/${memberId}?club_id=${clubId}`)
+}
+
+export interface UpdateMemberRequest {
+  pricing_category?: PricingCategory
+}
+
+export interface UpdateMemberResponse {
+  success: boolean
+  person: {
+    id: string
+    name: string
+    email: string
+    pricing_category: PricingCategory
+  }
+}
+
+export async function updateMember(
+  memberId: string,
+  clubId: string,
+  request: UpdateMemberRequest
+): Promise<UpdateMemberResponse> {
+  return api<UpdateMemberResponse>(`/admin/members/${memberId}?club_id=${clubId}`, {
+    method: 'PATCH',
+    body: request,
+  })
 }
 
 export interface CreateSubscriptionRequest {

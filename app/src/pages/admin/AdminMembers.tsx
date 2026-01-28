@@ -10,14 +10,16 @@ import { Link } from 'react-router-dom'
 import { useProfile } from '@/hooks/useProfile'
 import { useAdminMembers } from '@/hooks/useAdminMembers'
 import { Spinner } from '@/components'
-import type { AdminMember, MemberDetailResponse, BillingPlan } from '@/lib/api'
+import type { AdminMember, MemberDetailResponse, BillingPlan, PricingCategory } from '@/lib/api'
 import {
   getMemberDetail,
   createMemberSubscription,
   cancelMemberSubscription,
   recordMemberPayment,
   listBillingPlans,
+  updateMember,
 } from '@/lib/api'
+import { PRICING_CATEGORY_LABELS } from '@/types/database'
 import styles from './AdminMembers.module.css'
 
 // Helper to format date
@@ -145,6 +147,7 @@ function MemberDetailModal({ memberId, clubId, onClose, onUpdate }: MemberDetail
   const [showAssignModal, setShowAssignModal] = useState(false)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
+  const [savingPricingCategory, setSavingPricingCategory] = useState(false)
 
   useEffect(() => {
     loadMemberDetail()
@@ -182,6 +185,22 @@ function MemberDetailModal({ memberId, clubId, onClose, onUpdate }: MemberDetail
     }
   }
 
+  async function handlePricingCategoryChange(newCategory: PricingCategory) {
+    setSavingPricingCategory(true)
+    try {
+      await updateMember(memberId, clubId, { pricing_category: newCategory })
+      // Update local state
+      if (detail) {
+        setDetail({ ...detail, pricing_category: newCategory })
+      }
+      onUpdate()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to update pricing category')
+    } finally {
+      setSavingPricingCategory(false)
+    }
+  }
+
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modal} onClick={e => e.stopPropagation()}>
@@ -209,6 +228,30 @@ function MemberDetailModal({ memberId, clubId, onClose, onUpdate }: MemberDetail
                     <span className={`${styles.badge} ${styles.badgeGuest}`}>Guest</span>
                   )}
                   <StatusBadge status={detail.status} />
+                </div>
+              </div>
+
+              {/* Pricing Category Section */}
+              <div className={styles.subscriptionSection}>
+                <div className={styles.subscriptionSectionTitle}>Pricing Category</div>
+                <div className={styles.subscriptionInfo}>
+                  <div className={styles.subscriptionRow}>
+                    <span className={styles.subscriptionLabel}>Category</span>
+                    <select
+                      className={styles.formSelect}
+                      value={detail.pricing_category || 'adult'}
+                      onChange={(e) => handlePricingCategoryChange(e.target.value as PricingCategory)}
+                      disabled={savingPricingCategory}
+                      style={{ maxWidth: '150px' }}
+                    >
+                      {(Object.keys(PRICING_CATEGORY_LABELS) as PricingCategory[]).map(cat => (
+                        <option key={cat} value={cat}>
+                          {PRICING_CATEGORY_LABELS[cat]}
+                        </option>
+                      ))}
+                    </select>
+                    {savingPricingCategory && <span style={{ marginLeft: '8px', fontSize: '12px' }}>Saving...</span>}
+                  </div>
                 </div>
               </div>
 

@@ -8,6 +8,7 @@
 import { Env, jsonResponse, errorResponse } from '../../../types'
 import { withAuth } from '../../../middleware/auth'
 import { isAdmin } from '../../../middleware/admin'
+import { getEventPricingTiers, upsertEventPricingTiers, type PricingCategory, type PricingTier } from '../../../lib/pricing'
 
 /**
  * GET /api/admin/events/:id
@@ -71,9 +72,13 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
       .bind(eventId)
       .all()
 
+    // Fetch pricing tiers for the event
+    const pricingTiers = await getEventPricingTiers(db, eventId)
+
     return jsonResponse({
       event,
       rsvps: rsvps.results,
+      pricing_tiers: pricingTiers,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Database error'
@@ -104,6 +109,8 @@ export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) =
       payment_mode?: 'included' | 'one_off' | 'free'
       fee_cents?: number
       visible_from?: string
+      // Pricing tiers for different member categories
+      pricing_tiers?: Partial<Record<PricingCategory, number | null>>
     }
 
     const { club_id } = body
@@ -197,13 +204,26 @@ export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) =
       .bind(...values, eventId)
       .run()
 
+    // Update pricing tiers if provided
+    if (body.pricing_tiers) {
+      // Get event currency (default GBP)
+      const eventCurrency = body.fee_cents !== undefined
+        ? 'GBP' // Will use event currency, but for now just GBP
+        : (await db.prepare('SELECT currency FROM events WHERE id = ?').bind(eventId).first<{ currency: string }>())?.currency || 'GBP'
+
+      await upsertEventPricingTiers(db, eventId, body.pricing_tiers, eventCurrency)
+    }
+
     // Fetch updated event
     const event = await db
       .prepare('SELECT * FROM events WHERE id = ?')
       .bind(eventId)
       .first()
 
-    return jsonResponse({ event })
+    // Fetch updated pricing tiers
+    const pricingTiers = await getEventPricingTiers(db, eventId)
+
+    return jsonResponse({ event, pricing_tiers: pricingTiers })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Database error'
     return errorResponse(message, 500)

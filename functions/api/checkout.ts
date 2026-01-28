@@ -11,6 +11,7 @@
 import { Env, jsonResponse, errorResponse } from '../types'
 import { withAuth } from '../middleware/auth'
 import { createCheckoutSession } from '../lib/stripe'
+import { computeEffectiveCategoryAndPrice, formatPricingSummary, type PricingCategory } from '../lib/pricing'
 
 interface CheckoutRequest {
   event_id: string
@@ -33,11 +34,11 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       return errorResponse('event_id is required', 400)
     }
 
-    // Get user's person record
+    // Get user's person record with pricing category
     const person = await db
-      .prepare('SELECT id, email, name FROM people WHERE auth_user_id = ?')
+      .prepare('SELECT id, email, name, pricing_category FROM people WHERE auth_user_id = ?')
       .bind(user.id)
-      .first<{ id: string; email: string; name: string }>()
+      .first<{ id: string; email: string; name: string; pricing_category: PricingCategory }>()
 
     if (!person) {
       return errorResponse('Profile not found', 404)
@@ -61,8 +62,17 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       return errorResponse('Event not found', 404)
     }
 
+    // Compute effective pricing based on member's category
+    const personCategory = person.pricing_category || 'adult'
+    const pricing = await computeEffectiveCategoryAndPrice(db, {
+      person_category: personCategory,
+      event_id: event.id,
+      event_fee_cents: event.fee_cents,
+      currency: event.currency,
+    })
+
     // Check if event requires payment
-    if (event.payment_mode === 'free' || !event.fee_cents) {
+    if (event.payment_mode === 'free' || pricing.amount_cents === 0) {
       return errorResponse('This event is free', 400)
     }
 
@@ -104,7 +114,15 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     const successUrl = body.success_url || `${origin}/app/events?payment=success`
     const cancelUrl = body.cancel_url || `${origin}/app/events?payment=cancelled`
 
-    // Create Stripe checkout session
+    // Format description with pricing info
+    const pricingSummary = formatPricingSummary(
+      event.title,
+      pricing.charged_category,
+      pricing.amount_cents,
+      pricing.currency
+    )
+
+    // Create Stripe checkout session with computed price
     const session = await createCheckoutSession(stripeKey, {
       mode: 'payment',
       success_url: successUrl,
@@ -113,10 +131,10 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       line_items: [
         {
           price_data: {
-            currency: event.currency.toLowerCase(),
-            unit_amount: event.fee_cents,
+            currency: pricing.currency.toLowerCase(),
+            unit_amount: pricing.amount_cents,
             product_data: {
-              name: event.title,
+              name: pricingSummary,
               description: `${eventDate} - WWUWH`,
             },
           },
@@ -127,24 +145,27 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
         event_id: event.id,
         person_id: person.id,
         club_id: event.club_id,
+        charged_category: pricing.charged_category,
+        original_category: pricing.original_category,
       },
     })
 
-    // Create pending transaction record
+    // Create pending transaction record with charged category
     const transactionId = crypto.randomUUID()
     await db
       .prepare(`
         INSERT INTO transactions
-        (id, club_id, person_id, event_id, source, type, amount_cents, currency, status, stripe_payment_intent_id, created_at)
-        VALUES (?, ?, ?, ?, 'stripe', 'charge', ?, ?, 'pending', ?, datetime('now'))
+        (id, club_id, person_id, event_id, source, type, amount_cents, currency, status, charged_category, stripe_payment_intent_id, created_at)
+        VALUES (?, ?, ?, ?, 'stripe', 'charge', ?, ?, 'pending', ?, ?, datetime('now'))
       `)
       .bind(
         transactionId,
         event.club_id,
         person.id,
         event.id,
-        event.fee_cents,
-        event.currency,
+        pricing.amount_cents,
+        pricing.currency,
+        pricing.charged_category,
         session.id // We'll update this with the actual payment_intent after webhook
       )
       .run()

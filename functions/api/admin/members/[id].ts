@@ -1,11 +1,14 @@
 /**
  * Admin Member Detail Endpoint
- * GET /api/admin/members/:id - Get member details including subscription and payments
+ * GET   /api/admin/members/:id - Get member details including subscription and payments
+ * PATCH /api/admin/members/:id - Update member details (e.g., pricing_category)
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../types'
 import { withAuth } from '../../../middleware/auth'
 import { isAdmin } from '../../../middleware/admin'
+
+type PricingCategory = 'adult' | 'student' | 'junior' | 'senior' | 'guest'
 
 interface MemberDetail {
   id: string
@@ -15,6 +18,7 @@ interface MemberDetail {
   member_type: 'member' | 'guest'
   status: string
   joined_at: string | null
+  pricing_category: PricingCategory
   subscription: {
     id: string
     plan_id: string
@@ -76,6 +80,7 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
           cm.person_id,
           p.name,
           p.email,
+          p.pricing_category,
           cm.member_type,
           cm.status,
           cm.joined_at
@@ -89,6 +94,7 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
         person_id: string
         name: string
         email: string
+        pricing_category: PricingCategory
         member_type: 'member' | 'guest'
         status: string
         joined_at: string | null
@@ -166,6 +172,93 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
     }
 
     return jsonResponse(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Database error'
+    return errorResponse(message, 500)
+  }
+})
+
+const VALID_PRICING_CATEGORIES: PricingCategory[] = ['adult', 'student', 'junior', 'senior', 'guest']
+
+/**
+ * PATCH /api/admin/members/:id
+ * Update member details (e.g., pricing_category)
+ */
+export const onRequestPatch: PagesFunction<Env> = withAuth(async (context, user) => {
+  const db = context.env.WWUWH_DB
+  const url = new URL(context.request.url)
+  const clubId = url.searchParams.get('club_id')
+  const memberId = context.params.id as string
+
+  if (!clubId) {
+    return errorResponse('club_id is required', 400)
+  }
+
+  if (!memberId) {
+    return errorResponse('Member ID is required', 400)
+  }
+
+  let body: { pricing_category?: PricingCategory }
+  try {
+    body = await context.request.json()
+  } catch {
+    return errorResponse('Invalid JSON body', 400)
+  }
+
+  try {
+    // Get person record for admin check
+    const adminPerson = await db
+      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
+      .bind(user.id)
+      .first<{ id: string }>()
+
+    if (!adminPerson) {
+      return errorResponse('Profile not found', 404)
+    }
+
+    // Check admin role
+    const adminCheck = await isAdmin(db, adminPerson.id, clubId)
+    if (!adminCheck) {
+      return errorResponse('Admin access required', 403)
+    }
+
+    // Get membership to find person_id
+    const membership = await db
+      .prepare(`
+        SELECT person_id
+        FROM club_memberships
+        WHERE id = ? AND club_id = ?
+      `)
+      .bind(memberId, clubId)
+      .first<{ person_id: string }>()
+
+    if (!membership) {
+      return errorResponse('Member not found', 404)
+    }
+
+    // Update pricing_category if provided
+    if (body.pricing_category !== undefined) {
+      if (!VALID_PRICING_CATEGORIES.includes(body.pricing_category)) {
+        return errorResponse('Invalid pricing_category. Must be one of: adult, student, junior, senior, guest', 400)
+      }
+
+      await db
+        .prepare(`
+          UPDATE people
+          SET pricing_category = ?, updated_at = datetime('now')
+          WHERE id = ?
+        `)
+        .bind(body.pricing_category, membership.person_id)
+        .run()
+    }
+
+    // Return updated person data
+    const person = await db
+      .prepare('SELECT id, name, email, pricing_category FROM people WHERE id = ?')
+      .bind(membership.person_id)
+      .first<{ id: string; name: string; email: string; pricing_category: PricingCategory }>()
+
+    return jsonResponse({ success: true, person })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Database error'
     return errorResponse(message, 500)

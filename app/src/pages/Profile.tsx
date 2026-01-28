@@ -10,6 +10,7 @@ import { Button, Input, FormField, Spinner, Avatar, ImageCropper } from '@/compo
 import { AnimatedBadge } from '@/components/badges'
 import { supabase } from '@/lib/supabase'
 import { deleteAccount } from '@/lib/api'
+import { PRICING_CATEGORY_LABELS, type PricingCategory } from '@/types/database'
 import styles from './Profile.module.css'
 
 // Check if running in Capacitor native app
@@ -617,6 +618,14 @@ export function Profile() {
                         month: 'short',
                         year: 'numeric',
                       })}
+                    </span>
+                  </div>
+                )}
+                {person?.pricing_category && (
+                  <div className={styles.row}>
+                    <span className={styles.label}>Pricing Category</span>
+                    <span className={styles.value}>
+                      {PRICING_CATEGORY_LABELS[person.pricing_category as PricingCategory] || person.pricing_category}
                     </span>
                   </div>
                 )}
