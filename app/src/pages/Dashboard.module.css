@@ -831,26 +831,24 @@
   min-width: 24px;
 }
 
-/* Responsive */
-@media (max-width: 480px) {
-  /* When badge showcase is sharing space with profile card, make it more compact */
-  .badgeShowcase:not(.badgeShowcaseWide) {
-    padding: var(--space-sm);
-    gap: var(--space-sm);
-  }
+/* Responsive - compact badge showcase when sharing space with profile card */
+/* When badge showcase is sharing space with profile card, make it more compact */
+.badgeShowcase:not(.badgeShowcaseWide) {
+  padding: var(--space-sm);
+  gap: var(--space-sm);
+}
 
-  /* Only show first 2 badges */
-  .badgeShowcase:not(.badgeShowcaseWide) .badgePreviewItem:nth-child(n+3) {
-    display: none;
-  }
+/* Only show first 2 badges */
+.badgeShowcase:not(.badgeShowcaseWide) .badgePreviewItem:nth-child(n+3) {
+  display: none;
+}
 
-  .badgeShowcase:not(.badgeShowcaseWide) .badgeShowcaseHint {
-    display: none;
-  }
+.badgeShowcase:not(.badgeShowcaseWide) .badgeShowcaseHint {
+  display: none;
+}
 
-  .badgeShowcase:not(.badgeShowcaseWide) .badgeShowcaseCount {
-    font-size: var(--text-sm);
-  }
+.badgeShowcase:not(.badgeShowcaseWide) .badgeShowcaseCount {
+  font-size: var(--text-sm);
 }
 
 @media (max-width: 400px) {
