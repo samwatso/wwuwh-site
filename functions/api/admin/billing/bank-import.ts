@@ -1,10 +1,12 @@
 /**
  * Admin Bank Statement Import Endpoint
  * POST /api/admin/billing/bank-import - Import a Barclays CSV
+ * Requires: billing.view permission
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../types'
-import { withAdmin, AdminContext } from '../../../middleware/admin'
+import { withPermission, PermissionContext } from '../../../middleware/permission'
+import { PERMISSIONS } from '../../../lib/permissions'
 
 interface BarclaysRow {
   Number: string
@@ -53,9 +55,10 @@ async function generateFingerprint(
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
-export const onRequestPost: PagesFunction<Env> = withAdmin(async (context, admin: AdminContext) => {
-  const db = context.env.WWUWH_DB
-  const { clubId, person } = admin
+export const onRequestPost: PagesFunction<Env> = withPermission(PERMISSIONS.BILLING_VIEW)(
+  async (context, auth: PermissionContext) => {
+    const db = context.env.WWUWH_DB
+    const { clubId, person } = auth
 
   try {
     const body = await context.request.json() as BankImportBody

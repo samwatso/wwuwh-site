@@ -3,10 +3,20 @@
  *
  * Verifies user has admin role for the specified club.
  * Extends withAuth to also check admin permissions.
+ *
+ * NOTE: For new endpoints, prefer using the permission middleware:
+ *   import { withPermission, withAdminPermission } from '../middleware/permission'
+ *   import { PERMISSIONS } from '../lib/permissions'
+ *
+ * The permission middleware provides:
+ *   - Granular permission checking (not just admin)
+ *   - Permission context in the handler (auth.permissions, auth.isAdmin)
+ *   - Support for role-based permissions from club_roles.permissions_json
  */
 
 import { Env, errorResponse } from '../types'
 import { withAuth, AuthUser } from './auth'
+import { isClubAdmin } from '../lib/permissions'
 
 export interface AdminContext {
   user: AuthUser
@@ -95,19 +105,14 @@ export function withAdmin<E extends Env>(
 
 /**
  * Check if a user is admin for a club (utility function)
+ *
+ * Uses the permission system to check if user has admin access.
+ * Admin access is granted when a user has a role with {"admin": true} in permissions_json.
  */
 export async function isAdmin(
   db: D1Database,
   personId: string,
   clubId: string
 ): Promise<boolean> {
-  const result = await db
-    .prepare(`
-      SELECT 1 FROM club_member_roles
-      WHERE club_id = ? AND person_id = ? AND role_key = 'admin'
-    `)
-    .bind(clubId, personId)
-    .first()
-
-  return !!result
+  return isClubAdmin(db, personId, clubId)
 }

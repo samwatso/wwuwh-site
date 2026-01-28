@@ -1,10 +1,12 @@
 /**
  * Admin Billing Overview Endpoint
  * GET /api/admin/billing/overview - Get billing dashboard data
+ * Requires: billing.view permission
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../types'
-import { withAdmin, AdminContext } from '../../../middleware/admin'
+import { withPermission, PermissionContext } from '../../../middleware/permission'
+import { PERMISSIONS } from '../../../lib/permissions'
 
 interface DailyTotal {
   date: string
@@ -44,9 +46,10 @@ interface OverviewResponse {
   outstanding_one_off_cents: number
 }
 
-export const onRequestGet: PagesFunction<Env> = withAdmin(async (context, admin: AdminContext) => {
-  const db = context.env.WWUWH_DB
-  const { clubId } = admin
+export const onRequestGet: PagesFunction<Env> = withPermission(PERMISSIONS.BILLING_VIEW)(
+  async (context, auth: PermissionContext) => {
+    const db = context.env.WWUWH_DB
+    const { clubId } = auth
 
   try {
     const now = new Date()

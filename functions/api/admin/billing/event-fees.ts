@@ -1,10 +1,12 @@
 /**
  * Admin Billing Event Fees Endpoint
  * GET /api/admin/billing/event-fees - Get events with fee status
+ * Requires: billing.view permission
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../types'
-import { withAdmin, AdminContext } from '../../../middleware/admin'
+import { withPermission, PermissionContext } from '../../../middleware/permission'
+import { PERMISSIONS } from '../../../lib/permissions'
 
 interface EventFeePayer {
   person_id: string
@@ -41,9 +43,10 @@ interface EventFeesResponse {
   to: string
 }
 
-export const onRequestGet: PagesFunction<Env> = withAdmin(async (context, admin: AdminContext) => {
-  const db = context.env.WWUWH_DB
-  const { clubId } = admin
+export const onRequestGet: PagesFunction<Env> = withPermission(PERMISSIONS.BILLING_VIEW)(
+  async (context, auth: PermissionContext) => {
+    const db = context.env.WWUWH_DB
+    const { clubId } = auth
 
   const url = new URL(context.request.url)
   const fromParam = url.searchParams.get('from')

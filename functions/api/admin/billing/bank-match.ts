@@ -2,10 +2,12 @@
  * Admin Bank Statement Match Endpoint
  * POST /api/admin/billing/bank-match - Match a bank row to a transaction
  * DELETE /api/admin/billing/bank-match - Remove a match
+ * Requires: billing.view permission
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../types'
-import { withAdmin, AdminContext } from '../../../middleware/admin'
+import { withPermission, PermissionContext } from '../../../middleware/permission'
+import { PERMISSIONS } from '../../../lib/permissions'
 
 interface BankMatchBody {
   club_id: string
@@ -25,9 +27,10 @@ interface UnmatchBody {
   bank_row_id?: string
 }
 
-export const onRequestPost: PagesFunction<Env> = withAdmin(async (context, admin: AdminContext) => {
-  const db = context.env.WWUWH_DB
-  const { clubId, person } = admin
+export const onRequestPost: PagesFunction<Env> = withPermission(PERMISSIONS.BILLING_VIEW)(
+  async (context, auth: PermissionContext) => {
+    const db = context.env.WWUWH_DB
+    const { clubId, person } = auth
 
   try {
     const body = await context.request.json() as BankMatchBody
@@ -127,9 +130,10 @@ export const onRequestPost: PagesFunction<Env> = withAdmin(async (context, admin
   }
 })
 
-export const onRequestDelete: PagesFunction<Env> = withAdmin(async (context, admin: AdminContext) => {
-  const db = context.env.WWUWH_DB
-  const { clubId } = admin
+export const onRequestDelete: PagesFunction<Env> = withPermission(PERMISSIONS.BILLING_VIEW)(
+  async (context, auth: PermissionContext) => {
+    const db = context.env.WWUWH_DB
+    const { clubId } = auth
 
   try {
     const body = await context.request.json() as UnmatchBody

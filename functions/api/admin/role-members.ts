@@ -2,19 +2,21 @@
  * Admin Role Members Endpoint
  * POST   /api/admin/role-members - Assign role to member
  * DELETE /api/admin/role-members - Remove role from member
+ *
+ * All endpoints require admin access only.
  */
 
 import { Env, jsonResponse, errorResponse } from '../../types'
-import { withAuth } from '../../middleware/auth'
-import { isAdmin } from '../../middleware/admin'
+import { withAdminPermission } from '../../middleware/permission'
 
 /**
  * POST /api/admin/role-members
  * Assign a role to a member
+ * Requires: admin access
  *
- * Body: { club_id, role_key, person_id }
+ * Body: { role_key, person_id }
  */
-export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestPost: PagesFunction<Env> = withAdminPermission(async (context, auth) => {
   const db = context.env.WWUWH_DB
 
   try {
@@ -24,32 +26,16 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       person_id: string
     }
 
-    const { club_id, role_key, person_id } = body
+    const { role_key, person_id } = body
 
-    if (!club_id || !role_key || !person_id) {
-      return errorResponse('club_id, role_key, and person_id are required', 400)
-    }
-
-    // Get person record for admin check
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
+    if (!role_key || !person_id) {
+      return errorResponse('role_key and person_id are required', 400)
     }
 
     // Check if role exists
     const roleExists = await db
       .prepare('SELECT role_key FROM club_roles WHERE club_id = ? AND role_key = ?')
-      .bind(club_id, role_key)
+      .bind(auth.clubId, role_key)
       .first()
 
     if (!roleExists) {
@@ -59,7 +45,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     // Check if person is a member of the club
     const membership = await db
       .prepare('SELECT id FROM club_memberships WHERE club_id = ? AND person_id = ?')
-      .bind(club_id, person_id)
+      .bind(auth.clubId, person_id)
       .first()
 
     if (!membership) {
@@ -69,7 +55,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     // Check if already assigned
     const existing = await db
       .prepare('SELECT role_key FROM club_member_roles WHERE club_id = ? AND person_id = ? AND role_key = ?')
-      .bind(club_id, person_id, role_key)
+      .bind(auth.clubId, person_id, role_key)
       .first()
 
     if (existing) {
@@ -82,7 +68,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
         INSERT INTO club_member_roles (club_id, person_id, role_key, created_at)
         VALUES (?, ?, ?, datetime('now'))
       `)
-      .bind(club_id, person_id, role_key)
+      .bind(auth.clubId, person_id, role_key)
       .run()
 
     return jsonResponse({ success: true })
@@ -95,10 +81,11 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
 /**
  * DELETE /api/admin/role-members
  * Remove a role from a member
+ * Requires: admin access
  *
- * Body: { club_id, role_key, person_id }
+ * Body: { role_key, person_id }
  */
-export const onRequestDelete: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestDelete: PagesFunction<Env> = withAdminPermission(async (context, auth) => {
   const db = context.env.WWUWH_DB
 
   try {
@@ -108,37 +95,21 @@ export const onRequestDelete: PagesFunction<Env> = withAuth(async (context, user
       person_id: string
     }
 
-    const { club_id, role_key, person_id } = body
+    const { role_key, person_id } = body
 
-    if (!club_id || !role_key || !person_id) {
-      return errorResponse('club_id, role_key, and person_id are required', 400)
-    }
-
-    // Get person record for admin check
-    const adminPerson = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!adminPerson) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, adminPerson.id, club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
+    if (!role_key || !person_id) {
+      return errorResponse('role_key and person_id are required', 400)
     }
 
     // Prevent removing your own admin role
-    if (role_key === 'admin' && person_id === adminPerson.id) {
+    if (role_key === 'admin' && person_id === auth.person.id) {
       return errorResponse('Cannot remove your own admin role', 400)
     }
 
     // Remove role assignment
     await db
       .prepare('DELETE FROM club_member_roles WHERE club_id = ? AND person_id = ? AND role_key = ?')
-      .bind(club_id, person_id, role_key)
+      .bind(auth.clubId, person_id, role_key)
       .run()
 
     return jsonResponse({ success: true })

@@ -5,8 +5,8 @@
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../types'
-import { withAuth } from '../../../middleware/auth'
-import { isAdmin } from '../../../middleware/admin'
+import { withAnyPermission, PermissionContext } from '../../../middleware/permission'
+import { PERMISSIONS } from '../../../lib/permissions'
 
 interface ExternalEvent {
   id: string
@@ -46,37 +46,20 @@ interface CreateManualEventRequest {
  * List external events with their club-specific decision status
  *
  * Query params:
- * - club_id (required): The club to check decisions for
  * - kind (optional): 'uk' for imported UK events, 'manual' for manually created events
  * - from (optional): Start date filter (default: now)
  * - limit (optional): Max results (default: 50, max: 100)
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestGet: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
   const url = new URL(context.request.url)
-  const clubId = url.searchParams.get('club_id')
-
-  if (!clubId) {
-    return errorResponse('club_id is required', 400)
-  }
+  const { clubId } = auth
 
   try {
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, clubId)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Parse query params
     const from = url.searchParams.get('from') || new Date().toISOString()
     const limit = Math.min(parseInt(url.searchParams.get('limit') || '50'), 100)
@@ -136,9 +119,14 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
 /**
  * POST /api/admin/external-events
  * Create a manual external event
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestPost: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
+  const { clubId } = auth
 
   let body: CreateManualEventRequest
   try {
@@ -147,33 +135,13 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     return errorResponse('Invalid JSON body', 400)
   }
 
-  const { club_id: clubId, title, description, location, url, source, starts_at_utc, ends_at_utc, status, visibility } = body
-
-  if (!clubId) {
-    return errorResponse('club_id is required', 400)
-  }
+  const { title, description, location, url, source, starts_at_utc, ends_at_utc, status, visibility } = body
 
   if (!title || !starts_at_utc) {
     return errorResponse('title and starts_at_utc are required', 400)
   }
 
   try {
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, clubId)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Generate IDs
     const id = crypto.randomUUID()
     const sourceEventId = `manual:${id}`
@@ -212,7 +180,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
         ends_at_utc || null,
         status || 'active',
         visibility || 'admin_only',
-        person.id,
+        auth.person.id,
         now,
         now
       )

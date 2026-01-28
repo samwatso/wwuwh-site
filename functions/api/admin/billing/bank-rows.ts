@@ -1,10 +1,12 @@
 /**
  * Admin Bank Statement Rows Endpoint
  * GET /api/admin/billing/bank-rows - List bank statement rows with match status
+ * Requires: billing.view permission
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../types'
-import { withAdmin, AdminContext } from '../../../middleware/admin'
+import { withPermission, PermissionContext } from '../../../middleware/permission'
+import { PERMISSIONS } from '../../../lib/permissions'
 
 interface BankRow {
   id: string
@@ -46,9 +48,10 @@ interface BankRowsResponse {
   unmatched_out_count: number
 }
 
-export const onRequestGet: PagesFunction<Env> = withAdmin(async (context, admin: AdminContext) => {
-  const db = context.env.WWUWH_DB
-  const { clubId } = admin
+export const onRequestGet: PagesFunction<Env> = withPermission(PERMISSIONS.BILLING_VIEW)(
+  async (context, auth: PermissionContext) => {
+    const db = context.env.WWUWH_DB
+    const { clubId } = auth
 
   const url = new URL(context.request.url)
   const importIdParam = url.searchParams.get('import_id')

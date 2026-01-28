@@ -4,12 +4,8 @@
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../../types'
-import { withAuth } from '../../../../middleware/auth'
-import { isAdmin } from '../../../../middleware/admin'
-
-interface UndoBody {
-  club_id: string
-}
+import { withAnyPermission, PermissionContext } from '../../../../middleware/permission'
+import { PERMISSIONS } from '../../../../lib/permissions'
 
 /**
  * POST /api/admin/external-events/:id/undo
@@ -21,35 +17,18 @@ interface UndoBody {
  *
  * If was ignored:
  * - Removes the link record
+ *
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestPost: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
   const externalEventId = context.params.id as string
+  const { clubId } = auth
 
   try {
-    const body = await context.request.json() as UndoBody
-    const { club_id } = body
-
-    if (!club_id) {
-      return errorResponse('club_id is required', 400)
-    }
-
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Check if link exists
     const existingLink = await db
       .prepare(`
@@ -57,7 +36,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
         FROM external_event_links
         WHERE external_event_id = ? AND club_id = ?
       `)
-      .bind(externalEventId, club_id)
+      .bind(externalEventId, clubId)
       .first<{ id: string; decision: string; event_id: string | null }>()
 
     if (!existingLink || existingLink.decision === 'undecided') {

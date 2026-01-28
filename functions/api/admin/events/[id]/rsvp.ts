@@ -1,11 +1,12 @@
 /**
  * Admin Event RSVP Endpoint
  * POST /api/admin/events/:id/rsvp - Admin RSVPs on behalf of a member
+ * Requires: events.create OR events.edit permission
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../../types'
-import { withAuth } from '../../../../middleware/auth'
-import { isAdmin } from '../../../../middleware/admin'
+import { withAnyPermission, PermissionContext } from '../../../../middleware/permission'
+import { PERMISSIONS } from '../../../../lib/permissions'
 
 interface AdminRsvpBody {
   person_id: string
@@ -18,8 +19,12 @@ interface AdminRsvpBody {
  * POST /api/admin/events/:id/rsvp
  * Admin creates or updates RSVP on behalf of a member
  * If free_session is true, subscription logic is skipped
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestPost: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
   const eventId = context.params.id as string
 
@@ -38,24 +43,14 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       return errorResponse('response must be yes, no, or maybe', 400)
     }
 
-    // Get admin person record
-    const adminPerson = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!adminPerson) {
-      return errorResponse('Profile not found', 404)
-    }
-
     // Get event details
     const event = await db
       .prepare(`
         SELECT id, club_id, kind, starts_at_utc, payment_mode, fee_cents
         FROM events
-        WHERE id = ?
+        WHERE id = ? AND club_id = ?
       `)
-      .bind(eventId)
+      .bind(eventId, auth.clubId)
       .first<{
         id: string
         club_id: string
@@ -67,12 +62,6 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
 
     if (!event) {
       return errorResponse('Event not found', 404)
-    }
-
-    // Check admin role for the event's club
-    const adminCheck = await isAdmin(db, adminPerson.id, event.club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
     }
 
     // Verify the target person is a member of the club

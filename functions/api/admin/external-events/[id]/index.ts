@@ -5,8 +5,8 @@
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../../types'
-import { withAuth } from '../../../../middleware/auth'
-import { isAdmin } from '../../../../middleware/admin'
+import { withAnyPermission, PermissionContext } from '../../../../middleware/permission'
+import { PERMISSIONS } from '../../../../lib/permissions'
 
 interface UpdateManualEventRequest {
   club_id: string
@@ -41,8 +41,12 @@ interface ExternalEvent {
 /**
  * PUT /api/admin/external-events/:id
  * Update a manual external event (only origin='manual' events can be updated)
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestPut: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
   const externalEventId = context.params.id as string
 
@@ -53,29 +57,7 @@ export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) =
     return errorResponse('Invalid JSON body', 400)
   }
 
-  const { club_id: clubId } = body
-
-  if (!clubId) {
-    return errorResponse('club_id is required', 400)
-  }
-
   try {
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, clubId)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Check that the event exists and is a manual event
     const existing = await db
       .prepare('SELECT id, origin FROM external_events WHERE id = ?')
@@ -139,7 +121,7 @@ export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) =
     updates.push('updated_at = ?')
     values.push(new Date().toISOString())
     updates.push('updated_by_person_id = ?')
-    values.push(person.id)
+    values.push(auth.person.id)
 
     // Add the WHERE id
     values.push(externalEventId)
@@ -185,34 +167,16 @@ export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) =
 /**
  * DELETE /api/admin/external-events/:id
  * Delete a manual external event (only origin='manual' events can be deleted)
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestDelete: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestDelete: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
-  const url = new URL(context.request.url)
   const externalEventId = context.params.id as string
-  const clubId = url.searchParams.get('club_id')
-
-  if (!clubId) {
-    return errorResponse('club_id is required', 400)
-  }
 
   try {
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, clubId)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Check that the event exists and is a manual event
     const existing = await db
       .prepare('SELECT id, origin FROM external_events WHERE id = ?')

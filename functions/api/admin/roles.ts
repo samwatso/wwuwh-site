@@ -4,11 +4,12 @@
  * POST   /api/admin/roles - Create a new role
  * PUT    /api/admin/roles - Update a role
  * DELETE /api/admin/roles - Delete a role
+ *
+ * All endpoints require admin access only.
  */
 
 import { Env, jsonResponse, errorResponse } from '../../types'
-import { withAuth } from '../../middleware/auth'
-import { isAdmin } from '../../middleware/admin'
+import { withAdminPermission } from '../../middleware/permission'
 
 interface RoleWithCount {
   club_id: string
@@ -28,38 +29,19 @@ interface RoleMember {
 /**
  * GET /api/admin/roles
  * Returns all roles for a club with member counts
+ * Requires: admin access
  */
-export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestGet: PagesFunction<Env> = withAdminPermission(async (context, auth) => {
   const db = context.env.WWUWH_DB
   const url = new URL(context.request.url)
-  const clubId = url.searchParams.get('club_id')
   const roleKey = url.searchParams.get('role_key')
 
-  if (!clubId) {
-    return errorResponse('club_id is required', 400)
-  }
-
   try {
-    // Get person record for admin check
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, clubId)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // If role_key provided, get members for that role
     if (roleKey) {
       const members = await db
-        .prepare(`
+        .prepare(
+          `
           SELECT
             cmr.person_id,
             p.name,
@@ -69,13 +51,14 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
           JOIN people p ON p.id = cmr.person_id
           WHERE cmr.club_id = ? AND cmr.role_key = ?
           ORDER BY p.name
-        `)
-        .bind(clubId, roleKey)
+        `
+        )
+        .bind(auth.clubId, roleKey)
         .all<RoleMember>()
 
       const role = await db
         .prepare('SELECT * FROM club_roles WHERE club_id = ? AND role_key = ?')
-        .bind(clubId, roleKey)
+        .bind(auth.clubId, roleKey)
         .first()
 
       return jsonResponse({
@@ -86,7 +69,8 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
 
     // Get all roles with member counts
     const roles = await db
-      .prepare(`
+      .prepare(
+        `
         SELECT
           cr.club_id,
           cr.role_key,
@@ -98,8 +82,9 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
         WHERE cr.club_id = ?
         GROUP BY cr.club_id, cr.role_key
         ORDER BY cr.name
-      `)
-      .bind(clubId)
+      `
+      )
+      .bind(auth.clubId)
       .all<RoleWithCount>()
 
     return jsonResponse({ roles: roles.results })
@@ -112,24 +97,23 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
 /**
  * POST /api/admin/roles
  * Create a new role
- *
- * Body: { club_id, role_key, name, permissions: string[] }
+ * Requires: admin access
  */
-export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestPost: PagesFunction<Env> = withAdminPermission(async (context, auth) => {
   const db = context.env.WWUWH_DB
 
   try {
-    const body = await context.request.json() as {
+    const body = (await context.request.json()) as {
       club_id: string
       role_key: string
       name: string
       permissions?: string[]
     }
 
-    const { club_id, role_key, name, permissions = [] } = body
+    const { role_key, name, permissions = [] } = body
 
-    if (!club_id || !role_key || !name) {
-      return errorResponse('club_id, role_key, and name are required', 400)
+    if (!role_key || !name) {
+      return errorResponse('role_key and name are required', 400)
     }
 
     // Validate role_key format (lowercase, no spaces)
@@ -137,26 +121,10 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       return errorResponse('role_key must be lowercase letters and underscores only', 400)
     }
 
-    // Get person record for admin check
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Check if role already exists
     const existing = await db
       .prepare('SELECT role_key FROM club_roles WHERE club_id = ? AND role_key = ?')
-      .bind(club_id, role_key)
+      .bind(auth.clubId, role_key)
       .first()
 
     if (existing) {
@@ -166,16 +134,18 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     // Create role
     const permissionsJson = JSON.stringify(permissions)
     await db
-      .prepare(`
+      .prepare(
+        `
         INSERT INTO club_roles (club_id, role_key, name, permissions_json)
         VALUES (?, ?, ?, ?)
-      `)
-      .bind(club_id, role_key, name, permissionsJson)
+      `
+      )
+      .bind(auth.clubId, role_key, name, permissionsJson)
       .run()
 
     return jsonResponse({
       role: {
-        club_id,
+        club_id: auth.clubId,
         role_key,
         name,
         permissions_json: permissionsJson,
@@ -190,46 +160,29 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
 /**
  * PUT /api/admin/roles
  * Update a role's name or permissions
- *
- * Body: { club_id, role_key, name?, permissions?: string[] }
+ * Requires: admin access
  */
-export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestPut: PagesFunction<Env> = withAdminPermission(async (context, auth) => {
   const db = context.env.WWUWH_DB
 
   try {
-    const body = await context.request.json() as {
+    const body = (await context.request.json()) as {
       club_id: string
       role_key: string
       name?: string
       permissions?: string[]
     }
 
-    const { club_id, role_key, name, permissions } = body
+    const { role_key, name, permissions } = body
 
-    if (!club_id || !role_key) {
-      return errorResponse('club_id and role_key are required', 400)
-    }
-
-    // Get person record for admin check
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
+    if (!role_key) {
+      return errorResponse('role_key is required', 400)
     }
 
     // Check if role exists
     const existing = await db
       .prepare('SELECT * FROM club_roles WHERE club_id = ? AND role_key = ?')
-      .bind(club_id, role_key)
+      .bind(auth.clubId, role_key)
       .first()
 
     if (!existing) {
@@ -254,7 +207,7 @@ export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) =
       return errorResponse('No updates provided', 400)
     }
 
-    values.push(club_id, role_key)
+    values.push(auth.clubId, role_key)
 
     await db
       .prepare(`UPDATE club_roles SET ${updates.join(', ')} WHERE club_id = ? AND role_key = ?`)
@@ -264,7 +217,7 @@ export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) =
     // Return updated role
     const updated = await db
       .prepare('SELECT * FROM club_roles WHERE club_id = ? AND role_key = ?')
-      .bind(club_id, role_key)
+      .bind(auth.clubId, role_key)
       .first()
 
     return jsonResponse({ role: updated })
@@ -277,22 +230,21 @@ export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) =
 /**
  * DELETE /api/admin/roles
  * Delete a role (and all assignments)
- *
- * Body: { club_id, role_key }
+ * Requires: admin access
  */
-export const onRequestDelete: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestDelete: PagesFunction<Env> = withAdminPermission(async (context, auth) => {
   const db = context.env.WWUWH_DB
 
   try {
-    const body = await context.request.json() as {
+    const body = (await context.request.json()) as {
       club_id: string
       role_key: string
     }
 
-    const { club_id, role_key } = body
+    const { role_key } = body
 
-    if (!club_id || !role_key) {
-      return errorResponse('club_id and role_key are required', 400)
+    if (!role_key) {
+      return errorResponse('role_key is required', 400)
     }
 
     // Prevent deleting admin role
@@ -300,26 +252,10 @@ export const onRequestDelete: PagesFunction<Env> = withAuth(async (context, user
       return errorResponse('Cannot delete the admin role', 400)
     }
 
-    // Get person record for admin check
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Delete role (cascade will remove assignments)
     await db
       .prepare('DELETE FROM club_roles WHERE club_id = ? AND role_key = ?')
-      .bind(club_id, role_key)
+      .bind(auth.clubId, role_key)
       .run()
 
     return jsonResponse({ success: true })

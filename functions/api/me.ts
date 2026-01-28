@@ -10,6 +10,7 @@
 
 import { Env, jsonResponse, errorResponse } from '../types'
 import { withAuth, AuthUser } from '../middleware/auth'
+import { getUserPermissions } from '../lib/permissions'
 
 // TODO: STAGE 4 - Implement these handlers
 
@@ -82,11 +83,19 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
       .bind(person.id)
       .all()
 
+    // Compute permissions summary per club for easier frontend use
+    const clubPermissions: Record<string, { isAdmin: boolean; permissions: string[]; roles: string[] }> = {}
+    for (const membership of memberships.results as Array<{ club_id: string }>) {
+      const perms = await getUserPermissions(db, person.id as string, membership.club_id)
+      clubPermissions[membership.club_id] = perms
+    }
+
     return jsonResponse({
       person,
       memberships: memberships.results,
       roles: roles.results,
       subscriptions: subscriptions.results,
+      clubPermissions,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Database error'

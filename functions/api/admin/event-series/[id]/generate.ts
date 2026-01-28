@@ -1,11 +1,12 @@
 /**
  * Generate Events from Series Endpoint
  * POST /api/admin/event-series/:id/generate - Generate more events
+ * Requires: events.create OR events.edit permission
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../../types'
-import { withAuth } from '../../../../middleware/auth'
-import { isAdmin } from '../../../../middleware/admin'
+import { withAnyPermission, PermissionContext } from '../../../../middleware/permission'
+import { PERMISSIONS } from '../../../../lib/permissions'
 import { generateEventsFromSeries } from '../generate-helper'
 
 interface EventSeries {
@@ -27,8 +28,12 @@ interface EventSeries {
 /**
  * POST /api/admin/event-series/:id/generate
  * Generate additional events for a series
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestPost: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
   const seriesId = context.params.id as string
 
@@ -39,32 +44,10 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       from_date?: string  // Start generating from this date (default: today)
     }
 
-    const { club_id } = body
-
-    if (!club_id) {
-      return errorResponse('club_id is required', 400)
-    }
-
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Fetch series
     const series = await db
       .prepare('SELECT * FROM event_series WHERE id = ? AND club_id = ? AND archived_at IS NULL')
-      .bind(seriesId, club_id)
+      .bind(seriesId, auth.clubId)
       .first<EventSeries>()
 
     if (!series) {
@@ -91,7 +74,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       currency: series.currency,
       paymentMode: 'included', // Default for generated events
       generateWeeks: weeks,
-      createdByPersonId: person.id,
+      createdByPersonId: auth.person.id,
       fromDate,
     })
 

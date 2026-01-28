@@ -151,11 +151,18 @@ export interface MemberSubscriptionWithPlan {
   weekly_sessions_allowed: number
 }
 
+export interface ClubPermissions {
+  isAdmin: boolean
+  permissions: string[]
+  roles: string[]
+}
+
 export interface ProfileResponse {
   person: Person
   memberships?: ClubMembershipWithName[]
   roles?: ClubMemberRoleWithName[]
   subscriptions?: MemberSubscriptionWithPlan[]
+  clubPermissions?: Record<string, ClubPermissions>
 }
 
 export async function getMyProfile(): Promise<ProfileResponse> {

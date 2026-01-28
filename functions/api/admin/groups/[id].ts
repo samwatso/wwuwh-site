@@ -3,11 +3,13 @@
  * GET    /api/admin/groups/:id - Get group details with members
  * PUT    /api/admin/groups/:id - Update group
  * DELETE /api/admin/groups/:id - Archive/delete group
+ *
+ * Requires: teams.assign permission
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../types'
-import { withAuth } from '../../../middleware/auth'
-import { isAdmin } from '../../../middleware/admin'
+import { withPermission, PermissionContext } from '../../../middleware/permission'
+import { PERMISSIONS } from '../../../lib/permissions'
 
 interface GroupMember {
   person_id: string
@@ -20,39 +22,19 @@ interface GroupMember {
 /**
  * GET /api/admin/groups/:id
  * Get group details with members
+ * Requires: teams.assign permission
  */
-export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) => {
-  const db = context.env.WWUWH_DB
-  const groupId = context.params.id as string
-  const url = new URL(context.request.url)
-  const clubId = url.searchParams.get('club_id')
+export const onRequestGet: PagesFunction<Env> = withPermission(PERMISSIONS.TEAMS_ASSIGN)(
+  async (context, auth: PermissionContext) => {
+    const db = context.env.WWUWH_DB
+    const groupId = context.params.id as string
 
-  if (!clubId) {
-    return errorResponse('club_id is required', 400)
-  }
-
-  try {
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, clubId)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
-    // Fetch group
-    const group = await db
-      .prepare('SELECT * FROM groups WHERE id = ? AND club_id = ?')
-      .bind(groupId, clubId)
-      .first()
+    try {
+      // Fetch group
+      const group = await db
+        .prepare('SELECT * FROM groups WHERE id = ? AND club_id = ?')
+        .bind(groupId, auth.clubId)
+        .first()
 
     if (!group) {
       return errorResponse('Group not found', 404)
@@ -71,70 +53,51 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
       .bind(groupId)
       .all<GroupMember>()
 
-    return jsonResponse({
-      group,
-      members: members.results,
-    })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Database error'
-    return errorResponse(message, 500)
+      return jsonResponse({
+        group,
+        members: members.results,
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Database error'
+      return errorResponse(message, 500)
+    }
   }
-})
+)
 
 /**
  * PUT /api/admin/groups/:id
  * Update a group
+ * Requires: teams.assign permission
  */
-export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) => {
-  const db = context.env.WWUWH_DB
-  const groupId = context.params.id as string
+export const onRequestPut: PagesFunction<Env> = withPermission(PERMISSIONS.TEAMS_ASSIGN)(
+  async (context, auth: PermissionContext) => {
+    const db = context.env.WWUWH_DB
+    const groupId = context.params.id as string
 
-  try {
-    const body = await context.request.json() as {
-      club_id: string
-      name?: string
-      kind?: 'team' | 'committee' | 'squad' | 'other'
-      description?: string
-    }
+    try {
+      const body = await context.request.json() as {
+        club_id: string
+        name?: string
+        kind?: 'team' | 'committee' | 'squad' | 'other'
+        description?: string
+      }
 
-    const { club_id } = body
-
-    if (!club_id) {
-      return errorResponse('club_id is required', 400)
-    }
-
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
-    // Check group exists
-    const existingGroup = await db
-      .prepare('SELECT id FROM groups WHERE id = ? AND club_id = ?')
-      .bind(groupId, club_id)
-      .first()
+      // Check group exists
+      const existingGroup = await db
+        .prepare('SELECT id FROM groups WHERE id = ? AND club_id = ?')
+        .bind(groupId, auth.clubId)
+        .first()
 
     if (!existingGroup) {
       return errorResponse('Group not found', 404)
     }
 
-    // Check for duplicate name if name is being changed
-    if (body.name) {
-      const duplicate = await db
-        .prepare('SELECT id FROM groups WHERE club_id = ? AND name = ? AND id != ? AND archived_at IS NULL')
-        .bind(club_id, body.name, groupId)
-        .first()
+      // Check for duplicate name if name is being changed
+      if (body.name) {
+        const duplicate = await db
+          .prepare('SELECT id FROM groups WHERE club_id = ? AND name = ? AND id != ? AND archived_at IS NULL')
+          .bind(auth.clubId, body.name, groupId)
+          .first()
 
       if (duplicate) {
         return errorResponse('A group with this name already exists', 409)
@@ -168,57 +131,39 @@ export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) =
       .bind(...values, groupId)
       .run()
 
-    // Fetch updated group
-    const group = await db
-      .prepare('SELECT * FROM groups WHERE id = ?')
-      .bind(groupId)
-      .first()
+      // Fetch updated group
+      const group = await db
+        .prepare('SELECT * FROM groups WHERE id = ?')
+        .bind(groupId)
+        .first()
 
-    return jsonResponse({ group })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Database error'
-    return errorResponse(message, 500)
+      return jsonResponse({ group })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Database error'
+      return errorResponse(message, 500)
+    }
   }
-})
+)
 
 /**
  * DELETE /api/admin/groups/:id
  * Archive or delete a group
  * Query param: ?hard=true to permanently delete
+ * Requires: teams.assign permission
  */
-export const onRequestDelete: PagesFunction<Env> = withAuth(async (context, user) => {
-  const db = context.env.WWUWH_DB
-  const groupId = context.params.id as string
-  const url = new URL(context.request.url)
-  const clubId = url.searchParams.get('club_id')
-  const hardDelete = url.searchParams.get('hard') === 'true'
+export const onRequestDelete: PagesFunction<Env> = withPermission(PERMISSIONS.TEAMS_ASSIGN)(
+  async (context, auth: PermissionContext) => {
+    const db = context.env.WWUWH_DB
+    const groupId = context.params.id as string
+    const url = new URL(context.request.url)
+    const hardDelete = url.searchParams.get('hard') === 'true'
 
-  if (!clubId) {
-    return errorResponse('club_id is required', 400)
-  }
-
-  try {
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, clubId)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
-    // Check group exists
-    const existingGroup = await db
-      .prepare('SELECT id FROM groups WHERE id = ? AND club_id = ?')
-      .bind(groupId, clubId)
-      .first()
+    try {
+      // Check group exists
+      const existingGroup = await db
+        .prepare('SELECT id FROM groups WHERE id = ? AND club_id = ?')
+        .bind(groupId, auth.clubId)
+        .first()
 
     if (!existingGroup) {
       return errorResponse('Group not found', 404)
@@ -239,10 +184,11 @@ export const onRequestDelete: PagesFunction<Env> = withAuth(async (context, user
         .bind(groupId)
         .run()
 
-      return jsonResponse({ success: true, archived: true })
+        return jsonResponse({ success: true, archived: true })
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Database error'
+      return errorResponse(message, 500)
     }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Database error'
-    return errorResponse(message, 500)
   }
-})
+)

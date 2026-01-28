@@ -4,8 +4,8 @@
  */
 
 import { Env, jsonResponse, errorResponse } from '../../types'
-import { withAuth } from '../../middleware/auth'
-import { isAdmin } from '../../middleware/admin'
+import { withPermission } from '../../middleware/permission'
+import { PERMISSIONS } from '../../lib/permissions'
 
 type PricingCategory = 'adult' | 'student' | 'junior' | 'senior' | 'guest'
 
@@ -29,40 +29,22 @@ interface MemberWithStats {
  * GET /api/admin/members
  * Returns all members for a club with subscription and attendance stats
  *
+ * Requires: members.view permission
+ *
  * Query params:
  * - club_id (required)
  * - search (optional) - filter by name/email
  * - status (optional) - filter by membership status
  */
-export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) => {
-  const db = context.env.WWUWH_DB
-  const url = new URL(context.request.url)
-  const clubId = url.searchParams.get('club_id')
-  const search = url.searchParams.get('search')
-  const statusFilter = url.searchParams.get('status')
+export const onRequestGet: PagesFunction<Env> = withPermission(PERMISSIONS.MEMBERS_VIEW)(
+  async (context, auth) => {
+    const db = context.env.WWUWH_DB
+    const url = new URL(context.request.url)
+    const search = url.searchParams.get('search')
+    const statusFilter = url.searchParams.get('status')
 
-  if (!clubId) {
-    return errorResponse('club_id is required', 400)
-  }
-
-  try {
-    // Get person record for admin check
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, clubId)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
-    // Calculate date 12 weeks ago for attendance stats
+    try {
+      // Calculate date 12 weeks ago for attendance stats
     const twelveWeeksAgo = new Date()
     twelveWeeksAgo.setDate(twelveWeeksAgo.getDate() - 84)
     const twelveWeeksAgoStr = twelveWeeksAgo.toISOString()
@@ -104,7 +86,7 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
       WHERE cm.club_id = ?1
     `
 
-    const params: (string | number)[] = [clubId, twelveWeeksAgoStr]
+    const params: (string | number)[] = [auth.clubId, twelveWeeksAgoStr]
 
     // Add status filter
     if (statusFilter) {
@@ -134,7 +116,7 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
           AND starts_at_utc <= datetime('now')
           AND status = 'completed'
       `)
-      .bind(clubId, twelveWeeksAgoStr)
+      .bind(auth.clubId, twelveWeeksAgoStr)
       .first<{ total: number }>()
 
     const totalSessions = sessionsResult?.total || 0

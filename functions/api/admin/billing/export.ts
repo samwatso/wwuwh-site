@@ -1,10 +1,12 @@
 /**
  * Admin Billing Export Endpoint
  * GET /api/admin/billing/export - Export data as CSV
+ * Requires: billing.view permission
  */
 
 import { Env, errorResponse } from '../../../types'
-import { withAdmin, AdminContext } from '../../../middleware/admin'
+import { withPermission, PermissionContext } from '../../../middleware/permission'
+import { PERMISSIONS } from '../../../lib/permissions'
 
 type ExportType = 'attendance' | 'subscriptions' | 'event_fees' | 'transactions' | 'members_billing'
 
@@ -37,9 +39,10 @@ function formatCurrency(cents: number): string {
   return (cents / 100).toFixed(2)
 }
 
-export const onRequestGet: PagesFunction<Env> = withAdmin(async (context, admin: AdminContext) => {
-  const db = context.env.WWUWH_DB
-  const { clubId } = admin
+export const onRequestGet: PagesFunction<Env> = withPermission(PERMISSIONS.BILLING_VIEW)(
+  async (context, auth: PermissionContext) => {
+    const db = context.env.WWUWH_DB
+    const { clubId } = auth
 
   const url = new URL(context.request.url)
   const exportType = url.searchParams.get('type') as ExportType

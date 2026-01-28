@@ -3,43 +3,27 @@
  * GET    /api/admin/event-series/:id - Get series details
  * PUT    /api/admin/event-series/:id - Update series
  * DELETE /api/admin/event-series/:id - Archive series
+ *
+ * Requires: events.create OR events.edit permission
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../types'
-import { withAuth } from '../../../middleware/auth'
-import { isAdmin } from '../../../middleware/admin'
+import { withAnyPermission, PermissionContext } from '../../../middleware/permission'
+import { PERMISSIONS } from '../../../lib/permissions'
 
 /**
  * GET /api/admin/event-series/:id
  * Get series details with upcoming events
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestGet: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
   const seriesId = context.params.id as string
-  const url = new URL(context.request.url)
-  const clubId = url.searchParams.get('club_id')
-
-  if (!clubId) {
-    return errorResponse('club_id is required', 400)
-  }
 
   try {
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, clubId)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Fetch series
     const series = await db
       .prepare(`
@@ -50,7 +34,7 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
         FROM event_series es
         WHERE es.id = ? AND es.club_id = ?
       `)
-      .bind(seriesId, clubId)
+      .bind(seriesId, auth.clubId)
       .first()
 
     if (!series) {
@@ -84,8 +68,12 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
 /**
  * PUT /api/admin/event-series/:id
  * Update a series (does not affect already-generated events)
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestPut: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
   const seriesId = context.params.id as string
 
@@ -104,32 +92,10 @@ export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) =
       currency?: string
     }
 
-    const { club_id } = body
-
-    if (!club_id) {
-      return errorResponse('club_id is required', 400)
-    }
-
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Check series exists
     const existingSeries = await db
       .prepare('SELECT id FROM event_series WHERE id = ? AND club_id = ?')
-      .bind(seriesId, club_id)
+      .bind(seriesId, auth.clubId)
       .first()
 
     if (!existingSeries) {
@@ -208,39 +174,22 @@ export const onRequestPut: PagesFunction<Env> = withAuth(async (context, user) =
  * DELETE /api/admin/event-series/:id
  * Archive a series (keeps events, stops generating new ones)
  * Query param: ?hard=true to delete series and all future events
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestDelete: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestDelete: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
   const seriesId = context.params.id as string
   const url = new URL(context.request.url)
-  const clubId = url.searchParams.get('club_id')
   const hardDelete = url.searchParams.get('hard') === 'true'
 
-  if (!clubId) {
-    return errorResponse('club_id is required', 400)
-  }
-
   try {
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, clubId)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Check series exists
     const existingSeries = await db
       .prepare('SELECT id FROM event_series WHERE id = ? AND club_id = ?')
-      .bind(seriesId, clubId)
+      .bind(seriesId, auth.clubId)
       .first()
 
     if (!existingSeries) {

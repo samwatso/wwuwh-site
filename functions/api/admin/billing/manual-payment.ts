@@ -1,10 +1,12 @@
 /**
  * Admin Manual Payment Endpoint
  * POST /api/admin/billing/manual-payment - Record a manual payment
+ * Requires: billing.view permission
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../types'
-import { withAdmin, AdminContext } from '../../../middleware/admin'
+import { withPermission, PermissionContext } from '../../../middleware/permission'
+import { PERMISSIONS } from '../../../lib/permissions'
 
 interface ManualPaymentBody {
   club_id: string
@@ -23,9 +25,10 @@ interface ManualPaymentResponse {
   message: string
 }
 
-export const onRequestPost: PagesFunction<Env> = withAdmin(async (context, admin: AdminContext) => {
-  const db = context.env.WWUWH_DB
-  const { clubId, person } = admin
+export const onRequestPost: PagesFunction<Env> = withPermission(PERMISSIONS.BILLING_VIEW)(
+  async (context, auth: PermissionContext) => {
+    const db = context.env.WWUWH_DB
+    const { clubId, person } = auth
 
   try {
     const body = await context.request.json() as ManualPaymentBody

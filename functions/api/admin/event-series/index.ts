@@ -2,43 +2,27 @@
  * Admin Event Series Endpoint
  * GET  /api/admin/event-series - List all recurring series
  * POST /api/admin/event-series - Create a new series and generate events
+ *
+ * Requires: events.create OR events.edit permission
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../types'
-import { withAuth } from '../../../middleware/auth'
-import { isAdmin } from '../../../middleware/admin'
+import { withAnyPermission, PermissionContext } from '../../../middleware/permission'
+import { PERMISSIONS } from '../../../lib/permissions'
 import { generateEventsFromSeries } from './generate-helper'
 
 /**
  * GET /api/admin/event-series
  * List all event series for a club
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestGet: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
-  const url = new URL(context.request.url)
-  const clubId = url.searchParams.get('club_id')
-
-  if (!clubId) {
-    return errorResponse('club_id is required', 400)
-  }
 
   try {
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, clubId)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Fetch all series with event counts
     const series = await db
       .prepare(`
@@ -51,7 +35,7 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
           AND es.archived_at IS NULL
         ORDER BY es.created_at DESC
       `)
-      .bind(clubId)
+      .bind(auth.clubId)
       .all()
 
     return jsonResponse({
@@ -66,8 +50,12 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
 /**
  * POST /api/admin/event-series
  * Create a new recurring series and generate initial events
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestPost: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
 
   try {
@@ -88,30 +76,14 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       generate_weeks?: number
     }
 
-    const { club_id, title, weekday_mask, start_time_local, start_date } = body
+    const { title, weekday_mask, start_time_local, start_date } = body
 
-    if (!club_id || !title || weekday_mask === undefined || !start_time_local || !start_date) {
-      return errorResponse('club_id, title, weekday_mask, start_time_local, and start_date are required', 400)
+    if (!title || weekday_mask === undefined || !start_time_local || !start_date) {
+      return errorResponse('title, weekday_mask, start_time_local, and start_date are required', 400)
     }
 
     if (weekday_mask === 0) {
       return errorResponse('At least one weekday must be selected', 400)
-    }
-
-    // Get person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
     }
 
     // Generate series ID
@@ -133,7 +105,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       `)
       .bind(
         seriesId,
-        club_id,
+        auth.clubId,
         title,
         body.description || null,
         body.location || null,
@@ -151,7 +123,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     // Generate events for the next N weeks
     const eventsCreated = await generateEventsFromSeries(db, {
       seriesId,
-      clubId: club_id,
+      clubId: auth.clubId,
       title,
       description: body.description || null,
       location: body.location || null,
@@ -165,7 +137,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       currency: body.currency || 'GBP',
       paymentMode: body.payment_mode || 'included',
       generateWeeks,
-      createdByPersonId: person.id,
+      createdByPersonId: auth.person.id,
     })
 
     // Fetch the created series

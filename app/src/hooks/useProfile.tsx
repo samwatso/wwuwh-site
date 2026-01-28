@@ -8,7 +8,7 @@
 
 import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react'
 import { useAuth } from './useAuth'
-import { getMyProfile, ensureProfile, updateProfile, ClubMembershipWithName, ClubMemberRoleWithName, MemberSubscriptionWithPlan } from '@/lib/api'
+import { getMyProfile, ensureProfile, updateProfile, ClubMembershipWithName, ClubMemberRoleWithName, MemberSubscriptionWithPlan, ClubPermissions } from '@/lib/api'
 import { supabase } from '@/lib/supabase'
 import type { Person } from '@/types/database'
 
@@ -17,6 +17,7 @@ export interface ProfileState {
   memberships: ClubMembershipWithName[]
   roles: ClubMemberRoleWithName[]
   subscriptions: MemberSubscriptionWithPlan[]
+  clubPermissions: Record<string, ClubPermissions>
   loading: boolean
   error: string | null
   synced: boolean // true once profile is confirmed in D1
@@ -60,6 +61,7 @@ function useProfileInternal(): UseProfileReturn {
     memberships: [],
     roles: [],
     subscriptions: [],
+    clubPermissions: {},
     loading: true,
     error: null,
     synced: false,
@@ -73,6 +75,7 @@ function useProfileInternal(): UseProfileReturn {
         memberships: [],
         roles: [],
         subscriptions: [],
+        clubPermissions: {},
         loading: false,
         error: null,
         synced: false,
@@ -90,6 +93,7 @@ function useProfileInternal(): UseProfileReturn {
         memberships: response.memberships || [],
         roles: response.roles || [],
         subscriptions: response.subscriptions || [],
+        clubPermissions: response.clubPermissions || {},
         loading: false,
         error: null,
         synced: true,
@@ -104,6 +108,7 @@ function useProfileInternal(): UseProfileReturn {
             memberships: response.memberships || [],
             roles: response.roles || [],
             subscriptions: response.subscriptions || [],
+            clubPermissions: response.clubPermissions || {},
             loading: false,
             error: null,
             synced: true,
@@ -122,6 +127,7 @@ function useProfileInternal(): UseProfileReturn {
             memberships: [],
             roles: [],
             subscriptions: [],
+            clubPermissions: {},
             loading: false,
             error: message,
             synced: false,
@@ -136,6 +142,7 @@ function useProfileInternal(): UseProfileReturn {
           memberships: [],
           roles: [],
           subscriptions: [],
+          clubPermissions: {},
           loading: false,
           error: message,
           synced: false,
@@ -165,12 +172,13 @@ function useProfileInternal(): UseProfileReturn {
 
       try {
         const response = await ensureProfile(name)
-        // Preserve existing memberships/roles/subscriptions if API doesn't return them
+        // Preserve existing memberships/roles/subscriptions/permissions if API doesn't return them
         setState((prev) => ({
           person: response.person,
           memberships: response.memberships || prev.memberships,
           roles: response.roles || prev.roles,
           subscriptions: response.subscriptions || prev.subscriptions,
+          clubPermissions: response.clubPermissions || prev.clubPermissions,
           loading: false,
           error: null,
           synced: true,
@@ -197,12 +205,13 @@ function useProfileInternal(): UseProfileReturn {
 
       try {
         const response = await updateProfile({ photo_url: photoUrl })
-        // Preserve existing memberships/roles/subscriptions if API doesn't return them
+        // Preserve existing memberships/roles/subscriptions/permissions if API doesn't return them
         setState((prev) => ({
           person: response.person,
           memberships: response.memberships || prev.memberships,
           roles: response.roles || prev.roles,
           subscriptions: response.subscriptions || prev.subscriptions,
+          clubPermissions: response.clubPermissions || prev.clubPermissions,
           loading: false,
           error: null,
           synced: true,
@@ -237,12 +246,13 @@ function useProfileInternal(): UseProfileReturn {
 
         // Then update D1 database
         const response = await updateProfile({ email })
-        // Preserve existing memberships/roles/subscriptions if API doesn't return them
+        // Preserve existing memberships/roles/subscriptions/permissions if API doesn't return them
         setState((prev) => ({
           person: response.person,
           memberships: response.memberships || prev.memberships,
           roles: response.roles || prev.roles,
           subscriptions: response.subscriptions || prev.subscriptions,
+          clubPermissions: response.clubPermissions || prev.clubPermissions,
           loading: false,
           error: null,
           synced: true,

@@ -3,11 +3,13 @@
  * GET    /api/admin/events/:id/invitations - List invitations
  * POST   /api/admin/events/:id/invitations - Add invitations
  * DELETE /api/admin/events/:id/invitations - Remove invitation
+ *
+ * Requires: events.create OR events.edit permission
  */
 
 import { Env, jsonResponse, errorResponse } from '../../../../types'
-import { withAuth } from '../../../../middleware/auth'
-import { isAdmin } from '../../../../middleware/admin'
+import { withAnyPermission, PermissionContext } from '../../../../middleware/permission'
+import { PERMISSIONS } from '../../../../lib/permissions'
 import { sendEventInvitationNotifications } from '../../../../lib/push'
 
 interface PersonInvitation {
@@ -31,38 +33,20 @@ interface GroupInvitation {
 /**
  * GET /api/admin/events/:id/invitations
  * List all invitations for an event
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestGet: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
   const eventId = context.params.id as string
-  const url = new URL(context.request.url)
-  const clubId = url.searchParams.get('club_id')
-
-  if (!clubId) {
-    return errorResponse('club_id is required', 400)
-  }
 
   try {
-    // Get admin person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, clubId)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
-    }
-
     // Verify event exists and belongs to club
     const event = await db
       .prepare('SELECT id FROM events WHERE id = ? AND club_id = ?')
-      .bind(eventId, clubId)
+      .bind(eventId, auth.clubId)
       .first()
 
     if (!event) {
@@ -139,8 +123,12 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
 /**
  * POST /api/admin/events/:id/invitations
  * Add invitations to an event
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestPost: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
   const eventId = context.params.id as string
 
@@ -151,30 +139,10 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       group_ids?: string[]
     }
 
-    const { club_id, person_ids, group_ids } = body
-
-    if (!club_id) {
-      return errorResponse('club_id is required', 400)
-    }
+    const { person_ids, group_ids } = body
 
     if ((!person_ids || person_ids.length === 0) && (!group_ids || group_ids.length === 0)) {
       return errorResponse('At least one person_id or group_id is required', 400)
-    }
-
-    // Get admin person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
     }
 
     // Verify event exists and belongs to club, also get club name and kind
@@ -185,7 +153,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
         JOIN clubs c ON c.id = e.club_id
         WHERE e.id = ? AND e.club_id = ?
       `)
-      .bind(eventId, club_id)
+      .bind(eventId, auth.clubId)
       .first<{ id: string; title: string; kind: string; starts_at_utc: string; timezone: string; club_name: string }>()
 
     if (!event) {
@@ -204,7 +172,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
               INSERT INTO event_invitations (id, event_id, person_id, invited_by_person_id, created_at)
               VALUES (lower(hex(randomblob(16))), ?, ?, ?, datetime('now'))
             `)
-            .bind(eventId, personId, person.id)
+            .bind(eventId, personId, auth.person.id)
             .run()
           personsAdded++
         } catch (e) {
@@ -226,7 +194,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
               INSERT INTO event_invitations (id, event_id, group_id, invited_by_person_id, created_at)
               VALUES (lower(hex(randomblob(16))), ?, ?, ?, datetime('now'))
             `)
-            .bind(eventId, groupId, person.id)
+            .bind(eventId, groupId, auth.person.id)
             .run()
           groupsAdded++
         } catch (e) {
@@ -294,8 +262,12 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
 /**
  * DELETE /api/admin/events/:id/invitations
  * Remove an invitation from an event
+ * Requires: events.create OR events.edit permission
  */
-export const onRequestDelete: PagesFunction<Env> = withAuth(async (context, user) => {
+export const onRequestDelete: PagesFunction<Env> = withAnyPermission([
+  PERMISSIONS.EVENTS_CREATE,
+  PERMISSIONS.EVENTS_EDIT,
+])(async (context, auth: PermissionContext) => {
   const db = context.env.WWUWH_DB
   const eventId = context.params.id as string
   const url = new URL(context.request.url)
@@ -309,30 +281,10 @@ export const onRequestDelete: PagesFunction<Env> = withAuth(async (context, user
       group_id?: string
     }
 
-    const { club_id, invitation_id, person_id, group_id } = body
-
-    if (!club_id) {
-      return errorResponse('club_id is required', 400)
-    }
+    const { invitation_id, person_id, group_id } = body
 
     if (!invitation_id && !person_id && !group_id) {
       return errorResponse('invitation_id, person_id, or group_id is required', 400)
-    }
-
-    // Get admin person record
-    const person = await db
-      .prepare('SELECT id FROM people WHERE auth_user_id = ?')
-      .bind(user.id)
-      .first<{ id: string }>()
-
-    if (!person) {
-      return errorResponse('Profile not found', 404)
-    }
-
-    // Check admin role
-    const adminCheck = await isAdmin(db, person.id, club_id)
-    if (!adminCheck) {
-      return errorResponse('Admin access required', 403)
     }
 
     // If removing a person invitation, check for RSVP
