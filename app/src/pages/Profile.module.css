@@ -821,6 +821,10 @@
   justify-content: space-between;
   padding: var(--space-md);
   border-bottom: 1px solid var(--grey-100);
+  position: sticky;
+  top: 0;
+  background: var(--color-white);
+  z-index: 1;
 }
 
 .badgeModalTitle {
