@@ -2,9 +2,9 @@ name = "wwuwh-awards-cron"
 main = "src/index.ts"
 compatibility_date = "2024-01-01"
 
-# Run daily at 03:00 UTC
+# Run daily at 18:00 UTC (6pm GMT / 7pm BST)
 [triggers]
-crons = ["0 3 * * *"]
+crons = ["0 18 * * *"]
 
 # Service binding to the Pages project (bypasses public internet/bot protection)
 [[services]]
