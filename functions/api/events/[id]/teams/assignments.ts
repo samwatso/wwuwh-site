@@ -7,6 +7,7 @@
 import { Env, jsonResponse, errorResponse } from '../../../../types'
 import { withAuth } from '../../../../middleware/auth'
 import { isAdmin } from '../../../../middleware/admin'
+import { checkAndGrantAwards } from '../../../../lib/awards-service'
 
 interface AssignmentUpdate {
   person_id: string
@@ -144,7 +145,32 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
             `)
             .bind(eventId, person_id, attendance_status)
             .run()
+
+          // Check attendance awards if marked present/late
+          if (attendance_status === 'present' || attendance_status === 'late') {
+            await checkAndGrantAwards(db, person_id, 'attendance', {
+              eventId,
+              status: attendance_status,
+            })
+          }
         }
+      }
+
+      // Check team assignment awards if assigned to a team with 'play' activity
+      if (team_id && (activity === 'play' || !activity)) {
+        // Get team name for context
+        const team = await db
+          .prepare('SELECT name FROM event_teams WHERE id = ?')
+          .bind(team_id)
+          .first<{ name: string }>()
+
+        await checkAndGrantAwards(db, person_id, 'team_assigned', {
+          eventId,
+          teamId: team_id,
+          teamName: team?.name,
+          positionCode: position_code || null,
+          activity: activity || 'play',
+        })
       }
 
       results.push({

@@ -12,6 +12,7 @@
 
 import { Env, jsonResponse, errorResponse } from '../../../types'
 import { withAuth } from '../../../middleware/auth'
+import { checkAndGrantAwards } from '../../../lib/awards-service'
 
 export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) => {
   const db = context.env.WWUWH_DB
@@ -231,6 +232,15 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       .prepare('SELECT 1 FROM subscription_usages WHERE subscription_id = ? AND event_id = ?')
       .bind(subscription.id, eventId)
       .first() : null
+
+    // Check and grant any awards earned from this RSVP
+    await checkAndGrantAwards(db, person.id, 'rsvp', {
+      eventId,
+      response: body.response as 'yes' | 'no' | 'maybe',
+      eventKind: event.kind,
+      eventStartsAt: event.starts_at_utc,
+      isLateCancel: isLateCancellation,
+    })
 
     return jsonResponse({
       rsvp,
