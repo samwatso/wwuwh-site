@@ -8,6 +8,7 @@
 import { useEffect, useCallback, useState } from 'react'
 import { PushNotifications, Token, PushNotificationSchema, ActionPerformed } from '@capacitor/push-notifications'
 import { Capacitor } from '@capacitor/core'
+import { App } from '@capacitor/app'
 import { useAuth } from './useAuth'
 
 // API function to register device token
@@ -50,20 +51,43 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   const [permissionStatus, setPermissionStatus] = useState<'prompt' | 'granted' | 'denied' | 'unknown'>('unknown')
   const isSupported = Capacitor.isNativePlatform()
 
-  // Check current permission status
+  // Function to check and update permission status
+  const checkPermissionStatus = useCallback(async () => {
+    if (!isSupported) return
+
+    console.log('[Push] Checking permission status...')
+    const result = await PushNotifications.checkPermissions()
+    console.log('[Push] Permission result:', result.receive)
+
+    if (result.receive === 'granted') {
+      setPermissionStatus('granted')
+    } else if (result.receive === 'denied') {
+      setPermissionStatus('denied')
+    } else {
+      setPermissionStatus('prompt')
+    }
+  }, [isSupported])
+
+  // Check permission status on mount
+  useEffect(() => {
+    checkPermissionStatus()
+  }, [checkPermissionStatus])
+
+  // Re-check permission when app comes to foreground (user may have changed in Settings)
   useEffect(() => {
     if (!isSupported) return
 
-    PushNotifications.checkPermissions().then(result => {
-      if (result.receive === 'granted') {
-        setPermissionStatus('granted')
-      } else if (result.receive === 'denied') {
-        setPermissionStatus('denied')
-      } else {
-        setPermissionStatus('prompt')
+    const listener = App.addListener('appStateChange', ({ isActive }) => {
+      if (isActive) {
+        console.log('[Push] App became active, re-checking permissions...')
+        checkPermissionStatus()
       }
     })
-  }, [isSupported])
+
+    return () => {
+      listener.then(l => l.remove())
+    }
+  }, [isSupported, checkPermissionStatus])
 
   // Set up notification listeners
   useEffect(() => {
@@ -111,20 +135,29 @@ export function usePushNotifications(): UsePushNotificationsReturn {
   useEffect(() => {
     if (!isSupported || !user || permissionStatus !== 'granted') return
 
+    console.log('[Push] Auto-registering for push notifications...')
     PushNotifications.register()
   }, [isSupported, user, permissionStatus])
 
   // Request permission
   const requestPermission = useCallback(async () => {
-    if (!isSupported) return
+    if (!isSupported) {
+      console.log('[Push] Not supported on this platform')
+      return
+    }
 
+    console.log('[Push] Requesting permission...')
     const result = await PushNotifications.requestPermissions()
+    console.log('[Push] Permission request result:', result.receive)
 
     if (result.receive === 'granted') {
       setPermissionStatus('granted')
       // Register for push notifications
+      console.log('[Push] Permission granted, registering...')
       await PushNotifications.register()
+      console.log('[Push] Registration called')
     } else {
+      console.log('[Push] Permission denied or not granted')
       setPermissionStatus('denied')
     }
   }, [isSupported])

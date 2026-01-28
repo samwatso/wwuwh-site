@@ -663,6 +663,37 @@
   padding: var(--space-md);
 }
 
+/* Trophy Section Header */
+.trophySectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-xs);
+  margin-bottom: var(--space-sm);
+  border-bottom: 1px solid var(--grey-200);
+}
+
+.trophySectionHeader:not(:first-child) {
+  margin-top: var(--space-lg);
+}
+
+.trophySectionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--grey-600);
+}
+
+.trophySectionCount {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--grey-500);
+  background: var(--grey-100);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
 /* Trophy Item */
 .trophyItem {
   display: flex;

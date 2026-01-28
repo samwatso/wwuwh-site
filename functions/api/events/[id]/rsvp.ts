@@ -235,7 +235,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       .first() : null
 
     // Check and grant any awards earned from this RSVP
-    await checkAndGrantAwards(db, person.id, 'rsvp', {
+    await checkAndGrantAwards(context.env, db, person.id, 'rsvp', {
       eventId,
       response: body.response as 'yes' | 'no' | 'maybe',
       eventKind: event.kind,

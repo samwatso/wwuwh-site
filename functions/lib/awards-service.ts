@@ -5,6 +5,9 @@
  * Call checkAndGrantAwards() from hooks throughout the app.
  */
 
+import { Env } from '../types'
+import { sendBadgeUnlockNotification } from './push'
+
 // =============================================================================
 // Types
 // =============================================================================
@@ -50,6 +53,7 @@ export type AwardContext = RsvpContext | AttendanceContext | TeamAssignedContext
  * Call this from hooks after relevant actions.
  */
 export async function checkAndGrantAwards(
+  env: Env,
   db: D1Database,
   personId: string,
   trigger: AwardTrigger,
@@ -60,28 +64,28 @@ export async function checkAndGrantAwards(
   try {
     switch (trigger) {
       case 'rsvp':
-        granted.push(...await checkRsvpAwards(db, personId, context as RsvpContext))
+        granted.push(...await checkRsvpAwards(env, db, personId, context as RsvpContext))
         break
 
       case 'attendance':
-        granted.push(...await checkAttendanceAwards(db, personId, context as AttendanceContext))
+        granted.push(...await checkAttendanceAwards(env, db, personId, context as AttendanceContext))
         break
 
       case 'team_assigned':
-        granted.push(...await checkTeamAwards(db, personId, context as TeamAssignedContext))
+        granted.push(...await checkTeamAwards(env, db, personId, context as TeamAssignedContext))
         break
 
       case 'profile_load':
-        granted.push(...await checkProfileAwards(db, personId))
+        granted.push(...await checkProfileAwards(env, db, personId))
         break
 
       case 'scheduled':
-        granted.push(...await checkScheduledAwards(db, personId))
+        granted.push(...await checkScheduledAwards(env, db, personId))
         break
     }
 
     // Always check milestone awards (they apply across triggers)
-    granted.push(...await checkMilestoneAwards(db, personId))
+    granted.push(...await checkMilestoneAwards(env, db, personId))
 
   } catch (error) {
     console.error('[AwardsService] Error checking awards:', error)
@@ -98,6 +102,7 @@ export async function checkAndGrantAwards(
  * Grant an award (idempotent - won't duplicate)
  */
 async function grantAward(
+  env: Env,
   db: D1Database,
   personId: string,
   awardId: string,
@@ -116,7 +121,28 @@ async function grantAward(
       .run()
 
     // Returns true if a row was actually inserted (not ignored due to duplicate)
-    return (result.meta?.changes ?? 0) > 0
+    const wasGranted = (result.meta?.changes ?? 0) > 0
+
+    // Send push notification if award was newly granted
+    if (wasGranted) {
+      try {
+        // Look up the award details
+        const award = await db
+          .prepare('SELECT name, description FROM awards WHERE id = ?')
+          .bind(awardId)
+          .first<{ name: string; description: string }>()
+
+        if (award) {
+          await sendBadgeUnlockNotification(env, db, personId, award.name, award.description)
+          console.log(`[AwardsService] Sent badge notification: ${award.name} to person ${personId}`)
+        }
+      } catch (notifyError) {
+        // Don't fail the award grant if notification fails
+        console.error(`[AwardsService] Failed to send notification for ${awardId}:`, notifyError)
+      }
+    }
+
+    return wasGranted
   } catch (error) {
     console.error(`[AwardsService] Failed to grant ${awardId}:`, error)
     return false
@@ -139,6 +165,7 @@ async function hasAward(db: D1Database, personId: string, awardId: string): Prom
 // =============================================================================
 
 async function checkRsvpAwards(
+  env: Env,
   db: D1Database,
   personId: string,
   context: RsvpContext
@@ -157,7 +184,7 @@ async function checkRsvpAwards(
       .first<{ c: number }>()
 
     if (count && count.c === 1) {
-      if (await grantAward(db, personId, 'award_first_dip', 'First RSVP yes', context.eventId)) {
+      if (await grantAward(env, db, personId, 'award_first_dip', 'First RSVP yes', context.eventId)) {
         granted.push('award_first_dip')
       }
     }
@@ -175,7 +202,7 @@ async function checkRsvpAwards(
       .first<{ c: number }>()
 
     if (matchCount && matchCount.c === 1) {
-      if (await grantAward(db, personId, 'award_first_friendly', 'First match RSVP', context.eventId)) {
+      if (await grantAward(env, db, personId, 'award_first_friendly', 'First match RSVP', context.eventId)) {
         granted.push('award_first_friendly')
       }
     }
@@ -193,7 +220,7 @@ async function checkRsvpAwards(
       .first<{ c: number }>()
 
     if (tournamentCount && tournamentCount.c === 1) {
-      if (await grantAward(db, personId, 'award_tournament_debut', 'First tournament RSVP', context.eventId)) {
+      if (await grantAward(env, db, personId, 'award_tournament_debut', 'First tournament RSVP', context.eventId)) {
         granted.push('award_tournament_debut')
       }
     }
@@ -214,7 +241,7 @@ async function checkRsvpAwards(
       .first<{ c: number }>()
 
     if (priorYesCount && priorYesCount.c === 12) {
-      if (await grantAward(db, personId, 'award_squad_builder', 'The 13th player', context.eventId)) {
+      if (await grantAward(env, db, personId, 'award_squad_builder', 'The 13th player', context.eventId)) {
         granted.push('award_squad_builder')
       }
     }
@@ -234,7 +261,7 @@ async function checkRsvpAwards(
       .first<{ c: number }>()
 
     if (totalYesCount && totalYesCount.c >= 24) {
-      if (await grantAward(db, personId, 'award_full_bench', '24 players at session', context.eventId)) {
+      if (await grantAward(env, db, personId, 'award_full_bench', '24 players at session', context.eventId)) {
         granted.push('award_full_bench')
       }
     }
@@ -258,7 +285,7 @@ async function checkRsvpAwards(
       const isHomeLocation = homeLocations.some(loc => locationLower.includes(loc))
 
       if (!isHomeLocation) {
-        if (await grantAward(db, personId, 'award_road_trip', `Away event: ${event.location}`, context.eventId)) {
+        if (await grantAward(env, db, personId, 'award_road_trip', `Away event: ${event.location}`, context.eventId)) {
           granted.push('award_road_trip')
         }
       }
@@ -287,7 +314,7 @@ async function checkRsvpAwards(
       const isUkLocation = ukLocations.some(loc => locationLower.includes(loc))
 
       if (!isUkLocation && event.location.trim().length > 0) {
-        if (await grantAward(db, personId, 'award_international_waters', `International: ${event.location}`, context.eventId)) {
+        if (await grantAward(env, db, personId, 'award_international_waters', `International: ${event.location}`, context.eventId)) {
           granted.push('award_international_waters')
         }
       }
@@ -304,7 +331,7 @@ async function checkRsvpAwards(
     if (event?.title) {
       const titleLower = event.title.toLowerCase()
       if (titleLower.includes('camp')) {
-        if (await grantAward(db, personId, 'award_camp_week', event.title, context.eventId)) {
+        if (await grantAward(env, db, personId, 'award_camp_week', event.title, context.eventId)) {
           granted.push('award_camp_week')
         }
       }
@@ -321,7 +348,7 @@ async function checkRsvpAwards(
     if (event?.title) {
       const titleLower = event.title.toLowerCase()
       if (titleLower.includes('boa') || titleLower.includes('final') || titleLower.includes('national')) {
-        if (await grantAward(db, personId, 'award_finals_ready', event.title, context.eventId)) {
+        if (await grantAward(env, db, personId, 'award_finals_ready', event.title, context.eventId)) {
           granted.push('award_finals_ready')
         }
       }
@@ -335,7 +362,7 @@ async function checkRsvpAwards(
     const daysUntil = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
 
     if (daysUntil > 7 && !await hasAward(db, personId, 'award_early_bird')) {
-      if (await grantAward(db, personId, 'award_early_bird', `RSVP'd ${Math.floor(daysUntil)} days early`, context.eventId)) {
+      if (await grantAward(env, db, personId, 'award_early_bird', `RSVP'd ${Math.floor(daysUntil)} days early`, context.eventId)) {
         granted.push('award_early_bird')
       }
     }
@@ -348,14 +375,14 @@ async function checkRsvpAwards(
     const hoursUntil = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60)
 
     if (hoursUntil > 0 && hoursUntil <= 2 && !await hasAward(db, personId, 'award_last_minute_hero')) {
-      if (await grantAward(db, personId, 'award_last_minute_hero', 'Clutch last-minute RSVP', context.eventId)) {
+      if (await grantAward(env, db, personId, 'award_last_minute_hero', 'Clutch last-minute RSVP', context.eventId)) {
         granted.push('award_last_minute_hero')
       }
     }
   }
 
   // Check streak awards on RSVP
-  granted.push(...await checkStreakAwards(db, personId))
+  granted.push(...await checkStreakAwards(env, db, personId))
 
   return granted
 }
@@ -365,6 +392,7 @@ async function checkRsvpAwards(
 // =============================================================================
 
 async function checkAttendanceAwards(
+  env: Env,
   db: D1Database,
   personId: string,
   context: AttendanceContext
@@ -384,7 +412,7 @@ async function checkAttendanceAwards(
     if (dayOfWeek === 4) {
       const thursdayCount = await countAttendanceByDay(db, personId, 4)
       if (thursdayCount >= 10 && !await hasAward(db, personId, 'award_thursday_regular')) {
-        if (await grantAward(db, personId, 'award_thursday_regular', `${thursdayCount} Thursday sessions`)) {
+        if (await grantAward(env, db, personId, 'award_thursday_regular', `${thursdayCount} Thursday sessions`)) {
           granted.push('award_thursday_regular')
         }
       }
@@ -394,7 +422,7 @@ async function checkAttendanceAwards(
     if (dayOfWeek === 0) {
       const sundayCount = await countAttendanceByDay(db, personId, 0)
       if (sundayCount >= 10 && !await hasAward(db, personId, 'award_sunday_specialist')) {
-        if (await grantAward(db, personId, 'award_sunday_specialist', `${sundayCount} Sunday sessions`)) {
+        if (await grantAward(env, db, personId, 'award_sunday_specialist', `${sundayCount} Sunday sessions`)) {
           granted.push('award_sunday_specialist')
         }
       }
@@ -406,7 +434,7 @@ async function checkAttendanceAwards(
     if (month === 0 && day <= 7) { // First week of January
       const year = eventDate.getUTCFullYear()
       if (!await hasAward(db, personId, 'award_new_year_splash')) {
-        if (await grantAward(db, personId, 'award_new_year_splash', `New Year ${year}`)) {
+        if (await grantAward(env, db, personId, 'award_new_year_splash', `New Year ${year}`)) {
           granted.push('award_new_year_splash')
         }
       }
@@ -438,6 +466,7 @@ async function countAttendanceByDay(db: D1Database, personId: string, dayOfWeek:
 // =============================================================================
 
 async function checkTeamAwards(
+  env: Env,
   db: D1Database,
   personId: string,
   context: TeamAssignedContext
@@ -454,7 +483,7 @@ async function checkTeamAwards(
   if (teamNameLower.includes('white')) {
     const whiteCount = await countTeamAssignments(db, personId, 'white')
     if (whiteCount >= 5 && !await hasAward(db, personId, 'award_white_cap')) {
-      if (await grantAward(db, personId, 'award_white_cap', `${whiteCount} white team assignments`)) {
+      if (await grantAward(env, db, personId, 'award_white_cap', `${whiteCount} white team assignments`)) {
         granted.push('award_white_cap')
       }
     }
@@ -464,7 +493,7 @@ async function checkTeamAwards(
   if (teamNameLower.includes('black')) {
     const blackCount = await countTeamAssignments(db, personId, 'black')
     if (blackCount >= 5 && !await hasAward(db, personId, 'award_black_cap')) {
-      if (await grantAward(db, personId, 'award_black_cap', `${blackCount} black team assignments`)) {
+      if (await grantAward(env, db, personId, 'award_black_cap', `${blackCount} black team assignments`)) {
         granted.push('award_black_cap')
       }
     }
@@ -473,7 +502,7 @@ async function checkTeamAwards(
   // Third Team - Assigned to a team that isn't white or black
   if (!teamNameLower.includes('white') && !teamNameLower.includes('black')) {
     if (!await hasAward(db, personId, 'award_third_team')) {
-      if (await grantAward(db, personId, 'award_third_team', `Assigned to ${context.teamName}`)) {
+      if (await grantAward(env, db, personId, 'award_third_team', `Assigned to ${context.teamName}`)) {
         granted.push('award_third_team')
       }
     }
@@ -514,7 +543,7 @@ async function checkTeamAwards(
           .first()
 
         if (isCaptain) {
-          if (await grantAward(db, personId, 'award_captains_pick', 'First pick by captain')) {
+          if (await grantAward(env, db, personId, 'award_captains_pick', 'First pick by captain')) {
             granted.push('award_captains_pick')
           }
         }
@@ -536,7 +565,7 @@ async function checkTeamAwards(
 
       const awardId = positionAwards[context.positionCode]
       if (awardId && !await hasAward(db, personId, awardId)) {
-        if (await grantAward(db, personId, awardId, `${positionCount} times at ${context.positionCode}`)) {
+        if (await grantAward(env, db, personId, awardId, `${positionCount} times at ${context.positionCode}`)) {
           granted.push(awardId)
         }
       }
@@ -545,7 +574,7 @@ async function checkTeamAwards(
     // Utility Player - Played all 4 positions at least once
     const positions = await getDistinctPositions(db, personId)
     if (positions.length >= 4 && !await hasAward(db, personId, 'award_utility_player')) {
-      if (await grantAward(db, personId, 'award_utility_player', 'Played all positions')) {
+      if (await grantAward(env, db, personId, 'award_utility_player', 'Played all positions')) {
         granted.push('award_utility_player')
       }
     }
@@ -600,34 +629,34 @@ async function getDistinctPositions(db: D1Database, personId: string): Promise<s
 // Streak Awards
 // =============================================================================
 
-async function checkStreakAwards(db: D1Database, personId: string): Promise<string[]> {
+async function checkStreakAwards(env: Env, db: D1Database, personId: string): Promise<string[]> {
   const granted: string[] = []
   const streak = await calculateStreak(db, personId)
 
   // Back-to-Back (2 streak)
   if (streak >= 2 && !await hasAward(db, personId, 'award_back_to_back')) {
-    if (await grantAward(db, personId, 'award_back_to_back', `Streak of ${streak}`)) {
+    if (await grantAward(env, db, personId, 'award_back_to_back', `Streak of ${streak}`)) {
       granted.push('award_back_to_back')
     }
   }
 
   // Triple Threat (3 streak)
   if (streak >= 3 && !await hasAward(db, personId, 'award_triple_threat')) {
-    if (await grantAward(db, personId, 'award_triple_threat', `Streak of ${streak}`)) {
+    if (await grantAward(env, db, personId, 'award_triple_threat', `Streak of ${streak}`)) {
       granted.push('award_triple_threat')
     }
   }
 
   // Four Week Flow (8 sessions = ~4 weeks with 2/week)
   if (streak >= 8 && !await hasAward(db, personId, 'award_four_week_flow')) {
-    if (await grantAward(db, personId, 'award_four_week_flow', `Streak of ${streak}`)) {
+    if (await grantAward(env, db, personId, 'award_four_week_flow', `Streak of ${streak}`)) {
       granted.push('award_four_week_flow')
     }
   }
 
   // Twelve Week Habit (24 sessions = ~12 weeks with 2/week)
   if (streak >= 24 && !await hasAward(db, personId, 'award_twelve_week_habit')) {
-    if (await grantAward(db, personId, 'award_twelve_week_habit', `Streak of ${streak}`)) {
+    if (await grantAward(env, db, personId, 'award_twelve_week_habit', `Streak of ${streak}`)) {
       granted.push('award_twelve_week_habit')
     }
   }
@@ -636,7 +665,7 @@ async function checkStreakAwards(db: D1Database, personId: string): Promise<stri
   if (!await hasAward(db, personId, 'award_perfect_week')) {
     const hasPerfectWeek = await checkPerfectWeek(db, personId)
     if (hasPerfectWeek) {
-      if (await grantAward(db, personId, 'award_perfect_week', 'Attended all sessions in a week')) {
+      if (await grantAward(env, db, personId, 'award_perfect_week', 'Attended all sessions in a week')) {
         granted.push('award_perfect_week')
       }
     }
@@ -646,7 +675,7 @@ async function checkStreakAwards(db: D1Database, personId: string): Promise<stri
   if (!await hasAward(db, personId, 'award_unbroken_month')) {
     const hasUnbrokenMonth = await checkUnbrokenMonth(db, personId)
     if (hasUnbrokenMonth) {
-      if (await grantAward(db, personId, 'award_unbroken_month', 'Attended all sessions in a month')) {
+      if (await grantAward(env, db, personId, 'award_unbroken_month', 'Attended all sessions in a month')) {
         granted.push('award_unbroken_month')
       }
     }
@@ -656,7 +685,7 @@ async function checkStreakAwards(db: D1Database, personId: string): Promise<stri
   if (!await hasAward(db, personId, 'award_streak_saver')) {
     const hasStreakSaver = await checkStreakSaver(db, personId)
     if (hasStreakSaver) {
-      if (await grantAward(db, personId, 'award_streak_saver', 'Missed a week but came back')) {
+      if (await grantAward(env, db, personId, 'award_streak_saver', 'Missed a week but came back')) {
         granted.push('award_streak_saver')
       }
     }
@@ -844,7 +873,7 @@ async function calculateStreak(db: D1Database, personId: string): Promise<number
 // Milestone Awards (Session Count)
 // =============================================================================
 
-async function checkMilestoneAwards(db: D1Database, personId: string): Promise<string[]> {
+async function checkMilestoneAwards(env: Env, db: D1Database, personId: string): Promise<string[]> {
   const granted: string[] = []
 
   // Count total sessions attended
@@ -861,7 +890,7 @@ async function checkMilestoneAwards(db: D1Database, personId: string): Promise<s
 
   for (const milestone of milestones) {
     if (totalSessions >= milestone.count && !await hasAward(db, personId, milestone.awardId)) {
-      if (await grantAward(db, personId, milestone.awardId, `${totalSessions} total sessions`)) {
+      if (await grantAward(env, db, personId, milestone.awardId, `${totalSessions} total sessions`)) {
         granted.push(milestone.awardId)
       }
     }
@@ -871,7 +900,7 @@ async function checkMilestoneAwards(db: D1Database, personId: string): Promise<s
   if (!await hasAward(db, personId, 'award_season_centurion')) {
     const hasSeasonCenturion = await checkSeasonCenturion(db, personId)
     if (hasSeasonCenturion) {
-      if (await grantAward(db, personId, 'award_season_centurion', '100 sessions in a season')) {
+      if (await grantAward(env, db, personId, 'award_season_centurion', '100 sessions in a season')) {
         granted.push('award_season_centurion')
       }
     }
@@ -938,19 +967,19 @@ async function countTotalSessions(db: D1Database, personId: string): Promise<num
 // Profile Load Awards (checked on profile/awards page load)
 // =============================================================================
 
-async function checkProfileAwards(db: D1Database, personId: string): Promise<string[]> {
+async function checkProfileAwards(env: Env, db: D1Database, personId: string): Promise<string[]> {
   const granted: string[] = []
 
   // Check anniversary awards
-  granted.push(...await checkAnniversaryAwards(db, personId))
+  granted.push(...await checkAnniversaryAwards(env, db, personId))
 
   // Check reliability awards
-  granted.push(...await checkReliabilityAwards(db, personId))
+  granted.push(...await checkReliabilityAwards(env, db, personId))
 
   return granted
 }
 
-async function checkAnniversaryAwards(db: D1Database, personId: string): Promise<string[]> {
+async function checkAnniversaryAwards(env: Env, db: D1Database, personId: string): Promise<string[]> {
   const granted: string[] = []
 
   // Get first ever RSVP date
@@ -971,21 +1000,21 @@ async function checkAnniversaryAwards(db: D1Database, personId: string): Promise
 
   // 1 Year Anniversary
   if (yearsActive >= 1 && !await hasAward(db, personId, 'award_anniversary_1y')) {
-    if (await grantAward(db, personId, 'award_anniversary_1y', `Member since ${firstDate.getFullYear()}`)) {
+    if (await grantAward(env, db, personId, 'award_anniversary_1y', `Member since ${firstDate.getFullYear()}`)) {
       granted.push('award_anniversary_1y')
     }
   }
 
   // 5 Year Anniversary
   if (yearsActive >= 5 && !await hasAward(db, personId, 'award_anniversary_5y')) {
-    if (await grantAward(db, personId, 'award_anniversary_5y', `${Math.floor(yearsActive)} years`)) {
+    if (await grantAward(env, db, personId, 'award_anniversary_5y', `${Math.floor(yearsActive)} years`)) {
       granted.push('award_anniversary_5y')
     }
   }
 
   // 10 Year Anniversary
   if (yearsActive >= 10 && !await hasAward(db, personId, 'award_anniversary_10y')) {
-    if (await grantAward(db, personId, 'award_anniversary_10y', `${Math.floor(yearsActive)} years`)) {
+    if (await grantAward(env, db, personId, 'award_anniversary_10y', `${Math.floor(yearsActive)} years`)) {
       granted.push('award_anniversary_10y')
     }
   }
@@ -993,7 +1022,7 @@ async function checkAnniversaryAwards(db: D1Database, personId: string): Promise
   return granted
 }
 
-async function checkReliabilityAwards(db: D1Database, personId: string): Promise<string[]> {
+async function checkReliabilityAwards(env: Env, db: D1Database, personId: string): Promise<string[]> {
   const granted: string[] = []
 
   // On Time - RSVP'd to 20+ events more than 24 hours in advance
@@ -1010,7 +1039,7 @@ async function checkReliabilityAwards(db: D1Database, personId: string): Promise
     .first<{ c: number }>()
 
   if ((earlyRsvps?.c ?? 0) >= 20 && !await hasAward(db, personId, 'award_on_time')) {
-    if (await grantAward(db, personId, 'award_on_time', `${earlyRsvps?.c} early RSVPs`)) {
+    if (await grantAward(env, db, personId, 'award_on_time', `${earlyRsvps?.c} early RSVPs`)) {
       granted.push('award_on_time')
     }
   }
@@ -1031,14 +1060,14 @@ async function checkReliabilityAwards(db: D1Database, personId: string): Promise
     .first<{ total: number; late_cancels: number }>()
 
   if (stats && stats.total >= 25 && stats.late_cancels === 0 && !await hasAward(db, personId, 'award_dependable')) {
-    if (await grantAward(db, personId, 'award_dependable', `${stats.total} sessions, 0 late cancels`)) {
+    if (await grantAward(env, db, personId, 'award_dependable', `${stats.total} sessions, 0 late cancels`)) {
       granted.push('award_dependable')
     }
   }
 
   // Ironclad - 50+ sessions with no late cancellations
   if (stats && stats.total >= 50 && stats.late_cancels === 0 && !await hasAward(db, personId, 'award_ironclad')) {
-    if (await grantAward(db, personId, 'award_ironclad', `${stats.total} sessions, 0 late cancels`)) {
+    if (await grantAward(env, db, personId, 'award_ironclad', `${stats.total} sessions, 0 late cancels`)) {
       granted.push('award_ironclad')
     }
   }
@@ -1058,7 +1087,7 @@ async function checkReliabilityAwards(db: D1Database, personId: string): Promise
     .first<{ c: number }>()
 
   if ((quickRsvps?.c ?? 0) >= 15 && !await hasAward(db, personId, 'award_always_ready')) {
-    if (await grantAward(db, personId, 'award_always_ready', `${quickRsvps?.c} quick RSVPs`)) {
+    if (await grantAward(env, db, personId, 'award_always_ready', `${quickRsvps?.c} quick RSVPs`)) {
       granted.push('award_always_ready')
     }
   }
@@ -1070,17 +1099,17 @@ async function checkReliabilityAwards(db: D1Database, personId: string): Promise
 // Scheduled Awards (for cron jobs)
 // =============================================================================
 
-async function checkScheduledAwards(db: D1Database, personId: string): Promise<string[]> {
+async function checkScheduledAwards(env: Env, db: D1Database, personId: string): Promise<string[]> {
   const granted: string[] = []
 
   // Check all time-sensitive awards
-  granted.push(...await checkAnniversaryAwards(db, personId))
-  granted.push(...await checkSeasonalAwards(db, personId))
+  granted.push(...await checkAnniversaryAwards(env, db, personId))
+  granted.push(...await checkSeasonalAwards(env, db, personId))
 
   return granted
 }
 
-async function checkSeasonalAwards(db: D1Database, personId: string): Promise<string[]> {
+async function checkSeasonalAwards(env: Env, db: D1Database, personId: string): Promise<string[]> {
   const granted: string[] = []
   const now = new Date()
   const month = now.getUTCMonth()
@@ -1090,7 +1119,7 @@ async function checkSeasonalAwards(db: D1Database, personId: string): Promise<st
     const year = now.getUTCFullYear()
     const springCount = await countSessionsInPeriod(db, personId, `${year}-03-01`, `${year}-05-31`)
     if (springCount >= 10 && !await hasAward(db, personId, 'award_spring_surge')) {
-      if (await grantAward(db, personId, 'award_spring_surge', `${springCount} spring sessions ${year}`)) {
+      if (await grantAward(env, db, personId, 'award_spring_surge', `${springCount} spring sessions ${year}`)) {
         granted.push('award_spring_surge')
       }
     }
@@ -1101,7 +1130,7 @@ async function checkSeasonalAwards(db: D1Database, personId: string): Promise<st
     const year = now.getUTCFullYear()
     const summerCount = await countSessionsInPeriod(db, personId, `${year}-06-01`, `${year}-08-31`)
     if (summerCount >= 10 && !await hasAward(db, personId, 'award_summer_series')) {
-      if (await grantAward(db, personId, 'award_summer_series', `${summerCount} summer sessions ${year}`)) {
+      if (await grantAward(env, db, personId, 'award_summer_series', `${summerCount} summer sessions ${year}`)) {
         granted.push('award_summer_series')
       }
     }
@@ -1136,7 +1165,7 @@ async function countSessionsInPeriod(db: D1Database, personId: string, startDate
 /**
  * Check awards for all active users (for scheduled jobs)
  */
-export async function checkAwardsForAllUsers(db: D1Database): Promise<{ checked: number; awarded: number }> {
+export async function checkAwardsForAllUsers(env: Env, db: D1Database): Promise<{ checked: number; awarded: number }> {
   // Get all users who have RSVP'd in the last 90 days
   const activeUsers = await db
     .prepare(`
@@ -1149,7 +1178,7 @@ export async function checkAwardsForAllUsers(db: D1Database): Promise<{ checked:
   let totalAwarded = 0
 
   for (const user of activeUsers.results) {
-    const granted = await checkAndGrantAwards(db, user.person_id, 'scheduled', {})
+    const granted = await checkAndGrantAwards(env, db, user.person_id, 'scheduled', {})
     totalAwarded += granted.length
   }
 

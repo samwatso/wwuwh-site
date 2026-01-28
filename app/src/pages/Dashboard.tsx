@@ -236,6 +236,12 @@ function BadgeShowcase({ awardsCount, currentStreak, loading, earnedAwards, lock
   // Combine earned and locked, prioritizing earned badges for display
   const earnedSet = new Set(earnedAwards.map(a => a.icon))
 
+  // Sort earned badges A-Z by name
+  const sortedEarnedAwards = [...earnedAwards].sort((a, b) => a.name.localeCompare(b.name))
+
+  // Sort locked badges A-Z by name
+  const sortedLockedAwards = [...lockedAwards].sort((a, b) => a.name.localeCompare(b.name))
+
   // Get up to 4 badges for hive preview - prioritize earned, then locked
   const previewBadges = [
     ...earnedAwards.slice(0, 4).map(a => ({ icon: a.icon, earned: true })),
@@ -244,6 +250,17 @@ function BadgeShowcase({ awardsCount, currentStreak, loading, earnedAwards, lock
       .slice(0, Math.max(0, 4 - earnedAwards.length))
       .map(a => ({ icon: a.icon, earned: false })),
   ].slice(0, 4)
+
+  // Helper to get context text for earned badge
+  const getAwardContext = (award: Award): string | null => {
+    if (award.event_title) {
+      return award.event_title
+    }
+    if (award.context) {
+      return award.context
+    }
+    return null
+  }
 
   return (
     <>
@@ -308,48 +325,68 @@ function BadgeShowcase({ awardsCount, currentStreak, loading, earnedAwards, lock
             </div>
 
             <div className={styles.trophyCaseContent}>
-              {/* Earned Badges */}
-              {earnedAwards.map(award => (
-                <div key={award.id} className={styles.trophyItem}>
-                  <div className={styles.trophyBadgeWrapper}>
-                    <AnimatedBadge
-                      icon={award.icon || 'first_dip_round'}
-                      size={64}
-                      earned={true}
-                      animate={true}
-                    />
+              {/* Unlocked Badges Section */}
+              {sortedEarnedAwards.length > 0 && (
+                <>
+                  <div className={styles.trophySectionHeader}>
+                    <span className={styles.trophySectionTitle}>Unlocked</span>
+                    <span className={styles.trophySectionCount}>{sortedEarnedAwards.length}</span>
                   </div>
-                  <div className={styles.trophyInfo}>
-                    <span className={styles.trophyName}>{award.name}</span>
-                    <span className={styles.trophyDesc}>{award.description}</span>
-                    <span className={styles.trophyEarnedDate}>
-                      ✓ Earned {new Date(award.granted_at).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'short',
-                        year: 'numeric',
-                      })}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                  {sortedEarnedAwards.map(award => {
+                    const context = getAwardContext(award)
+                    return (
+                      <div key={award.id} className={styles.trophyItem}>
+                        <div className={styles.trophyBadgeWrapper}>
+                          <AnimatedBadge
+                            icon={award.icon || 'first_dip_round'}
+                            size={64}
+                            earned={true}
+                            animate={true}
+                          />
+                        </div>
+                        <div className={styles.trophyInfo}>
+                          <span className={styles.trophyName}>{award.name}</span>
+                          <span className={styles.trophyDesc}>{award.description}</span>
+                          <span className={styles.trophyEarnedDate}>
+                            ✓ {new Date(award.granted_at).toLocaleDateString('en-GB', {
+                              day: 'numeric',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                            {context && ` · ${context}`}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </>
+              )}
 
-              {/* Locked Badges */}
-              {lockedAwards.map(award => (
-                <div key={award.id} className={styles.trophyItem}>
-                  <div className={styles.trophyBadgeWrapper}>
-                    <AnimatedBadge
-                      icon={award.icon || 'first_dip_round'}
-                      size={64}
-                      earned={false}
-                      animate={false}
-                    />
+              {/* Locked Badges Section */}
+              {sortedLockedAwards.length > 0 && (
+                <>
+                  <div className={styles.trophySectionHeader}>
+                    <span className={styles.trophySectionTitle}>Locked</span>
+                    <span className={styles.trophySectionCount}>{sortedLockedAwards.length}</span>
                   </div>
-                  <div className={styles.trophyInfo}>
-                    <span className={styles.trophyName}>{award.name}</span>
-                    <span className={styles.trophyDesc}>{award.description}</span>
-                  </div>
-                </div>
-              ))}
+                  {sortedLockedAwards.map(award => (
+                    <div key={award.id} className={styles.trophyItem}>
+                      <div className={styles.trophyBadgeWrapper}>
+                        <AnimatedBadge
+                          icon={award.icon || 'first_dip_round'}
+                          size={64}
+                          earned={false}
+                          animate={false}
+                        />
+                      </div>
+                      <div className={styles.trophyInfo}>
+                        <span className={styles.trophyName}>{award.name}</span>
+                        <span className={styles.trophyDesc}>{award.description}</span>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
 
               {/* Fallback if no badges */}
               {earnedAwards.length === 0 && lockedAwards.length === 0 && (

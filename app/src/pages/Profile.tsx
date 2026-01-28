@@ -4,7 +4,7 @@ import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
 import { useAuth } from '@/hooks/useAuth'
 import { useProfile } from '@/hooks/useProfile'
 import { useSubscribe } from '@/hooks/useSubscribe'
-import { useAwards } from '@/hooks/useAwards'
+import { useAwards, Award } from '@/hooks/useAwards'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
 import { Button, Input, FormField, Spinner, Avatar, ImageCropper } from '@/components'
 import { AnimatedBadge } from '@/components/badges'
@@ -357,6 +357,23 @@ export function Profile() {
         // Combine earned and locked for preview
         const earnedSet = new Set(awards.map(a => a.icon))
 
+        // Sort earned badges A-Z by name
+        const sortedEarnedAwards = [...awards].sort((a, b) => a.name.localeCompare(b.name))
+
+        // Sort locked badges A-Z by name
+        const sortedLockedAwards = [...lockedAwards].sort((a, b) => a.name.localeCompare(b.name))
+
+        // Helper to get context text for earned badge
+        const getAwardContext = (award: Award): string | null => {
+          if (award.event_title) {
+            return award.event_title
+          }
+          if (award.context) {
+            return award.context
+          }
+          return null
+        }
+
         // Get up to 4 badges for hive preview - prioritize earned, then locked
         const previewBadges = [
           ...awards.slice(0, 4).map(a => ({ icon: a.icon, earned: true })),
@@ -434,48 +451,68 @@ export function Profile() {
                   </div>
 
                   <div className={styles.badgeModalContent}>
-                    {/* Earned Badges */}
-                    {awards.map(award => (
-                      <div key={award.id} className={styles.badgeModalItem}>
-                        <div className={styles.badgeModalIconWrapper}>
-                          <AnimatedBadge
-                            icon={award.icon || 'first_dip_round'}
-                            size={56}
-                            earned={true}
-                            animate={true}
-                          />
+                    {/* Unlocked Badges Section */}
+                    {sortedEarnedAwards.length > 0 && (
+                      <>
+                        <div className={styles.badgeSectionHeader}>
+                          <span className={styles.badgeSectionTitle}>Unlocked</span>
+                          <span className={styles.badgeSectionCount}>{sortedEarnedAwards.length}</span>
                         </div>
-                        <div className={styles.badgeModalDetails}>
-                          <span className={styles.badgeModalName}>{award.name}</span>
-                          <span className={styles.badgeModalDesc}>{award.description}</span>
-                          <span className={styles.badgeModalEarnedDate}>
-                            ✓ Earned {new Date(award.granted_at).toLocaleDateString('en-GB', {
-                              day: 'numeric',
-                              month: 'short',
-                              year: 'numeric',
-                            })}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+                        {sortedEarnedAwards.map(award => {
+                          const context = getAwardContext(award)
+                          return (
+                            <div key={award.id} className={styles.badgeModalItem}>
+                              <div className={styles.badgeModalIconWrapper}>
+                                <AnimatedBadge
+                                  icon={award.icon || 'first_dip_round'}
+                                  size={56}
+                                  earned={true}
+                                  animate={true}
+                                />
+                              </div>
+                              <div className={styles.badgeModalDetails}>
+                                <span className={styles.badgeModalName}>{award.name}</span>
+                                <span className={styles.badgeModalDesc}>{award.description}</span>
+                                <span className={styles.badgeModalEarnedDate}>
+                                  ✓ {new Date(award.granted_at).toLocaleDateString('en-GB', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric',
+                                  })}
+                                  {context && ` · ${context}`}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })}
+                      </>
+                    )}
 
-                    {/* Locked Badges */}
-                    {lockedAwards.map(award => (
-                      <div key={award.id} className={styles.badgeModalItem}>
-                        <div className={styles.badgeModalIconWrapper}>
-                          <AnimatedBadge
-                            icon={award.icon || 'first_dip_round'}
-                            size={56}
-                            earned={false}
-                            animate={false}
-                          />
+                    {/* Locked Badges Section */}
+                    {sortedLockedAwards.length > 0 && (
+                      <>
+                        <div className={styles.badgeSectionHeader}>
+                          <span className={styles.badgeSectionTitle}>Locked</span>
+                          <span className={styles.badgeSectionCount}>{sortedLockedAwards.length}</span>
                         </div>
-                        <div className={styles.badgeModalDetails}>
-                          <span className={styles.badgeModalName}>{award.name}</span>
-                          <span className={styles.badgeModalDesc}>{award.description}</span>
-                        </div>
-                      </div>
-                    ))}
+                        {sortedLockedAwards.map(award => (
+                          <div key={award.id} className={styles.badgeModalItem}>
+                            <div className={styles.badgeModalIconWrapper}>
+                              <AnimatedBadge
+                                icon={award.icon || 'first_dip_round'}
+                                size={56}
+                                earned={false}
+                                animate={false}
+                              />
+                            </div>
+                            <div className={styles.badgeModalDetails}>
+                              <span className={styles.badgeModalName}>{award.name}</span>
+                              <span className={styles.badgeModalDesc}>{award.description}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </>
+                    )}
 
                     {/* Fallback if no badges */}
                     {awards.length === 0 && lockedAwards.length === 0 && (

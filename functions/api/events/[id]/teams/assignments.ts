@@ -148,7 +148,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
 
           // Check attendance awards if marked present/late
           if (attendance_status === 'present' || attendance_status === 'late') {
-            await checkAndGrantAwards(db, person_id, 'attendance', {
+            await checkAndGrantAwards(context.env, db, person_id, 'attendance', {
               eventId,
               status: attendance_status,
             })
@@ -164,7 +164,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
           .bind(team_id)
           .first<{ name: string }>()
 
-        await checkAndGrantAwards(db, person_id, 'team_assigned', {
+        await checkAndGrantAwards(context.env, db, person_id, 'team_assigned', {
           eventId,
           teamId: team_id,
           teamName: team?.name,

@@ -24,6 +24,8 @@ interface PersonAward {
   award_id: string
   awarded_at: string
   notes: string | null
+  event_id: string | null
+  event_title: string | null
   name: string
   description: string
   icon: string | null
@@ -78,9 +80,9 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
 
     // Check and grant any awards earned (profile load checks)
     // This covers: anniversaries, reliability, milestones, streaks
-    await checkAndGrantAwards(db, person.id, 'profile_load', {})
+    await checkAndGrantAwards(context.env, db, person.id, 'profile_load', {})
 
-    // Fetch user's earned awards
+    // Fetch user's earned awards with event details if applicable
     const personAwards = await db
       .prepare(`
         SELECT
@@ -88,11 +90,14 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
           pa.award_id,
           pa.awarded_at,
           pa.notes,
+          pa.event_id,
+          e.title as event_title,
           a.name,
           a.description,
           a.icon
         FROM person_awards pa
         JOIN awards a ON a.id = pa.award_id
+        LEFT JOIN events e ON e.id = pa.event_id
         WHERE pa.person_id = ?
         ORDER BY pa.awarded_at DESC
       `)
@@ -116,7 +121,9 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
         description: a.description,
         icon: a.icon,
         granted_at: a.awarded_at,
-        meta: a.notes ? { notes: a.notes } : null,
+        event_id: a.event_id,
+        event_title: a.event_title,
+        context: a.notes || null,
       })),
       locked_awards: lockedAwards,
       current_streak: currentStreak,

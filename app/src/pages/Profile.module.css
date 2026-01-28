@@ -862,6 +862,36 @@
   gap: var(--space-md);
 }
 
+/* Badge Section Header */
+.badgeSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-xs);
+  border-bottom: 1px solid var(--grey-200);
+}
+
+.badgeSectionHeader:not(:first-child) {
+  margin-top: var(--space-md);
+}
+
+.badgeSectionTitle {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--grey-600);
+}
+
+.badgeSectionCount {
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--grey-500);
+  background: var(--grey-100);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
 .badgeModalItem {
   display: flex;
   align-items: flex-start;

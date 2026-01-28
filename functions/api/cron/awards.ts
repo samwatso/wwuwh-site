@@ -20,7 +20,7 @@ export const onRequestPost: PagesFunction<Env> = async (context) => {
   }
 
   try {
-    const result = await checkAwardsForAllUsers(db)
+    const result = await checkAwardsForAllUsers(context.env, db)
 
     return jsonResponse({
       success: true,

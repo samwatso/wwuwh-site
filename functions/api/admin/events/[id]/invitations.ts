@@ -177,16 +177,16 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       return errorResponse('Admin access required', 403)
     }
 
-    // Verify event exists and belongs to club, also get club name
+    // Verify event exists and belongs to club, also get club name and kind
     const event = await db
       .prepare(`
-        SELECT e.id, e.title, e.starts_at_utc, e.timezone, c.name as club_name
+        SELECT e.id, e.title, e.kind, e.starts_at_utc, e.timezone, c.name as club_name
         FROM events e
         JOIN clubs c ON c.id = e.club_id
         WHERE e.id = ? AND e.club_id = ?
       `)
       .bind(eventId, club_id)
-      .first<{ id: string; title: string; starts_at_utc: string; timezone: string; club_name: string }>()
+      .first<{ id: string; title: string; kind: string; starts_at_utc: string; timezone: string; club_name: string }>()
 
     if (!event) {
       return errorResponse('Event not found', 404)
@@ -272,6 +272,7 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
           db,
           eventId,
           event.title,
+          event.kind,
           event.starts_at_utc,
           event.timezone,
           event.club_name,

@@ -14,7 +14,9 @@ export interface Award {
   description: string
   icon: string | null
   granted_at: string
-  meta: Record<string, unknown> | null
+  event_id: string | null
+  event_title: string | null
+  context: string | null
 }
 
 export interface LockedAward {

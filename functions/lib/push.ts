@@ -143,6 +143,17 @@ function formatEventDateTime(startsAtUtc: string, timezone: string): string {
   }
 }
 
+// Map event kind to display label
+const EVENT_KIND_LABELS: Record<string, string> = {
+  session: 'Session',
+  training: 'Training',
+  match: 'Match',
+  tournament: 'Tournament',
+  social: 'Social',
+  ladies: 'Ladies',
+  other: 'Event',
+}
+
 /**
  * Send event invitation notifications to all platforms
  */
@@ -151,6 +162,7 @@ export async function sendEventInvitationNotifications(
   db: D1Database,
   eventId: string,
   eventTitle: string,
+  eventKind: string,
   startsAtUtc: string,
   timezone: string,
   clubName: string,
@@ -176,14 +188,17 @@ export async function sendEventInvitationNotifications(
     return
   }
 
-  // Format notification
+  // Format notification: "Session Invite: Thursday Session - Tue 28 Jan, 7:30pm"
+  const kindLabel = EVENT_KIND_LABELS[eventKind] || 'Event'
   const dateTime = formatEventDateTime(startsAtUtc, timezone)
-  const body = dateTime ? `${eventTitle} - ${dateTime}` : eventTitle
+  const body = dateTime
+    ? `${kindLabel} Invite: ${eventTitle} - ${dateTime}`
+    : `${kindLabel} Invite: ${eventTitle}`
 
   const payload: NotificationPayload = {
     title: clubName,
     body,
-    data: { eventId }
+    data: { eventId, type: 'event_invite' }
   }
 
   const results = await sendNotifications(env, tokens.results, payload)
@@ -209,5 +224,50 @@ export async function sendEventInvitationNotifications(
       .bind(...invalidTokens)
       .run()
     console.log(`Cleaned up ${invalidTokens.length} invalid device tokens`)
+  }
+}
+
+/**
+ * Send badge unlock notification to a single person
+ */
+export async function sendBadgeUnlockNotification(
+  env: Env,
+  db: D1Database,
+  personId: string,
+  badgeName: string,
+  badgeDescription: string
+): Promise<void> {
+  // Get device token for the person
+  const token = await db
+    .prepare('SELECT token, platform, person_id FROM device_tokens WHERE person_id = ? ORDER BY created_at DESC LIMIT 1')
+    .bind(personId)
+    .first<DeviceToken>()
+
+  if (!token) {
+    console.log(`No device token found for person ${personId}`)
+    return
+  }
+
+  const payload: NotificationPayload = {
+    title: '🏆 Badge Unlocked!',
+    body: `${badgeName} - ${badgeDescription}`,
+    data: { type: 'badge_unlock', badgeName }
+  }
+
+  const result = await sendNotification(env, token.token, token.platform as 'ios' | 'android', payload)
+
+  if (result.success) {
+    console.log(`Badge unlock notification sent to person ${personId}: ${badgeName}`)
+  } else {
+    console.log(`Failed to send badge notification to person ${personId}: ${result.error}`)
+
+    // Clean up invalid token
+    if (result.statusCode === 410 || result.statusCode === 404) {
+      await db
+        .prepare('DELETE FROM device_tokens WHERE token = ?')
+        .bind(token.token)
+        .run()
+      console.log(`Cleaned up invalid device token for person ${personId}`)
+    }
   }
 }
