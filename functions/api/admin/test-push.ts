@@ -29,18 +29,16 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
     }
 
     // Check admin role for any club
-    const adminMembership = await db
+    const adminRole = await db
       .prepare(`
-        SELECT cm.club_id FROM club_memberships cm
-        JOIN club_member_roles cmr ON cmr.membership_id = cm.id
-        JOIN club_roles cr ON cr.id = cmr.role_id
-        WHERE cm.person_id = ? AND cr.name = 'admin'
+        SELECT club_id FROM club_member_roles
+        WHERE person_id = ? AND role_key = 'admin'
         LIMIT 1
       `)
       .bind(person.id)
       .first<{ club_id: string }>()
 
-    if (!adminMembership) {
+    if (!adminRole) {
       return errorResponse('Admin access required', 403)
     }
 
