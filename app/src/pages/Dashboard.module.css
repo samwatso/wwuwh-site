@@ -835,29 +835,21 @@
 @media (max-width: 480px) {
   /* When badge showcase is sharing space with profile card, make it more compact */
   .badgeShowcase:not(.badgeShowcaseWide) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-sm);
     padding: var(--space-sm);
+    gap: var(--space-sm);
   }
 
-  .badgeShowcase:not(.badgeShowcaseWide) .badgeHivePreview {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .badgeShowcase:not(.badgeShowcaseWide) .badgePreviewItem:nth-child(n+4) {
+  /* Only show first 2 badges */
+  .badgeShowcase:not(.badgeShowcaseWide) .badgePreviewItem:nth-child(n+3) {
     display: none;
-  }
-
-  .badgeShowcase:not(.badgeShowcaseWide) .badgeShowcaseInfo {
-    width: 100%;
-    text-align: center;
-    align-items: center;
   }
 
   .badgeShowcase:not(.badgeShowcaseWide) .badgeShowcaseHint {
     display: none;
+  }
+
+  .badgeShowcase:not(.badgeShowcaseWide) .badgeShowcaseCount {
+    font-size: var(--text-sm);
   }
 }
 
