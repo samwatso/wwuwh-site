@@ -5,6 +5,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import { api } from '@/lib/api'
 
 export interface Award {
   id: string
@@ -50,28 +51,20 @@ export function useAwards(): UseAwardsReturn {
     setError(null)
 
     try {
-      const response = await fetch('/api/me/awards', {
-        credentials: 'include',
-      })
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          // No profile yet, just return empty
-          setAwards([])
-          setLockedAwards([])
-          setCurrentStreak(0)
-          return
-        }
-        throw new Error('Failed to fetch awards')
-      }
-
-      const data: AwardsResponse = await response.json()
+      const data = await api<AwardsResponse>('/me/awards')
       setAwards(data.awards)
       setLockedAwards(data.locked_awards)
       setCurrentStreak(data.current_streak)
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load awards'
-      setError(message)
+      // Don't show error for unauthenticated users - just return empty
+      if (message.includes('401') || message.includes('404')) {
+        setAwards([])
+        setLockedAwards([])
+        setCurrentStreak(0)
+      } else {
+        setError(message)
+      }
     } finally {
       setLoading(false)
     }
