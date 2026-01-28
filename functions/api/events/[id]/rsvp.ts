@@ -202,9 +202,10 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
           .first<{ count: number }>()
 
         const sessionsUsed = usageCount?.count || 0
+        const hasUnlimitedSessions = subscription.weekly_sessions_allowed === -1
 
-        // If sessions available, use one
-        if (sessionsUsed < subscription.weekly_sessions_allowed) {
+        // If sessions available (or unlimited), use one
+        if (hasUnlimitedSessions || sessionsUsed < subscription.weekly_sessions_allowed) {
           await db
             .prepare(`
               INSERT OR IGNORE INTO subscription_usages (subscription_id, event_id, used_at)

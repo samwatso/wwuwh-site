@@ -16,6 +16,7 @@ function formatPrice(cents: number, currency: string): string {
 
 // Helper to get sessions text
 function getSessionsText(sessions: number): string {
+  if (sessions === -1) return 'Unlimited sessions per week'
   if (sessions === 1) return '1 session per week'
   return `${sessions} sessions per week`
 }

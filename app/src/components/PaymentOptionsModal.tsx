@@ -46,13 +46,14 @@ export function PaymentOptionsModal({
 
   // Format fee for display
   const formatFee = (cents: number | null, currency: string): string => {
-    if (!cents) return 'Free'
+    if (cents === null || cents === undefined || cents === 0) return 'Free'
     const amount = cents / 100
     if (currency === 'GBP') return `£${amount.toFixed(2)}`
     return `${amount.toFixed(2)} ${currency}`
   }
 
-  const feeDisplay = formatFee(event.fee_cents, event.currency)
+  // Use computed price based on member's category, fallback to event fee
+  const feeDisplay = formatFee(event.computed_price_cents ?? event.fee_cents, event.currency)
 
   // Close on click outside
   useEffect(() => {

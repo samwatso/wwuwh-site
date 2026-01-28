@@ -163,8 +163,10 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
 
           // Payment NOT required if:
           // - Already used subscription for this event, OR
+          // - Has unlimited sessions (-1), OR
           // - Has sessions remaining this week
-          if (alreadyUsedForThisEvent || sessionsUsedThisWeek < subscription.weekly_sessions_allowed) {
+          const hasUnlimitedSessions = subscription.weekly_sessions_allowed === -1
+          if (alreadyUsedForThisEvent || hasUnlimitedSessions || sessionsUsedThisWeek < subscription.weekly_sessions_allowed) {
             paymentRequired = false
           }
         }

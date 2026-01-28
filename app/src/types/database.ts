@@ -236,7 +236,7 @@ export interface BillingPlan {
   club_id: string
   name: string
   cadence: 'month'
-  weekly_sessions_allowed: 1 | 2
+  weekly_sessions_allowed: -1 | 1 | 2  // -1 = unlimited
   price_cents: number
   currency: string
   stripe_price_id: string | null

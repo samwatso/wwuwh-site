@@ -671,7 +671,7 @@ export function Profile() {
                 <div className={styles.row}>
                   <span className={styles.label}>Sessions</span>
                   <span className={styles.value}>
-                    {sub.weekly_sessions_allowed} per week
+                    {sub.weekly_sessions_allowed === -1 ? 'Unlimited' : sub.weekly_sessions_allowed} per week
                   </span>
                 </div>
                 <div className={styles.row}>

@@ -378,7 +378,8 @@ function MemberRow({ member }: { member: BillingMember }) {
     ? 'Confirmed'
     : 'No Plan'
 
-  const isOverLimit = subscription && usage_this_week.attended_count > usage_this_week.allowed
+  // -1 means unlimited sessions, so never over limit
+  const isOverLimit = subscription && usage_this_week.allowed !== -1 && usage_this_week.attended_count > usage_this_week.allowed
 
   return (
     <div className={styles.memberRow}>
@@ -392,7 +393,7 @@ function MemberRow({ member }: { member: BillingMember }) {
           <>
             <span className={styles.planBadge}>{subscription.plan_name}</span>
             <span className={styles.planSessions}>
-              {subscription.weekly_sessions_allowed}/week
+              {subscription.weekly_sessions_allowed === -1 ? '∞' : subscription.weekly_sessions_allowed}/week
             </span>
           </>
         ) : (
@@ -402,7 +403,7 @@ function MemberRow({ member }: { member: BillingMember }) {
 
       <div className={styles.memberUsage}>
         <span className={`${styles.usagePill} ${isOverLimit ? styles.usageOver : ''}`}>
-          {usage_this_week.attended_count}/{usage_this_week.allowed || '∞'}
+          {usage_this_week.attended_count}/{usage_this_week.allowed === -1 || !usage_this_week.allowed ? '∞' : usage_this_week.allowed}
         </span>
       </div>
 

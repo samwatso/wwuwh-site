@@ -270,7 +270,7 @@ function MemberDetailModal({ memberId, clubId, onClose, onUpdate }: MemberDetail
                     </div>
                     <div className={styles.subscriptionRow}>
                       <span className={styles.subscriptionLabel}>Sessions/week</span>
-                      <span className={styles.subscriptionValue}>{detail.subscription.weekly_sessions_allowed}</span>
+                      <span className={styles.subscriptionValue}>{detail.subscription.weekly_sessions_allowed === -1 ? '∞' : detail.subscription.weekly_sessions_allowed}</span>
                     </div>
                     <div className={styles.subscriptionRow}>
                       <span className={styles.subscriptionLabel}>Price</span>
@@ -471,7 +471,7 @@ function AssignSubscriptionModal({
                 ) : (
                   plans.map(plan => (
                     <option key={plan.id} value={plan.id}>
-                      {plan.name} - {formatCurrency(plan.price_cents)}/month ({plan.weekly_sessions_allowed} session{plan.weekly_sessions_allowed > 1 ? 's' : ''}/week)
+                      {plan.name} - {formatCurrency(plan.price_cents)}/month ({plan.weekly_sessions_allowed === -1 ? '∞' : plan.weekly_sessions_allowed} session{plan.weekly_sessions_allowed !== 1 ? 's' : ''}/week)
                     </option>
                   ))
                 )}
@@ -867,6 +867,7 @@ export function AdminMembers() {
         >
           <option value="">All statuses</option>
           <option value="active">Active</option>
+          <option value="invited">Invited</option>
           <option value="suspended">Suspended</option>
           <option value="left">Left</option>
         </select>

@@ -56,7 +56,7 @@ function getDateKey(dateStr: string): string {
 }
 
 function formatFee(cents: number | null, currency: string): string {
-  if (!cents) return 'Free'
+  if (cents === null || cents === undefined || cents === 0) return 'Free'
   const amount = cents / 100
   if (currency === 'GBP') return `£${amount.toFixed(2)}`
   return `${amount.toFixed(2)} ${currency}`
@@ -303,8 +303,11 @@ function EventCard({ event, onRsvp, rsvpLoading, onPaymentComplete, isPast }: Ev
   }
 
   const hasPaid = event.has_paid === 1
-  const subscriptionCovers = event.subscription_used === 1 ||
+  // Subscription only covers events with payment_mode 'included' (not free events)
+  const subscriptionCovers = event.payment_mode === 'included' && (
+    event.subscription_used === 1 ||
     (event.subscription_status === 'active' && !event.payment_required && !hasPaid)
+  )
 
   const allDay = isAllDayEvent(event.starts_at_utc, event.ends_at_utc)
   const eventDays = allDay ? getEventDays(event.starts_at_utc, event.ends_at_utc) : 0
@@ -328,6 +331,8 @@ function EventCard({ event, onRsvp, rsvpLoading, onPaymentComplete, isPast }: Ev
         : ''
       return <span className={`${styles.kindBadge} ${kindClass}`}>{event.kind}</span>
     }
+    // Don't show fee badge for subscription-included events
+    if (event.payment_mode === 'included') return null
     // Use computed price if available, otherwise fall back to fee_cents
     const priceToShow = event.computed_price_cents ?? event.fee_cents
     const fee = formatFee(priceToShow, event.currency)
@@ -841,7 +846,7 @@ export function Events() {
         </p>
         {subscription && (
           <div className={styles.subscriptionBadge}>
-            {subscription.plan_name} ({subscription.weekly_sessions_allowed}x/week)
+            {subscription.plan_name} ({subscription.weekly_sessions_allowed === -1 ? '∞' : subscription.weekly_sessions_allowed}x/week)
           </div>
         )}
       </div>
