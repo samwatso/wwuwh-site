@@ -740,6 +740,13 @@ export interface AdminEvent {
   rsvp_no_count?: number
   rsvp_maybe_count?: number
   series_title?: string
+  pricing_tiers?: PricingTier[]
+}
+
+export interface PricingTier {
+  category: PricingCategory
+  price_cents: number
+  currency: string
 }
 
 export interface AdminEventsResponse {
@@ -817,6 +824,16 @@ export async function deleteAdminEvent(eventId: string, clubId: string, hard?: b
   return api<{ success: boolean }>(`/admin/events/${eventId}?${params}`, {
     method: 'DELETE',
   })
+}
+
+export interface AdminEventDetailResponse {
+  event: AdminEvent
+  rsvps: Array<{ person_id: string; response: string; name: string; email: string }>
+  pricing_tiers: PricingTier[]
+}
+
+export async function getAdminEventDetail(eventId: string, clubId: string): Promise<AdminEventDetailResponse> {
+  return api<AdminEventDetailResponse>(`/admin/events/${eventId}?club_id=${clubId}`)
 }
 
 // ============================================

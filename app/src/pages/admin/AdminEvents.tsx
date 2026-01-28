@@ -33,6 +33,7 @@ import {
   deleteManualExternalEvent,
   ExternalEventVisibility,
   ExternalEventStatus,
+  getAdminEventDetail,
 } from '@/lib/api'
 import styles from './AdminEvents.module.css'
 
@@ -1237,9 +1238,17 @@ function EventModal({
     sourceEvent?.payment_mode || savedDraft?.paymentMode || 'included'
   )
   const [feeCents, setFeeCents] = useState(sourceEvent?.fee_cents || savedDraft?.feeCents || 0)
-  const [pricingTiers, setPricingTiers] = useState<Partial<Record<PricingCategory, number | null>>>(
-    savedDraft?.pricingTiers || {}
-  )
+  const [pricingTiers, setPricingTiers] = useState<Partial<Record<PricingCategory, number | null>>>(() => {
+    // Convert pricing_tiers array to record format for the form
+    if (sourceEvent?.pricing_tiers && sourceEvent.pricing_tiers.length > 0) {
+      const record: Partial<Record<PricingCategory, number | null>> = {}
+      for (const tier of sourceEvent.pricing_tiers) {
+        record[tier.category] = tier.price_cents
+      }
+      return record
+    }
+    return savedDraft?.pricingTiers || {}
+  })
   const [visibilityDays, setVisibilityDays] = useState(() => {
     // For edit/copy, calculate from existing event's visible_from
     if (sourceEvent?.visible_from && sourceEvent?.starts_at_utc) {
@@ -2672,6 +2681,7 @@ export function AdminEvents() {
 
   const [showEventModal, setShowEventModal] = useState(false)
   const [editingEvent, setEditingEvent] = useState<AdminEvent | null>(null)
+  const [loadingEventDetails, setLoadingEventDetails] = useState(false)
   const [copyingEvent, setCopyingEvent] = useState<AdminEvent | null>(null)
   const [showSeriesModal, setShowSeriesModal] = useState(false)
   const [editingSeries, setEditingSeries] = useState<EventSeries | null>(null)
@@ -2913,6 +2923,26 @@ export function AdminEvents() {
   const handleCopyEvent = (event: AdminEvent) => {
     setCopyingEvent(event)
     setShowEventModal(true)
+  }
+
+  const handleEditEvent = async (event: AdminEvent) => {
+    // Fetch full event details including pricing tiers
+    setLoadingEventDetails(true)
+    try {
+      const response = await getAdminEventDetail(event.id, clubId)
+      // Merge pricing tiers into the event
+      const eventWithTiers: AdminEvent = {
+        ...event,
+        pricing_tiers: response.pricing_tiers,
+      }
+      setEditingEvent(eventWithTiers)
+    } catch (err) {
+      console.error('Failed to fetch event details:', err)
+      // Fall back to editing without pricing tiers
+      setEditingEvent(event)
+    } finally {
+      setLoadingEventDetails(false)
+    }
   }
 
   const handleUpdateEvent = async (data: Parameters<typeof updateEvent>[1]) => {
@@ -3187,7 +3217,7 @@ export function AdminEvents() {
                   <EventRow
                     key={event.id}
                     event={event}
-                    onEdit={() => setEditingEvent(event)}
+                    onEdit={() => handleEditEvent(event)}
                     onCancel={() => handleCancelEvent(event.id)}
                     onCopy={() => handleCopyEvent(event)}
                     onManageInvites={() => setManagingInvitesEvent(event)}
@@ -3213,7 +3243,7 @@ export function AdminEvents() {
                     <EventRow
                       key={event.id}
                       event={event}
-                      onEdit={() => setEditingEvent(event)}
+                      onEdit={() => handleEditEvent(event)}
                       onCancel={() => handleCancelEvent(event.id)}
                       onCopy={() => handleCopyEvent(event)}
                       onManageInvites={() => setManagingInvitesEvent(event)}
@@ -3242,8 +3272,18 @@ export function AdminEvents() {
         />
       )}
 
+      {/* Loading Event Details */}
+      {loadingEventDetails && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.loading}>
+            <Spinner size="lg" />
+            <p>Loading event details...</p>
+          </div>
+        </div>
+      )}
+
       {/* Edit Event Modal */}
-      {editingEvent && (
+      {editingEvent && !loadingEventDetails && (
         <EventModal
           event={editingEvent}
           onSave={handleUpdateEvent}
