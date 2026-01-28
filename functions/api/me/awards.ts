@@ -18,11 +18,11 @@ interface Award {
   icon: string | null
 }
 
-interface UserAward {
+interface PersonAward {
   id: string
   award_id: string
-  granted_at: string
-  meta_json: string | null
+  awarded_at: string
+  notes: string | null
   name: string
   description: string
   icon: string | null
@@ -86,18 +86,17 @@ async function grantAward(
   db: D1Database,
   personId: string,
   awardId: string,
-  meta?: Record<string, unknown>
+  notes?: string
 ): Promise<boolean> {
   const id = crypto.randomUUID()
-  const metaJson = meta ? JSON.stringify(meta) : null
 
   try {
     await db
       .prepare(`
-        INSERT OR IGNORE INTO user_awards (id, user_id, award_id, granted_at, meta_json)
-        VALUES (?, ?, ?, datetime('now'), ?)
+        INSERT OR IGNORE INTO person_awards (id, person_id, award_id, source, notes, awarded_at, created_at)
+        VALUES (?, ?, ?, 'auto', ?, strftime('%Y-%m-%dT%H:%M:%fZ','now'), strftime('%Y-%m-%dT%H:%M:%fZ','now'))
       `)
-      .bind(id, personId, awardId, metaJson)
+      .bind(id, personId, awardId, notes || null)
       .run()
     return true
   } catch {
@@ -124,27 +123,27 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
 
     // Check and grant 3 session streak award if earned
     if (currentStreak >= 3) {
-      await grantAward(db, person.id, 'three_session_streak', { streak: currentStreak })
+      await grantAward(db, person.id, 'award_triple_threat', `Streak of ${currentStreak}`)
     }
 
     // Fetch user's earned awards
-    const userAwards = await db
+    const personAwards = await db
       .prepare(`
         SELECT
-          ua.id,
-          ua.award_id,
-          ua.granted_at,
-          ua.meta_json,
+          pa.id,
+          pa.award_id,
+          pa.awarded_at,
+          pa.notes,
           a.name,
           a.description,
           a.icon
-        FROM user_awards ua
-        JOIN awards a ON a.id = ua.award_id
-        WHERE ua.user_id = ?
-        ORDER BY ua.granted_at DESC
+        FROM person_awards pa
+        JOIN awards a ON a.id = pa.award_id
+        WHERE pa.person_id = ?
+        ORDER BY pa.awarded_at DESC
       `)
       .bind(person.id)
-      .all<UserAward>()
+      .all<PersonAward>()
 
     // Fetch all available awards for "locked" display
     const allAwards = await db
@@ -152,18 +151,18 @@ export const onRequestGet: PagesFunction<Env> = withAuth(async (context, user) =
       .all<Award>()
 
     // Build locked awards (awards user hasn't earned)
-    const earnedIds = new Set(userAwards.results.map(a => a.award_id))
+    const earnedIds = new Set(personAwards.results.map(a => a.award_id))
     const lockedAwards = allAwards.results.filter(a => !earnedIds.has(a.id))
 
     return jsonResponse({
-      awards: userAwards.results.map(a => ({
+      awards: personAwards.results.map(a => ({
         id: a.id,
         award_id: a.award_id,
         name: a.name,
         description: a.description,
         icon: a.icon,
-        granted_at: a.granted_at,
-        meta: a.meta_json ? JSON.parse(a.meta_json) : null,
+        granted_at: a.awarded_at,
+        meta: a.notes ? { notes: a.notes } : null,
       })),
       locked_awards: lockedAwards,
       current_streak: currentStreak,

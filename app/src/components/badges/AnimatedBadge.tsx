@@ -51,7 +51,7 @@ export function AnimatedBadge({
   }, [])
 
   const shouldAnimate = animate && earned && !prefersReducedMotion
-  const badgePath = `/badges/${icon}.svg`
+  const badgePath = `${import.meta.env.BASE_URL}badges/${icon}.svg`
 
   const containerClasses = [
     styles.badgeContainer,
