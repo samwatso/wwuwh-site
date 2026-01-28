@@ -6,7 +6,7 @@ import { useProfile } from '@/hooks/useProfile'
 import { useSubscribe } from '@/hooks/useSubscribe'
 import { useAwards, Award } from '@/hooks/useAwards'
 import { usePushNotifications } from '@/hooks/usePushNotifications'
-import { Button, Input, FormField, Spinner, Avatar, ImageCropper } from '@/components'
+import { Button, Input, FormField, Spinner, Avatar, ImageCropper, Skeleton } from '@/components'
 import { AnimatedBadge } from '@/components/badges'
 import { supabase } from '@/lib/supabase'
 import { deleteAccount } from '@/lib/api'
@@ -245,9 +245,40 @@ export function Profile() {
 
   if (loading) {
     return (
-      <div className={styles.loading}>
-        <Spinner size="lg" />
-        <p>Loading profile...</p>
+      <div className={styles.container}>
+        {/* Skeleton Header */}
+        <div className={styles.header}>
+          <div className={styles.avatarWrapper}>
+            <Skeleton variant="circle" width={80} height={80} />
+          </div>
+          <Skeleton variant="text" width={150} height={24} className={styles.skeletonTitle} />
+        </div>
+
+        {/* Skeleton Cards */}
+        <div className={styles.skeletonCard}>
+          <Skeleton variant="text" width={80} height={16} />
+          <div className={styles.skeletonRows}>
+            <Skeleton variant="text" width="100%" height={40} />
+            <Skeleton variant="text" width="100%" height={40} />
+            <Skeleton variant="text" width="100%" height={40} />
+          </div>
+        </div>
+
+        <div className={styles.skeletonCard}>
+          <Skeleton variant="text" width={120} height={16} />
+          <div className={styles.skeletonRows}>
+            <Skeleton variant="text" width="100%" height={40} />
+            <Skeleton variant="text" width="100%" height={40} />
+          </div>
+        </div>
+
+        <div className={styles.skeletonCard}>
+          <Skeleton variant="text" width={100} height={16} />
+          <div className={styles.skeletonRows}>
+            <Skeleton variant="text" width="100%" height={40} />
+            <Skeleton variant="text" width="100%" height={40} />
+          </div>
+        </div>
       </div>
     )
   }

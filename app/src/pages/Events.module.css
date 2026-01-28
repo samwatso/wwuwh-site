@@ -1302,3 +1302,34 @@
     padding: 0 var(--space-xs);
   }
 }
+
+/* ============================================================================
+   SKELETON LOADING STYLES
+   ============================================================================ */
+
+.skeletonSubtitle {
+  margin-top: var(--space-xs);
+}
+
+.skeletonMarginSm {
+  margin-top: var(--space-xs);
+}
+
+.skeletonDateGroup {
+  margin-bottom: var(--space-lg);
+}
+
+.skeletonEventCard {
+  background: var(--color-white);
+  border-radius: var(--radius-card);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+  margin-top: var(--space-sm);
+}
+
+.skeletonEventActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-md);
+}

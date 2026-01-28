@@ -3,7 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom'
 import { Browser } from '@capacitor/browser'
 import { useProfile } from '@/hooks/useProfile'
 import { useEvents } from '@/hooks/useEvents'
-import { Spinner, Avatar, CalendarPopup, PaymentOptionsModal } from '@/components'
+import { Spinner, Avatar, CalendarPopup, PaymentOptionsModal, Skeleton } from '@/components'
 import { getEventAttendees, Attendee } from '@/lib/api'
 import type { EventWithRsvp, RsvpResponse } from '@/types/database'
 import styles from './Events.module.css'
@@ -730,9 +730,44 @@ export function Events() {
   if (profileLoading || (eventsLoading && events.length === 0)) {
     return (
       <div className={styles.container}>
-        <div className={styles.loading}>
-          <Spinner size="lg" />
-          <p>Loading events...</p>
+        {/* Skeleton Header */}
+        <div className={styles.header}>
+          <Skeleton variant="text" width={100} height={28} />
+          <Skeleton variant="text" width={150} height={16} className={styles.skeletonSubtitle} />
+        </div>
+
+        {/* Skeleton Event Cards */}
+        <div className={styles.eventsList}>
+          <div className={styles.skeletonDateGroup}>
+            <Skeleton variant="text" width={140} height={14} />
+            <div className={styles.skeletonEventCard}>
+              <Skeleton variant="text" width="60%" height={18} />
+              <Skeleton variant="text" width="40%" height={14} className={styles.skeletonMarginSm} />
+              <div className={styles.skeletonEventActions}>
+                <Skeleton variant="rect" width={60} height={24} />
+                <Skeleton variant="rect" width={120} height={36} />
+              </div>
+            </div>
+            <div className={styles.skeletonEventCard}>
+              <Skeleton variant="text" width="50%" height={18} />
+              <Skeleton variant="text" width="35%" height={14} className={styles.skeletonMarginSm} />
+              <div className={styles.skeletonEventActions}>
+                <Skeleton variant="rect" width={60} height={24} />
+                <Skeleton variant="rect" width={120} height={36} />
+              </div>
+            </div>
+          </div>
+          <div className={styles.skeletonDateGroup}>
+            <Skeleton variant="text" width={160} height={14} />
+            <div className={styles.skeletonEventCard}>
+              <Skeleton variant="text" width="55%" height={18} />
+              <Skeleton variant="text" width="45%" height={14} className={styles.skeletonMarginSm} />
+              <div className={styles.skeletonEventActions}>
+                <Skeleton variant="rect" width={60} height={24} />
+                <Skeleton variant="rect" width={120} height={36} />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     )

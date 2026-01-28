@@ -6,7 +6,7 @@ import { useEvents } from '@/hooks/useEvents'
 import { useCountdown } from '@/hooks/useCountdown'
 import { useAwards, Award, LockedAward } from '@/hooks/useAwards'
 import { getEventAttendees, Attendee } from '@/lib/api'
-import { Spinner, Avatar } from '@/components'
+import { Spinner, Avatar, Skeleton } from '@/components'
 import { AnimatedBadge } from '@/components/badges'
 import type { EventWithRsvp, RsvpResponse, EventKind } from '@/types/database'
 import styles from './Dashboard.module.css'
@@ -439,6 +439,44 @@ export function Dashboard() {
   )
   const hasPhoto = !!(person?.photo_url && person.photo_url.trim().length > 0)
 
+  // Show skeleton loading on initial load
+  const isInitialLoading = profileLoading && !person
+
+  if (isInitialLoading) {
+    return (
+      <div className={styles.container}>
+        {/* Skeleton Welcome Section */}
+        <div className={styles.welcome}>
+          <Skeleton variant="circle" width={80} height={80} className={styles.welcomeAvatar} />
+          <Skeleton variant="text" width={180} height={28} className={styles.skeletonTitle} />
+          <Skeleton variant="text" width={120} height={16} className={styles.skeletonSubtitle} />
+        </div>
+
+        {/* Skeleton Up Next Card */}
+        <div className={styles.skeletonUpNext}>
+          <Skeleton variant="text" width={80} height={14} />
+          <Skeleton variant="text" width="70%" height={20} className={styles.skeletonMarginTop} />
+          <Skeleton variant="text" width="50%" height={14} className={styles.skeletonMarginTop} />
+        </div>
+
+        {/* Skeleton Events Card */}
+        <div className={styles.skeletonCard}>
+          <Skeleton variant="text" width={160} height={16} />
+          <div className={styles.skeletonEventsList}>
+            <Skeleton variant="rect" height={70} />
+            <Skeleton variant="rect" height={70} />
+          </div>
+        </div>
+
+        {/* Skeleton Stats Grid */}
+        <div className={styles.statsGrid}>
+          <Skeleton variant="card" height={80} />
+          <Skeleton variant="card" height={80} />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className={styles.container}>
       {/* Welcome Section */}
@@ -457,13 +495,6 @@ export function Dashboard() {
         </p>
 
         {/* Profile Sync Status */}
-        {profileLoading && (
-          <div className={styles.syncStatus}>
-            <span className={styles.syncPending}>
-              <Spinner size="sm" /> Syncing...
-            </span>
-          </div>
-        )}
         {profileError && (
           <div className={styles.syncStatus}>
             <span className={styles.syncError}>

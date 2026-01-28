@@ -875,3 +875,39 @@
     height: 44px;
   }
 }
+
+/* Skeleton Loading Styles */
+.skeletonTitle {
+  margin: var(--space-sm) auto 0;
+}
+
+.skeletonSubtitle {
+  margin: var(--space-xs) auto 0;
+}
+
+.skeletonMarginTop {
+  margin-top: var(--space-sm);
+}
+
+.skeletonUpNext {
+  background: var(--color-white);
+  border-radius: var(--radius-card);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-md);
+}
+
+.skeletonCard {
+  background: var(--color-white);
+  border-radius: var(--radius-card);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-md);
+}
+
+.skeletonEventsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}

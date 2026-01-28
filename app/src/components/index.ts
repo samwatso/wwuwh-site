@@ -10,6 +10,9 @@ export type { FormFieldProps } from './FormField'
 export { Spinner } from './Spinner'
 export type { SpinnerProps } from './Spinner'
 
+export { Skeleton } from './Skeleton'
+export type { SkeletonProps } from './Skeleton'
+
 export { AuthGuard, GuestGuard } from './AuthGuard'
 export { AdminGuard } from './AdminGuard'
 export { AuthLayout } from './AuthLayout'
