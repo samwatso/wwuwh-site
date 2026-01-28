@@ -60,11 +60,11 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
       return errorResponse('Admin access required', 403)
     }
 
-    // Verify event exists
+    // Verify event exists and get details for awards
     const event = await db
-      .prepare('SELECT id FROM events WHERE id = ? AND club_id = ?')
+      .prepare('SELECT id, kind, starts_at_utc FROM events WHERE id = ? AND club_id = ?')
       .bind(eventId, club_id)
-      .first()
+      .first<{ id: string; kind: string; starts_at_utc: string }>()
 
     if (!event) {
       return errorResponse('Event not found', 404)
@@ -151,6 +151,8 @@ export const onRequestPost: PagesFunction<Env> = withAuth(async (context, user) 
             await checkAndGrantAwards(context.env, db, person_id, 'attendance', {
               eventId,
               status: attendance_status,
+              eventKind: event.kind,
+              eventStartsAt: event.starts_at_utc,
             })
           }
         }

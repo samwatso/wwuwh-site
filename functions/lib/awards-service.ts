@@ -176,22 +176,27 @@ async function checkRsvpAwards(
     return granted
   }
 
-  // First Dip - First ever RSVP yes
-  if (!await hasAward(db, personId, 'award_first_dip')) {
+  // Determine if event date has passed (used for event-based awards)
+  const eventHasPassed = context.eventStartsAt
+    ? new Date(context.eventStartsAt) < new Date()
+    : false
+
+  // First Dip - First ever session attended (only after event date)
+  if (eventHasPassed && !await hasAward(db, personId, 'award_first_dip')) {
     const count = await db
       .prepare(`SELECT COUNT(*) as c FROM event_rsvps WHERE person_id = ? AND response = 'yes'`)
       .bind(personId)
       .first<{ c: number }>()
 
     if (count && count.c === 1) {
-      if (await grantAward(env, db, personId, 'award_first_dip', 'First RSVP yes', context.eventId)) {
+      if (await grantAward(env, db, personId, 'award_first_dip', 'First session', context.eventId)) {
         granted.push('award_first_dip')
       }
     }
   }
 
-  // First Friendly - First RSVP yes to a match
-  if (context.eventKind === 'match' && !await hasAward(db, personId, 'award_first_friendly')) {
+  // First Friendly - First match attended (only after event date)
+  if (eventHasPassed && context.eventKind === 'match' && !await hasAward(db, personId, 'award_first_friendly')) {
     const matchCount = await db
       .prepare(`
         SELECT COUNT(*) as c FROM event_rsvps er
@@ -202,14 +207,14 @@ async function checkRsvpAwards(
       .first<{ c: number }>()
 
     if (matchCount && matchCount.c === 1) {
-      if (await grantAward(env, db, personId, 'award_first_friendly', 'First match RSVP', context.eventId)) {
+      if (await grantAward(env, db, personId, 'award_first_friendly', 'First match', context.eventId)) {
         granted.push('award_first_friendly')
       }
     }
   }
 
-  // Tournament Debut - First RSVP yes to a tournament
-  if (context.eventKind === 'tournament' && !await hasAward(db, personId, 'award_tournament_debut')) {
+  // Tournament Debut - First tournament attended (only after event date)
+  if (eventHasPassed && context.eventKind === 'tournament' && !await hasAward(db, personId, 'award_tournament_debut')) {
     const tournamentCount = await db
       .prepare(`
         SELECT COUNT(*) as c FROM event_rsvps er
@@ -220,7 +225,7 @@ async function checkRsvpAwards(
       .first<{ c: number }>()
 
     if (tournamentCount && tournamentCount.c === 1) {
-      if (await grantAward(env, db, personId, 'award_tournament_debut', 'First tournament RSVP', context.eventId)) {
+      if (await grantAward(env, db, personId, 'award_tournament_debut', 'First tournament', context.eventId)) {
         granted.push('award_tournament_debut')
       }
     }
@@ -267,14 +272,14 @@ async function checkRsvpAwards(
     }
   }
 
-  // Road Trip - RSVP yes to any event outside home locations (not London/M25 area, not K2 Crawley)
+  // Road Trip - attended event outside home locations (only after event date has passed)
   if (!await hasAward(db, personId, 'award_road_trip')) {
     const event = await db
-      .prepare('SELECT location FROM events WHERE id = ?')
+      .prepare('SELECT location, starts_at_utc FROM events WHERE id = ?')
       .bind(context.eventId)
-      .first<{ location: string | null }>()
+      .first<{ location: string | null; starts_at_utc: string }>()
 
-    if (event?.location) {
+    if (event?.location && new Date(event.starts_at_utc) < new Date()) {
       const locationLower = event.location.toLowerCase()
       // Home locations: London/M25 area and regular training venues
       const homeLocations = [
@@ -292,14 +297,14 @@ async function checkRsvpAwards(
     }
   }
 
-  // International Waters - RSVP yes to event outside UK
+  // International Waters - attended event outside UK (only after event date has passed)
   if (!await hasAward(db, personId, 'award_international_waters')) {
     const event = await db
-      .prepare('SELECT location FROM events WHERE id = ?')
+      .prepare('SELECT location, starts_at_utc FROM events WHERE id = ?')
       .bind(context.eventId)
-      .first<{ location: string | null }>()
+      .first<{ location: string | null; starts_at_utc: string }>()
 
-    if (event?.location) {
+    if (event?.location && new Date(event.starts_at_utc) < new Date()) {
       const locationLower = event.location.toLowerCase()
       // UK locations - if none of these match, it's international
       const ukLocations = [
@@ -309,7 +314,20 @@ async function checkRsvpAwards(
         'glasgow', 'belfast', 'nottingham', 'southampton', 'portsmouth', 'brighton',
         'oxford', 'cambridge', 'exeter', 'plymouth', 'norwich', 'coventry', 'leicester',
         'crawley', 'bromley', 'croydon', 'kent', 'surrey', 'essex', 'hertfordshire',
-        'egham', 'achieve lifestyle'
+        'egham', 'achieve lifestyle',
+        'high wycombe', 'wycombe', 'reading', 'slough', 'swindon', 'bath', 'cheltenham',
+        'gloucester', 'worcester', 'derby', 'stoke', 'wolverhampton', 'walsall',
+        'luton', 'watford', 'stevenage', 'milton keynes', 'northampton', 'peterborough',
+        'ipswich', 'colchester', 'chelmsford', 'basildon', 'southend', 'maidstone',
+        'canterbury', 'dover', 'hastings', 'eastbourne', 'worthing', 'chichester',
+        'basingstoke', 'winchester', 'bournemouth', 'poole', 'salisbury', 'taunton',
+        'torquay', 'barnsley', 'doncaster', 'rotherham', 'wakefield', 'huddersfield',
+        'halifax', 'bradford', 'york', 'harrogate', 'scarborough', 'middlesbrough',
+        'sunderland', 'durham', 'carlisle', 'blackpool', 'preston', 'bolton', 'wigan',
+        'warrington', 'chester', 'stockport', 'oldham', 'rochdale', 'burnley',
+        'swansea', 'newport', 'wrexham', 'bangor', 'aberystwyth',
+        'aberdeen', 'dundee', 'inverness', 'stirling', 'perth',
+        'leisure centre', 'sports centre', 'swimming pool', 'pool', 'leisure center'
       ]
       const isUkLocation = ukLocations.some(loc => locationLower.includes(loc))
 
@@ -321,8 +339,8 @@ async function checkRsvpAwards(
     }
   }
 
-  // Camp Week - RSVP yes to GB Camp event
-  if (!await hasAward(db, personId, 'award_camp_week')) {
+  // Camp Week - attended GB Camp event (only after event date)
+  if (eventHasPassed && !await hasAward(db, personId, 'award_camp_week')) {
     const event = await db
       .prepare('SELECT title FROM events WHERE id = ?')
       .bind(context.eventId)
@@ -338,8 +356,8 @@ async function checkRsvpAwards(
     }
   }
 
-  // Finals Ready - RSVP yes to BOA, Finals, or Nationals event
-  if (!await hasAward(db, personId, 'award_finals_ready')) {
+  // Finals Ready - attended BOA, Finals, or Nationals event (only after event date)
+  if (eventHasPassed && !await hasAward(db, personId, 'award_finals_ready')) {
     const event = await db
       .prepare('SELECT title FROM events WHERE id = ?')
       .bind(context.eventId)
@@ -355,18 +373,7 @@ async function checkRsvpAwards(
     }
   }
 
-  // Early Bird - RSVP'd more than 7 days before event
-  if (context.eventStartsAt) {
-    const eventDate = new Date(context.eventStartsAt)
-    const now = new Date()
-    const daysUntil = (eventDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-
-    if (daysUntil > 7 && !await hasAward(db, personId, 'award_early_bird')) {
-      if (await grantAward(env, db, personId, 'award_early_bird', `RSVP'd ${Math.floor(daysUntil)} days early`, context.eventId)) {
-        granted.push('award_early_bird')
-      }
-    }
-  }
+  // Early Bird - moved to attendance trigger (requires event to have passed)
 
   // Last Minute Hero - RSVP'd yes within 2 hours of event start
   if (context.eventStartsAt) {
@@ -436,6 +443,151 @@ async function checkAttendanceAwards(
       if (!await hasAward(db, personId, 'award_new_year_splash')) {
         if (await grantAward(env, db, personId, 'award_new_year_splash', `New Year ${year}`)) {
           granted.push('award_new_year_splash')
+        }
+      }
+    }
+  }
+
+  // First Dip - first session attended
+  if (context.eventId && !await hasAward(db, personId, 'award_first_dip')) {
+    const count = await db
+      .prepare(`SELECT COUNT(*) as c FROM event_rsvps WHERE person_id = ? AND response = 'yes'`)
+      .bind(personId)
+      .first<{ c: number }>()
+
+    if (count && count.c >= 1) {
+      if (await grantAward(env, db, personId, 'award_first_dip', 'First session', context.eventId)) {
+        granted.push('award_first_dip')
+      }
+    }
+  }
+
+  // First Friendly - first match attended
+  if (context.eventId && context.eventKind === 'match' && !await hasAward(db, personId, 'award_first_friendly')) {
+    if (await grantAward(env, db, personId, 'award_first_friendly', 'First match', context.eventId)) {
+      granted.push('award_first_friendly')
+    }
+  }
+
+  // Tournament Debut - first tournament attended
+  if (context.eventId && context.eventKind === 'tournament' && !await hasAward(db, personId, 'award_tournament_debut')) {
+    if (await grantAward(env, db, personId, 'award_tournament_debut', 'First tournament', context.eventId)) {
+      granted.push('award_tournament_debut')
+    }
+  }
+
+  // Camp Week - attended camp event
+  if (context.eventId && !await hasAward(db, personId, 'award_camp_week')) {
+    const event = await db
+      .prepare('SELECT title FROM events WHERE id = ?')
+      .bind(context.eventId)
+      .first<{ title: string }>()
+
+    if (event?.title && event.title.toLowerCase().includes('camp')) {
+      if (await grantAward(env, db, personId, 'award_camp_week', event.title, context.eventId)) {
+        granted.push('award_camp_week')
+      }
+    }
+  }
+
+  // Finals Ready - attended BOA, Finals, or Nationals event
+  if (context.eventId && !await hasAward(db, personId, 'award_finals_ready')) {
+    const event = await db
+      .prepare('SELECT title FROM events WHERE id = ?')
+      .bind(context.eventId)
+      .first<{ title: string }>()
+
+    if (event?.title) {
+      const titleLower = event.title.toLowerCase()
+      if (titleLower.includes('boa') || titleLower.includes('final') || titleLower.includes('national')) {
+        if (await grantAward(env, db, personId, 'award_finals_ready', event.title, context.eventId)) {
+          granted.push('award_finals_ready')
+        }
+      }
+    }
+  }
+
+  // Early Bird - RSVP'd 10+ days before 5 different session events
+  if (context.eventId && context.eventKind === 'session' && context.eventStartsAt && !await hasAward(db, personId, 'award_early_bird')) {
+    // Count past sessions where this person RSVP'd 10+ days early and attended
+    const earlyCount = await db
+      .prepare(`
+        SELECT COUNT(*) as c FROM event_rsvps er
+        JOIN events e ON e.id = er.event_id
+        JOIN event_attendance ea ON ea.event_id = er.event_id AND ea.person_id = er.person_id
+        WHERE er.person_id = ?
+          AND er.response = 'yes'
+          AND e.kind = 'session'
+          AND e.starts_at_utc < datetime('now')
+          AND ea.status IN ('present', 'late')
+          AND (julianday(e.starts_at_utc) - julianday(er.responded_at)) >= 10
+      `)
+      .bind(personId)
+      .first<{ c: number }>()
+
+    if (earlyCount && earlyCount.c >= 5) {
+      if (await grantAward(env, db, personId, 'award_early_bird', `RSVP'd 10+ days early to ${earlyCount.c} sessions`, context.eventId)) {
+        granted.push('award_early_bird')
+      }
+    }
+  }
+
+  // Road Trip - attended event outside home locations
+  if (context.eventId && !await hasAward(db, personId, 'award_road_trip')) {
+    const event = await db
+      .prepare('SELECT location FROM events WHERE id = ?')
+      .bind(context.eventId)
+      .first<{ location: string | null }>()
+
+    if (event?.location) {
+      const locationLower = event.location.toLowerCase()
+      const homeLocations = [
+        'london', 'k2', 'crawley', 'west wickham', 'bromley',
+        'crystal palace', 'beckenham', 'downham', 'orpington',
+        'south norwood', 'camberwell', 'achieve lifestyle', 'egham', 'orbit'
+      ]
+      if (!homeLocations.some(loc => locationLower.includes(loc))) {
+        if (await grantAward(env, db, personId, 'award_road_trip', `Away event: ${event.location}`, context.eventId)) {
+          granted.push('award_road_trip')
+        }
+      }
+    }
+  }
+
+  // International Waters - attended event outside UK
+  if (context.eventId && !await hasAward(db, personId, 'award_international_waters')) {
+    const event = await db
+      .prepare('SELECT location FROM events WHERE id = ?')
+      .bind(context.eventId)
+      .first<{ location: string | null }>()
+
+    if (event?.location) {
+      const locationLower = event.location.toLowerCase()
+      const ukLocations = [
+        'uk', 'u.k.', 'united kingdom', 'england', 'wales', 'scotland', 'northern ireland',
+        'london', 'leeds', 'sheffield', 'bristol', 'guildford', 'sussex', 'st albans',
+        'manchester', 'birmingham', 'liverpool', 'newcastle', 'cardiff', 'edinburgh',
+        'glasgow', 'belfast', 'nottingham', 'southampton', 'portsmouth', 'brighton',
+        'oxford', 'cambridge', 'exeter', 'plymouth', 'norwich', 'coventry', 'leicester',
+        'crawley', 'bromley', 'croydon', 'kent', 'surrey', 'essex', 'hertfordshire',
+        'egham', 'achieve lifestyle',
+        'high wycombe', 'wycombe', 'reading', 'slough', 'swindon', 'bath', 'cheltenham',
+        'gloucester', 'worcester', 'derby', 'stoke', 'wolverhampton', 'walsall',
+        'luton', 'watford', 'stevenage', 'milton keynes', 'northampton', 'peterborough',
+        'ipswich', 'colchester', 'chelmsford', 'basildon', 'southend', 'maidstone',
+        'canterbury', 'dover', 'hastings', 'eastbourne', 'worthing', 'chichester',
+        'basingstoke', 'winchester', 'bournemouth', 'poole', 'salisbury', 'taunton',
+        'torquay', 'barnsley', 'doncaster', 'rotherham', 'wakefield', 'huddersfield',
+        'halifax', 'bradford', 'york', 'harrogate', 'scarborough', 'middlesbrough',
+        'sunderland', 'durham', 'carlisle', 'blackpool', 'preston', 'bolton', 'wigan',
+        'warrington', 'chester', 'stockport', 'oldham', 'rochdale', 'burnley',
+        'swansea', 'newport', 'wrexham', 'bangor', 'aberystwyth',
+        'aberdeen', 'dundee', 'inverness', 'stirling', 'perth',
+        'leisure centre', 'sports centre', 'swimming pool', 'pool', 'leisure center'
+      ]
+      if (!ukLocations.some(loc => locationLower.includes(loc)) && event.location.trim().length > 0) {
+        if (await grantAward(env, db, personId, 'award_international_waters', `International: ${event.location}`, context.eventId)) {
+          granted.push('award_international_waters')
         }
       }
     }
